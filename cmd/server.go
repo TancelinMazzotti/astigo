@@ -3,6 +3,9 @@ package cmd
 import (
 	"astigo/internal/application/http"
 	"astigo/internal/config"
+	"astigo/internal/domain/handler"
+	"astigo/internal/domain/repository"
+	"astigo/internal/domain/service"
 	redis2 "astigo/internal/infrastructure/cache/redis"
 	nats2 "astigo/internal/infrastructure/messaging/nats"
 	"astigo/internal/infrastructure/repository/postgres"
@@ -49,11 +52,19 @@ type Server struct {
 	Postgres  *sql.DB
 	Nats      *nats.Conn
 	Redis     *redis.Client
-	GinRouter *gin.Engine
+	GinEngine *gin.Engine
+
+	FooRepository        repository.IFooRepository
+	FooHandler           handler.IFooHandler
+	HealthHttpController *http.HealthController
+	FooHttpController    *http.FooController
 }
 
 func (server *Server) Start() error {
-	server.GinRouter.Run(fmt.Sprintf(":%s", config.Cfg.Gin.Port))
+	if err := server.GinEngine.Run(fmt.Sprintf(":%s", config.Cfg.Gin.Port)); err != nil {
+		return fmt.Errorf("fail ro run gin server %w", err)
+	}
+
 	return nil
 }
 
@@ -73,7 +84,13 @@ func NewServer() (*Server, error) {
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}
 
-	server.GinRouter = http.NewGin()
+	server.FooRepository = postgres.NewFooPostgres(server.Postgres)
+
+	server.FooHandler = service.NewService(server.FooRepository)
+
+	server.GinEngine = http.NewGin()
+	server.HealthHttpController = http.NewHealthController(server.GinEngine)
+	server.FooHttpController = http.NewFooController(server.GinEngine, server.FooHandler)
 
 	return server, nil
 }

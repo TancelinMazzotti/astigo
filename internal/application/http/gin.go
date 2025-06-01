@@ -5,12 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
-	"time"
 )
-
-type RouterRegistrar interface {
-	RegisterRoutes(router *gin.Engine)
-}
 
 type GinConfig struct {
 	Port string `mapstructure:"port"`
@@ -18,42 +13,23 @@ type GinConfig struct {
 }
 
 func NewGin() *gin.Engine {
-	r := gin.New()
-	r.Use(middleware.ZapLoggerMiddleware())
-	r.Use(middleware.ZapRecoveryMiddleware())
+	e := gin.New()
+	e.Use(middleware.ZapLoggerMiddleware())
+	e.Use(middleware.ZapRecoveryMiddleware())
 
-	setupSystemRoutes(r)
-
-	return r
-}
-
-func setupSystemRoutes(router *gin.Engine) {
-	router.GET("/", func(c *gin.Context) {
+	e.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"name":        "Astigo API",
 			"version":     "1.0.0",
 			"description": "Welcome to the Astigo API. This is a RESTful service.",
+			"author":      "Tancelin Mazzotti",
+			"github":      "https://github.com/TancelinMazzotti/astigo",
+			"license":     "MIT",
+			"docs":        "https://github.com/TancelinMazzotti/astigo/blob/main/README.md",
 		})
 	})
 
-	router.GET("/health/liveness", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":     "UP",
-			"message":    "Service is healthy",
-			"timestamp":  time.Now().UTC().Format(time.RFC3339),
-			"start_time": time.Now().UTC().Format(time.RFC3339),
-		})
-	})
+	e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	router.GET("/health/readiness", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status":     "UP",
-			"message":    "Service is healthy",
-			"timestamp":  time.Now().UTC().Format(time.RFC3339),
-			"start_time": time.Now().UTC().Format(time.RFC3339),
-		})
-	})
-
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
+	return e
 }

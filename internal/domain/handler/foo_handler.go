@@ -1,11 +1,14 @@
 package handler
 
 import (
-	"astigo/pkg/model"
+	"astigo/pkg/dto"
 	"context"
 )
 
 type IFooHandler interface {
-	Get(ctx context.Context, id string) (*model.Foo, error)
-	Register(ctx context.Context, input model.Foo) error
+	GetAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error)
+	GetByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error)
+	Create(ctx context.Context, input dto.FooRequestCreateDto) error
+	Update(ctx context.Context, input dto.FooRequestUpdateDto) error
+	DeleteByID(ctx context.Context, id int) error
 }
