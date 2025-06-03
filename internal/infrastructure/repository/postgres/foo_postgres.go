@@ -5,6 +5,7 @@ import (
 	"astigo/pkg/dto"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 )
 
@@ -18,8 +19,14 @@ type FooPostgres struct {
 
 func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error) {
 	query := `
-        SELECT foo_id, label
+        SELECT foo_id, foo.label,
+    	COALESCE(
+			json_agg(bar_id) FILTER (WHERE bar_id IS NOT NULL),
+			'[]'
+		) AS bar_ids
         FROM foo
+        LEFT JOIN bar USING(foo_id)
+        GROUP BY foo_id, foo.label
         ORDER BY foo_id
         LIMIT $1 OFFSET $2`
 
@@ -32,10 +39,17 @@ func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationReque
 	var foos []dto.FooResponseReadDto
 	for rows.Next() {
 		var foo dto.FooResponseReadDto
+		var barIDsJSON []byte
 
-		if err := rows.Scan(&foo.Id, &foo.Label); err != nil {
+		if err := rows.Scan(&foo.Id, &foo.Label, &barIDsJSON); err != nil {
 			return nil, fmt.Errorf("error scanning foo row: %w", err)
 		}
+
+		err = json.Unmarshal(barIDsJSON, &foo.Bars)
+		if err != nil {
+			return nil, fmt.Errorf("error unmarshal bar id: %w", err)
+		}
+
 		foos = append(foos, foo)
 	}
 
@@ -43,40 +57,7 @@ func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationReque
 		return nil, fmt.Errorf("error iterating foo rows: %w", err)
 	}
 
-	for i, foo := range foos {
-		bars, err := f.findAllBarId(ctx, foo.Id)
-		if err != nil {
-			return nil, fmt.Errorf("error querying bars: %w", err)
-		}
-		foos[i].Bars = bars
-	}
-
 	return foos, nil
-}
-
-func (f FooPostgres) findAllBarId(ctx context.Context, fooID int) ([]int, error) {
-	query := "SELECT bar_id FROM bar JOIN foo USING(foo_id) WHERE foo_id = $1"
-	rows, err := f.db.QueryContext(ctx, query, fooID)
-	if err != nil {
-		return nil, fmt.Errorf("error querying foos: %w", err)
-	}
-	defer rows.Close()
-
-	var barsID []int
-	for rows.Next() {
-		var id int
-
-		if err := rows.Scan(&id); err != nil {
-			return nil, fmt.Errorf("error scanning foo row: %w", err)
-		}
-		barsID = append(barsID, id)
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("error iterating foo rows: %w", err)
-	}
-
-	return barsID, nil
 }
 
 func (f FooPostgres) FindByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error) {

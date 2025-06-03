@@ -26,7 +26,7 @@ func TestFooService_GetAll(t *testing.T) {
 			mockRepoResponse: []dto.FooResponseReadDto{
 				{Id: 1, Label: "Foo1", Bars: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 				{Id: 2, Label: "Foo2", Bars: []int{}},
-				{Id: 3, Label: "Foo3"},
+				{Id: 3, Label: "Foo3", Bars: []int{}},
 			},
 			mockRepoError: nil,
 			expectedCount: 3,

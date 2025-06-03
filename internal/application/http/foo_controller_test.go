@@ -27,7 +27,7 @@ func TestFooController_GetAll(t *testing.T) {
 			mockResponse: []dto.FooResponseReadDto{
 				{Id: 1, Label: "Foo1", Bars: []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}},
 				{Id: 2, Label: "Foo2", Bars: []int{}},
-				{Id: 3, Label: "Foo3"},
+				{Id: 3, Label: "Foo3", Bars: []int{}},
 			},
 			mockError:   nil,
 			queryParams: "offset=0&limit=10",
@@ -35,7 +35,7 @@ func TestFooController_GetAll(t *testing.T) {
 			bodyResponse: `[
 				{"id":1, "label":"Foo1", "bars": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
 				{"id":2, "label":"Foo2", "bars": []},
-				{"id":3, "label":"Foo3", "bars": null}
+				{"id":3, "label":"Foo3", "bars": []}
 			]`,
 			expectedError: nil,
 		},
