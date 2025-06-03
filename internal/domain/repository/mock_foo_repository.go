@@ -6,6 +6,10 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+var (
+	_ IFooRepository = (*MockFooRepository)(nil)
+)
+
 type MockFooRepository struct {
 	mock.Mock
 }

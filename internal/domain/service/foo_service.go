@@ -23,13 +23,17 @@ type FooService struct {
 func (s *FooService) GetAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error) {
 	foos, err := s.repo.FindAll(ctx, pagination)
 	if err != nil {
-		return nil, fmt.Errorf("fail to find all foo %w")
+		return nil, fmt.Errorf("fail to find all foo: %w", err)
 	}
 	return foos, nil
 }
 
 func (s *FooService) GetByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error) {
-	return s.repo.FindByID(ctx, id)
+	foo, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("fail to find foo by id: %w", err)
+	}
+	return foo, nil
 }
 
 func (s *FooService) Create(ctx context.Context, input dto.FooRequestCreateDto) error {
