@@ -5,14 +5,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
+	"time"
 )
+
+var StartAt time.Time
 
 type GinConfig struct {
 	Port string `mapstructure:"port"`
 	Mode string `mapstructure:"mode"`
 }
 
-func NewGin() *gin.Engine {
+func NewGin(healthController *HealthController, fooController *FooController) *gin.Engine {
 	e := gin.New()
 	e.Use(middleware.ZapLoggerMiddleware())
 	e.Use(middleware.ZapRecoveryMiddleware())
@@ -30,6 +33,22 @@ func NewGin() *gin.Engine {
 	})
 
 	e.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	{
+		health := e.Group("/health")
+		health.GET("/liveness", healthController.GetLiveness)
+		health.GET("/readiness", healthController.GetReadiness)
+	}
+
+	{
+		foos := e.Group("/foos")
+		foos.GET("", fooController.GetAll)
+		foos.GET("/:id", fooController.GetByID)
+		foos.POST("", fooController.Create)
+		foos.PUT("", fooController.Update)
+		foos.DELETE("/:id", fooController.DeleteByID)
+
+	}
 
 	return e
 }

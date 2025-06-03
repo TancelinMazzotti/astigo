@@ -13,7 +13,7 @@ func (c *HealthController) GetLiveness(ctx *gin.Context) {
 		"status":     "UP",
 		"message":    "Service is healthy",
 		"timestamp":  time.Now().UTC().Format(time.RFC3339),
-		"start_time": time.Now().UTC().Format(time.RFC3339),
+		"start_time": StartAt.Format(time.RFC3339),
 	})
 }
 
@@ -22,15 +22,12 @@ func (c *HealthController) GetReadiness(ctx *gin.Context) {
 		"status":     "UP",
 		"message":    "Service is healthy",
 		"timestamp":  time.Now().UTC().Format(time.RFC3339),
-		"start_time": time.Now().UTC().Format(time.RFC3339),
+		"start_time": StartAt.Format(time.RFC3339),
 	})
 }
 
-func NewHealthController(engine *gin.Engine) *HealthController {
+func NewHealthController() *HealthController {
 	c := &HealthController{}
-
-	engine.GET("/health/liveness", c.GetLiveness)
-	engine.GET("/health/readiness", c.GetReadiness)
 
 	return c
 }

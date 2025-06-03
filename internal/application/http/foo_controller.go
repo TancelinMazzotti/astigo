@@ -86,16 +86,10 @@ func (c *FooController) DeleteByID(ctx *gin.Context) {
 	ctx.Status(http.StatusNoContent)
 }
 
-func NewFooController(engine *gin.Engine, svc handler.IFooHandler) *FooController {
+func NewFooController(svc handler.IFooHandler) *FooController {
 	c := &FooController{
 		svc: svc,
 	}
-
-	engine.GET("/foos", c.GetAll)
-	engine.GET("/foos/:id", c.GetByID)
-	engine.POST("/foos", c.Create)
-	engine.PUT("/foos", c.Update)
-	engine.DELETE("/foos/:id", c.DeleteByID)
 
 	return c
 }
