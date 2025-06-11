@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"astigo/pkg/dto"
+	"astigo/internal/domain/model"
 	"context"
 	"github.com/stretchr/testify/mock"
 )
@@ -14,22 +14,22 @@ type MockFooHandler struct {
 	mock.Mock
 }
 
-func (m *MockFooHandler) GetAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error) {
+func (m *MockFooHandler) GetAll(ctx context.Context, pagination PaginationInput) ([]model.Foo, error) {
 	args := m.Called(ctx, pagination)
-	return args.Get(0).([]dto.FooResponseReadDto), args.Error(1)
+	return args.Get(0).([]model.Foo), args.Error(1)
 }
 
-func (m *MockFooHandler) GetByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error) {
+func (m *MockFooHandler) GetByID(ctx context.Context, id int) (*model.Foo, error) {
 	args := m.Called(ctx, id)
-	return args.Get(0).(*dto.FooResponseReadDto), args.Error(1)
+	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
-func (m *MockFooHandler) Create(ctx context.Context, input dto.FooRequestCreateDto) error {
+func (m *MockFooHandler) Create(ctx context.Context, input FooCreateInput) error {
 	args := m.Called(ctx, input)
 	return args.Error(0)
 }
 
-func (m *MockFooHandler) Update(ctx context.Context, input dto.FooRequestUpdateDto) error {
+func (m *MockFooHandler) Update(ctx context.Context, input FooUpdateInput) error {
 	args := m.Called(ctx, input)
 	return args.Error(0)
 }

@@ -1,7 +1,12 @@
+-- DROP TABLE
+DROP TABLE IF EXISTS bar;
+DROP TABLE IF EXISTS foo;
+
 -- CREATE TABLE
 CREATE TABLE IF NOT EXISTS foo (
     foo_id int primary key GENERATED ALWAYS AS IDENTITY,
-    label varchar(32)
+    label varchar(32),
+    secret varchar(32)
 );
 
 CREATE TABLE IF NOT EXISTS bar (
@@ -12,10 +17,10 @@ CREATE TABLE IF NOT EXISTS bar (
 
 
 -- INSERT DATA
-INSERT INTO foo(label) VALUES
-('foo1'),
-('foo2'),
-('foo3');
+INSERT INTO foo(label, secret) VALUES
+('foo1', 'secret1'),
+('foo2', 'secret2'),
+('foo3', 'secret3');
 
 INSERT INTO bar(label, foo_id) VALUES
 ('bar1',1),
@@ -23,6 +28,5 @@ INSERT INTO bar(label, foo_id) VALUES
 ('bar3',1),
 ('bar4',1),
 ('bar5',1),
-('bar6',2),
-('bar7',2),
-('bar8',2);
+('bar6',2);
+

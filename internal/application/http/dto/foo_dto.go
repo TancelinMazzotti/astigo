@@ -1,27 +1,25 @@
 package dto
 
-type FooRequestReadDto struct {
+type FooReadRequest struct {
 	Id int `uri:"id" binding:"required,numeric"`
 }
 
-type FooResponseReadDto struct {
+type FooReadResponse struct {
 	Id    int    `json:"id"`
 	Label string `json:"label"`
-	Bars  []int  `json:"bars"`
 }
 
-type FooRequestCreateDto struct {
+type FooCreateRequest struct {
 	Label  string `json:"label"`
 	Secret string `json:"secret"`
 }
 
-type FooRequestUpdateDto struct {
+type FooUpdateRequest struct {
 	Id     int    `json:"id"`
 	Label  string `json:"label"`
-	Bars   []int  `json:"bars"`
 	Secret string `json:"secret"`
 }
 
-type FooRequestDeleteDto struct {
+type FooDeleteRequest struct {
 	Id int `uri:"id" binding:"required,numeric"`
 }

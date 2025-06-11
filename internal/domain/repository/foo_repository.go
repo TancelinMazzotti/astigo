@@ -1,14 +1,15 @@
 package repository
 
 import (
-	"astigo/pkg/dto"
+	"astigo/internal/domain/handler"
+	"astigo/internal/domain/model"
 	"context"
 )
 
 type IFooRepository interface {
-	FindAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error)
-	FindByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error)
-	Create(ctx context.Context, foo dto.FooRequestCreateDto) error
-	Update(ctx context.Context, foo dto.FooRequestUpdateDto) error
+	FindAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error)
+	FindByID(ctx context.Context, id int) (*model.Foo, error)
+	Create(ctx context.Context, foo handler.FooCreateInput) error
+	Update(ctx context.Context, foo handler.FooUpdateInput) error
 	DeleteByID(ctx context.Context, id int) error
 }

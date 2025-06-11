@@ -4,8 +4,8 @@ import (
 	"astigo/internal/domain/cache"
 	"astigo/internal/domain/handler"
 	"astigo/internal/domain/messaging"
+	"astigo/internal/domain/model"
 	"astigo/internal/domain/repository"
-	"astigo/pkg/dto"
 	"context"
 	"fmt"
 )
@@ -20,7 +20,7 @@ type FooService struct {
 	messaging messaging.IFooMessaging
 }
 
-func (s *FooService) GetAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error) {
+func (s *FooService) GetAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error) {
 	foos, err := s.repo.FindAll(ctx, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("fail to find all foo: %w", err)
@@ -28,7 +28,7 @@ func (s *FooService) GetAll(ctx context.Context, pagination dto.PaginationReques
 	return foos, nil
 }
 
-func (s *FooService) GetByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error) {
+func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
 	foo, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("fail to find foo by id: %w", err)
@@ -36,11 +36,11 @@ func (s *FooService) GetByID(ctx context.Context, id int) (*dto.FooResponseReadD
 	return foo, nil
 }
 
-func (s *FooService) Create(ctx context.Context, input dto.FooRequestCreateDto) error {
+func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) error {
 	return s.repo.Create(ctx, input)
 }
 
-func (s *FooService) Update(ctx context.Context, input dto.FooRequestUpdateDto) error {
+func (s *FooService) Update(ctx context.Context, input handler.FooUpdateInput) error {
 	return s.repo.Update(ctx, input)
 }
 

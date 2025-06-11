@@ -1,11 +1,11 @@
 package postgres
 
 import (
+	"astigo/internal/domain/handler"
+	"astigo/internal/domain/model"
 	"astigo/internal/domain/repository"
-	"astigo/pkg/dto"
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
 )
 
@@ -17,16 +17,10 @@ type FooPostgres struct {
 	db *sql.DB
 }
 
-func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationRequestDto) ([]dto.FooResponseReadDto, error) {
+func (f FooPostgres) FindAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error) {
 	query := `
-        SELECT foo_id, foo.label,
-    	COALESCE(
-			json_agg(bar_id) FILTER (WHERE bar_id IS NOT NULL),
-			'[]'
-		) AS bar_ids
+        SELECT foo_id, foo.label, foo.secret
         FROM foo
-        LEFT JOIN bar USING(foo_id)
-        GROUP BY foo_id, foo.label
         ORDER BY foo_id
         LIMIT $1 OFFSET $2`
 
@@ -36,18 +30,12 @@ func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationReque
 	}
 	defer rows.Close()
 
-	var foos []dto.FooResponseReadDto
+	var foos []model.Foo
 	for rows.Next() {
-		var foo dto.FooResponseReadDto
-		var barIDsJSON []byte
+		var foo model.Foo
 
-		if err := rows.Scan(&foo.Id, &foo.Label, &barIDsJSON); err != nil {
+		if err := rows.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
 			return nil, fmt.Errorf("error scanning foo row: %w", err)
-		}
-
-		err = json.Unmarshal(barIDsJSON, &foo.Bars)
-		if err != nil {
-			return nil, fmt.Errorf("error unmarshal bar id: %w", err)
 		}
 
 		foos = append(foos, foo)
@@ -60,24 +48,86 @@ func (f FooPostgres) FindAll(ctx context.Context, pagination dto.PaginationReque
 	return foos, nil
 }
 
-func (f FooPostgres) FindByID(ctx context.Context, id int) (*dto.FooResponseReadDto, error) {
-	//TODO implement me
-	panic("implement me")
+func (f FooPostgres) FindByID(ctx context.Context, id int) (*model.Foo, error) {
+	query := `
+        SELECT foo_id, foo.label, foo.secret
+        FROM foo
+        WHERE foo_id = $1`
+
+	row := f.db.QueryRowContext(ctx, query, id)
+	var foo model.Foo
+
+	if err := row.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
+		return nil, fmt.Errorf("error scanning foo row: %w", err)
+	}
+
+	return &foo, nil
 }
 
-func (f FooPostgres) Create(ctx context.Context, foo dto.FooRequestCreateDto) error {
-	//TODO implement me
-	panic("implement me")
+func (f FooPostgres) Create(ctx context.Context, foo handler.FooCreateInput) error {
+	query := `INSERT INTO foo (label, secret) VALUES ($1, $2)`
+
+	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret)
+	if err != nil {
+		return fmt.Errorf("error inserting foo: %w", err)
+	}
+
+	if affectedRow, err := result.RowsAffected(); err != nil {
+		return fmt.Errorf("error getting affected rows: %w", err)
+	} else if affectedRow == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
 }
 
-func (f FooPostgres) Update(ctx context.Context, foo dto.FooRequestUpdateDto) error {
-	//TODO implement me
-	panic("implement me")
+func (f FooPostgres) Update(ctx context.Context, foo handler.FooUpdateInput) error {
+	query := `UPDATE foo SET label = $1, secret = $2 WHERE foo_id = $3`
+
+	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret, foo.Id)
+	if err != nil {
+		return fmt.Errorf("error updating foo: %w", err)
+	}
+
+	if affectedRow, err := result.RowsAffected(); err != nil {
+		return fmt.Errorf("error getting affected rows: %w", err)
+	} else if affectedRow == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
 }
 
 func (f FooPostgres) DeleteByID(ctx context.Context, id int) error {
-	//TODO implement me
-	panic("implement me")
+	if err := f.DeleteBars(ctx, id); err != nil {
+		return fmt.Errorf("error deleting bars: %w", err)
+	}
+
+	query := `DELETE FROM foo WHERE foo_id = $1`
+
+	result, err := f.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("error deleting foo: %w", err)
+	}
+
+	if affectedRow, err := result.RowsAffected(); err != nil {
+		return fmt.Errorf("error getting affected rows: %w", err)
+	} else if affectedRow == 0 {
+		return fmt.Errorf("no row affected")
+	}
+
+	return nil
+}
+
+func (f FooPostgres) DeleteBars(ctx context.Context, id int) error {
+	query := `DELETE FROM bar WHERE foo_id = $1`
+
+	_, err := f.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("error deleting foo: %w", err)
+	}
+
+	return nil
 }
 
 func NewFooPostgres(db *sql.DB) *FooPostgres {
