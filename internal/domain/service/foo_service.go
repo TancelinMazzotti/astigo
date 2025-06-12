@@ -25,6 +25,7 @@ func (s *FooService) GetAll(ctx context.Context, pagination handler.PaginationIn
 	if err != nil {
 		return nil, fmt.Errorf("fail to find all foo: %w", err)
 	}
+
 	return foos, nil
 }
 
@@ -33,22 +34,35 @@ func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail to find foo by id: %w", err)
 	}
+
 	return foo, nil
 }
 
 func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) error {
-	return s.repo.Create(ctx, input)
+	if err := s.repo.Create(ctx, input); err != nil {
+		return fmt.Errorf("fail to create foo: %w", err)
+	}
+
+	return nil
 }
 
 func (s *FooService) Update(ctx context.Context, input handler.FooUpdateInput) error {
-	return s.repo.Update(ctx, input)
+	if err := s.repo.Update(ctx, input); err != nil {
+		return fmt.Errorf("fail to update foo: %w", err)
+	}
+
+	return nil
 }
 
 func (s *FooService) DeleteByID(ctx context.Context, id int) error {
-	return s.repo.DeleteByID(ctx, id)
+	if err := s.repo.DeleteByID(ctx, id); err != nil {
+		return fmt.Errorf("fail to delete foo by id: %w", err)
+	}
+
+	return nil
 }
 
-func NewService(repo repository.IFooRepository, cache cache.IFooCahe, messaging messaging.IFooMessaging) *FooService {
+func NewFooService(repo repository.IFooRepository, cache cache.IFooCahe, messaging messaging.IFooMessaging) *FooService {
 	return &FooService{
 		repo:      repo,
 		cache:     cache,

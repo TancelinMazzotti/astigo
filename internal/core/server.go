@@ -53,7 +53,7 @@ func NewServer() (*Server, error) {
 
 	server.GinEngine = http.NewGin(
 		http.NewHealthController(),
-		http.NewFooController(service.NewService(
+		http.NewFooController(service.NewFooService(
 			postgres.NewFooPostgres(server.Postgres),
 			redis2.NewFooRedis(server.Redis),
 			nats2.NewFooNats(server.Nats)),
