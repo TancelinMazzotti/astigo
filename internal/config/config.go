@@ -48,7 +48,7 @@ func Load() error {
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return fmt.Errorf("erreur parsing config: %v\n", err)
+		return fmt.Errorf("erreur parsing config: %w", err)
 	}
 
 	Cfg = &cfg
