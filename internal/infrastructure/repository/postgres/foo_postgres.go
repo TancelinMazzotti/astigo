@@ -6,6 +6,7 @@ import (
 	"astigo/internal/domain/repository"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -58,6 +59,9 @@ func (f FooPostgres) FindByID(ctx context.Context, id int) (*model.Foo, error) {
 	var foo model.Foo
 
 	if err := row.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, repository.NewNotFound("foo", fmt.Sprintf("id: %d", id))
+		}
 		return nil, fmt.Errorf("error scanning foo row: %w", err)
 	}
 

@@ -89,7 +89,7 @@ func TestFooPostgres_FindByID(t *testing.T) {
 		{
 			name:          "Fail Case - Not exist",
 			id:            -1,
-			expectedError: fmt.Errorf("error scanning foo row"),
+			expectedError: fmt.Errorf("foo with id 'id: -1' not found"),
 		},
 	}
 

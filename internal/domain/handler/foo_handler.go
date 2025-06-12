@@ -14,25 +14,25 @@ type IFooHandler interface {
 }
 
 type FooReadInput struct {
-	Id int `uri:"id" binding:"required,numeric"`
+	Id int
 }
 
 type FooReadOutput struct {
-	Id    int    `json:"id"`
-	Label string `json:"label"`
+	Id    int
+	Label string
 }
 
 type FooCreateInput struct {
-	Label  string `json:"label"`
-	Secret string `json:"secret"`
+	Label  string
+	Secret string
 }
 
 type FooUpdateInput struct {
-	Id     int    `json:"id"`
-	Label  string `json:"label"`
-	Secret string `json:"secret"`
+	Id     int
+	Label  string
+	Secret string
 }
 
 type FooDeleteInput struct {
-	Id int `uri:"id" binding:"required,numeric"`
+	Id int
 }

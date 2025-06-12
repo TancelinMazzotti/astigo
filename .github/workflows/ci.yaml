@@ -1,0 +1,63 @@
+name: CI - Astigo API
+
+on:
+  push:
+    branches: ["dev", "main"]
+  pull_request:
+    branches: ["dev", "main"]
+
+jobs:
+  build-test-push:
+    runs-on: ubuntu-latest
+
+    env:
+      TESTCONTAINERS_RYUK_DISABLED: true
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
+
+      - name: 📦 Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: 🔍 Lint - go vet
+        run: go vet ./...
+
+      - name: 🔍 Lint - staticcheck
+        uses: dominikh/staticcheck-action@v1
+
+      - name: 🧪 Run Tests (with Testcontainers)
+        run: go test -v ./...
+
+      - name: 📛 Set Docker image tag
+        id: vars
+        run: |
+          BRANCH="${GITHUB_REF##*/}"
+          IMAGE_TAG=$BRANCH
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: 🔐 Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: 🐳 Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository_owner }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
+
+      - name: 📤 Push Docker image to GHCR
+        run: docker push ghcr.io/${{ github.repository_owner }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }}
+
+      - name: 🐳 Also tag as latest (if main)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker tag ghcr.io/${{ github.repository_owner }}/astigo-api:main ghcr.io/${{ github.repository_owner }}/astigo-api:latest
+          docker push ghcr.io/${{ github.repository_owner }}/astigo-api:latest

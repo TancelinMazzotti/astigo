@@ -3,6 +3,8 @@ package http
 import (
 	"astigo/internal/application/http/dto"
 	"astigo/internal/domain/handler"
+	"astigo/internal/domain/repository"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -66,6 +68,11 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 
 	foo, err := c.svc.GetByID(ctx, pathParams.Id)
 	if err != nil {
+
+		if errors.As(err, &repository.ErrorNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -16,9 +16,12 @@ type GinConfig struct {
 }
 
 func NewGin(healthController *HealthController, fooController *FooController) *gin.Engine {
+	middleware.RegisterMetrics()
+
 	e := gin.New()
 	e.Use(middleware.ZapLoggerMiddleware())
 	e.Use(middleware.ZapRecoveryMiddleware())
+	e.Use(middleware.MetricsMiddleware())
 
 	e.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
