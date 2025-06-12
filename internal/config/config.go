@@ -38,7 +38,7 @@ func Load() error {
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Printf("Info: Impossible de lire le fichier de config: %v\n", err)
+		fmt.Printf("info: impossible de lire le fichier de config: %v\n", err)
 	}
 
 	// 3. Configuration des variables d'environnement
@@ -48,7 +48,7 @@ func Load() error {
 
 	var cfg Config
 	if err := viper.Unmarshal(&cfg); err != nil {
-		return fmt.Errorf("Erreur parsing config: %v\n", err)
+		return fmt.Errorf("erreur parsing config: %v\n", err)
 	}
 
 	Cfg = &cfg

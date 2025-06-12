@@ -2,7 +2,6 @@ package redis
 
 import (
 	"astigo/internal/domain/cache"
-	"astigo/internal/domain/repository"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -11,8 +10,7 @@ var (
 )
 
 type FooRedis struct {
-	repo repository.IFooRepository
-	db   *redis.Client
+	db *redis.Client
 }
 
 func NewFooRedis(db *redis.Client) *FooRedis {
