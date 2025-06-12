@@ -41,20 +41,22 @@ jobs:
         id: vars
         run: |
           BRANCH="${GITHUB_REF##*/}"
+          REPO_LOWER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           IMAGE_TAG=$BRANCH
+          echo "REPO_LOWER=$REPO_LOWER" >> $GITHUB_OUTPUT
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: 🔐 Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: 🐳 Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository_owner }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
+        run: docker build -t ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
 
       - name: 📤 Push Docker image to GHCR
-        run: docker push ghcr.io/${{ github.repository_owner }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }}
+        run: docker push ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }}
 
       - name: 🐳 Also tag as latest (if main)
         if: github.ref == 'refs/heads/main'
         run: |
-          docker tag ghcr.io/${{ github.repository_owner }}/astigo-api:main ghcr.io/${{ github.repository_owner }}/astigo-api:latest
-          docker push ghcr.io/${{ github.repository_owner }}/astigo-api:latest
+          docker tag ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:main ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:latest
+          docker push ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:latest
