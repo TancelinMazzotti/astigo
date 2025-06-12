@@ -22,14 +22,11 @@ jobs:
         with:
           go-version: "1.24.2"
 
-      - name: 📦 Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/go/pkg/mod
-            ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ runner.os }}-go-
+      - name: ⚙️ Go mod tidy
+        run: go mod tidy
+
+      - name: 📁 Vendoring dependencies
+        run: go mod vendor
 
       - name: 🔍 Lint - go vet
         run: go vet ./...
