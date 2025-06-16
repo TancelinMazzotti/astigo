@@ -11,8 +11,7 @@ import (
 
 type PostgresContainer struct {
 	*postgres.PostgresContainer
-	Config  PostgresConfig
-	ConnStr string
+	Config PostgresConfig
 }
 
 func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {

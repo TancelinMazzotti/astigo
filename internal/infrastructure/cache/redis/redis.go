@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 	"github.com/redis/go-redis/v9"
+	"strconv"
 )
 
 type RedisConfig struct {
 	Host     string `mapstructure:"host"`
-	Port     string `mapstructure:"port"`
+	Port     int    `mapstructure:"port"`
 	Password string `mapstructure:"password"`
 	DB       int    `mapstructure:"db"`
 }
 
 func NewRedis(config RedisConfig) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
-		Addr:     config.Host + ":" + config.Port,
+		Addr:     config.Host + ":" + strconv.Itoa(config.Port),
 		Password: config.Password,
 		DB:       config.DB,
 	})

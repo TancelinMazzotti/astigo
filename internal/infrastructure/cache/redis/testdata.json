@@ -1,0 +1,12 @@
+{
+  "foo:1": {
+    "id": 1,
+    "label": "foo1",
+    "secret": "secret1"
+  },
+  "foo:2": {
+    "id": 2,
+    "label": "foo2",
+    "secret": "secret2"
+  }
+}

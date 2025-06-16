@@ -16,7 +16,7 @@ var (
 
 type FooService struct {
 	repo      repository.IFooRepository
-	cache     cache.IFooCahe
+	cache     cache.IFooCache
 	messaging messaging.IFooMessaging
 }
 
@@ -30,9 +30,20 @@ func (s *FooService) GetAll(ctx context.Context, pagination handler.PaginationIn
 }
 
 func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
-	foo, err := s.repo.FindByID(ctx, id)
+	foo, err := s.cache.GetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("fail to find foo by id: %w", err)
+		return nil, fmt.Errorf("fail to find foo by id from cache: %w", err)
+	}
+
+	if foo == nil {
+		foo, err = s.repo.FindByID(ctx, id)
+		if err != nil {
+			return nil, fmt.Errorf("fail to find foo by id: %w", err)
+		}
+
+		if err := s.cache.Set(ctx, *foo, 0); err != nil {
+			return nil, fmt.Errorf("fail to create foo in cache: %w", err)
+		}
 	}
 
 	return foo, nil
@@ -62,7 +73,7 @@ func (s *FooService) DeleteByID(ctx context.Context, id int) error {
 	return nil
 }
 
-func NewFooService(repo repository.IFooRepository, cache cache.IFooCahe, messaging messaging.IFooMessaging) *FooService {
+func NewFooService(repo repository.IFooRepository, cache cache.IFooCache, messaging messaging.IFooMessaging) *FooService {
 	return &FooService{
 		repo:      repo,
 		cache:     cache,

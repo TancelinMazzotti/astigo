@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
+	"time"
 )
 
 func TestFooService_GetAll(t *testing.T) {
@@ -87,16 +88,24 @@ func TestFooService_GetAll(t *testing.T) {
 
 func TestFooService_GetByID(t *testing.T) {
 	testCases := []struct {
-		name             string
-		id               int
-		mockRepoResponse *model.Foo
-		mockRepoError    error
-		expectedResult   *model.Foo
-		expectedError    error
+		name                string
+		id                  int
+		mockCacheResponse   *model.Foo
+		mockCacheExpiration time.Duration
+		mockCacheError      error
+		isCached            bool
+		mockRepoResponse    *model.Foo
+		mockRepoError       error
+		expectedResult      *model.Foo
+		expectedError       error
 	}{
 		{
-			name: "Success Case",
-			id:   1,
+			name:                "Success Case",
+			id:                  1,
+			mockCacheResponse:   nil,
+			mockCacheExpiration: 0,
+			mockCacheError:      nil,
+			isCached:            false,
 			mockRepoResponse: &model.Foo{
 				Id:     1,
 				Label:  "foo1",
@@ -110,19 +119,53 @@ func TestFooService_GetByID(t *testing.T) {
 			mockRepoError: nil,
 		},
 		{
-			name:             "Failure Case - Repository Error",
-			id:               1,
-			mockRepoResponse: nil,
-			mockRepoError:    errors.New("repository error"),
-			expectedError:    errors.New("fail to find foo by id: repository error"),
+			name: "Success Case - Cache Hit",
+			id:   1,
+			mockCacheResponse: &model.Foo{
+				Id:     1,
+				Label:  "foo1",
+				Secret: "secret1",
+			},
+			mockCacheError: nil,
+			isCached:       true,
+			expectedResult: &model.Foo{
+				Id:     1,
+				Label:  "foo1",
+				Secret: "secret1",
+			},
+			mockRepoError: nil,
+		},
+		{
+			name:              "Failure Case - Cache Error",
+			id:                1,
+			mockCacheResponse: nil,
+			mockCacheError:    errors.New("cache error"),
+			expectedError:     errors.New("fail to find foo by id from cache: cache error"),
+		},
+		{
+			name:              "Failure Case - Repository Error",
+			id:                1,
+			mockCacheResponse: nil,
+			mockCacheError:    nil,
+			isCached:          false,
+			mockRepoResponse:  nil,
+			mockRepoError:     errors.New("repository error"),
+			expectedError:     errors.New("fail to find foo by id: repository error"),
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("FindByID", mock.Anything, testCase.id).Return(testCase.mockRepoResponse, testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
+			mockCache.On("GetByID", mock.Anything, testCase.id).Return(testCase.mockCacheResponse, testCase.mockCacheError)
+
+			mockRepo := new(repository.MockFooRepository)
+			if !testCase.isCached {
+				mockRepo.On("FindByID", mock.Anything, testCase.id).Return(testCase.mockRepoResponse, testCase.mockRepoError)
+				if (testCase.mockRepoResponse != nil) && (testCase.mockRepoError == nil) {
+					mockCache.On("Set", mock.Anything, *testCase.mockRepoResponse, testCase.mockCacheExpiration).Return(nil)
+				}
+			}
 			mockMessaging := new(messaging.MockFooMessaging)
 
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
@@ -169,7 +212,7 @@ func TestFooService_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("Create", mock.Anything, testCase.foo).Return(testCase.mockRepoError)
+			mockRepo.On("Set", mock.Anything, testCase.foo).Return(testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
 			mockMessaging := new(messaging.MockFooMessaging)
 

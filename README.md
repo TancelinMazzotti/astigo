@@ -14,7 +14,7 @@ Ce projet met l’accent sur la **séparation des préoccupations**, la **scalab
 - ⚙️ Configuration flexible via **Viper**
 - 💻 CLI intégrée avec **Cobra**
 - 📝 Logging structuré avec **Zap**
-- 🗃️ Persistance avec **PostgreSQL**, **MongoDB**
+- 🗃️ Persistance avec **PostgreSQL**
 - 🧠Cache distribué avec **Redis**
 - 📨 Événements asynchrones via **NATS**
 - ✅ Tests unitaires avec mocking et interfaces
