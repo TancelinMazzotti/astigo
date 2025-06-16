@@ -55,6 +55,16 @@ services:
       - "-m"
       - "8222"
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8090:8080"
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
