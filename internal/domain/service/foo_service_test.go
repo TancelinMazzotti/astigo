@@ -212,7 +212,7 @@ func TestFooService_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("Set", mock.Anything, testCase.foo).Return(testCase.mockRepoError)
+			mockRepo.On("Create", mock.Anything, testCase.foo).Return(testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
 			mockMessaging := new(messaging.MockFooMessaging)
 
