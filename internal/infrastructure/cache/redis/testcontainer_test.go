@@ -8,11 +8,6 @@ import (
 	"os"
 )
 
-type RedisEntry struct {
-	Key   string `yaml:"key"`
-	Value string `yaml:"value"`
-}
-
 type RedisContainer struct {
 	*redis.RedisContainer
 	Config RedisConfig
