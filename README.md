@@ -15,7 +15,7 @@ Ce projet met l’accent sur la **séparation des préoccupations**, la **scalab
 - 💻 CLI intégrée avec **Cobra**
 - 📝 Logging structuré avec **Zap**
 - 🗃️ Persistance avec **PostgreSQL**
-- 🧠Cache distribué avec **Redis**
+- 🧠 Cache distribué avec **Redis**
 - 📨 Événements asynchrones via **NATS**
 - ✅ Tests unitaires avec mocking et interfaces
 - 🧪 Tests d’intégration isolés avec Testcontainers

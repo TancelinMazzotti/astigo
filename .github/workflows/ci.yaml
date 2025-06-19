@@ -6,13 +6,12 @@ on:
   pull_request:
     branches: ["dev", "main"]
 
+env:
+  TESTCONTAINERS_RYUK_DISABLED: true
+
 jobs:
-  build-test-push:
+  build:
     runs-on: ubuntu-latest
-
-    env:
-      TESTCONTAINERS_RYUK_DISABLED: true
-
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
@@ -22,11 +21,31 @@ jobs:
         with:
           go-version: "1.24.2"
 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
       - name: ⚙️ Go mod tidy
         run: go mod tidy
 
       - name: 📁 Vendoring dependencies
         run: go mod vendor
+
+  lint:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
 
       - name: 🔍 Lint - go vet
         run: go vet ./...
@@ -34,8 +53,37 @@ jobs:
       - name: 🔍 Lint - staticcheck
         uses: dominikh/staticcheck-action@v1
 
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🧰 Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.2"
+
       - name: 🧪 Run Tests (with Testcontainers)
         run: go test -v ./...
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [build, lint, test]
+    env:
+      TESTCONTAINERS_RYUK_DISABLED: true
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-docker-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-docker-
 
       - name: 📛 Set Docker image tag
         id: vars
@@ -50,7 +98,16 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: 🐳 Build Docker image
-        run: docker build -t ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
+        run: |
+          docker build \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            -t ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: 📤 Push Docker image to GHCR
         run: docker push ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }}
