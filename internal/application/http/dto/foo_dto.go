@@ -11,15 +11,17 @@ type FooReadResponse struct {
 	Label string    `json:"label" binding:"required"`
 }
 
-type FooCreateRequest struct {
+type FooCreateBody struct {
 	Label  string `json:"label" binding:"required"`
 	Secret string `json:"secret" binding:"required"`
 }
 
 type FooUpdateRequest struct {
-	Id     uuid.UUID `json:"id" binding:"required"`
-	Label  string    `json:"label" binding:"required"`
-	Secret string    `json:"secret" binding:"required"`
+	Id string `uri:"id" binding:"required"`
+}
+type FooUpdateBody struct {
+	Label  string `json:"label" binding:"required"`
+	Secret string `json:"secret" binding:"required"`
 }
 
 type FooDeleteRequest struct {

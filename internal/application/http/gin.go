@@ -48,7 +48,7 @@ func NewGin(healthController *HealthController, fooController *FooController) *g
 		foos.GET("", fooController.GetAll)
 		foos.GET("/:id", fooController.GetByID)
 		foos.POST("", fooController.Create)
-		foos.PUT("", fooController.Update)
+		foos.PUT("/:id", fooController.Update)
 		foos.DELETE("/:id", fooController.DeleteByID)
 
 	}

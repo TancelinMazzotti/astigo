@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -23,9 +24,8 @@ func TestFooController_GetAll(t *testing.T) {
 		mockResponse []model.Foo
 		mockError    error
 
-		statusCode    int
-		bodyResponse  string
-		expectedError error
+		statusCode   int
+		bodyResponse string
 	}{
 		{
 			name: "Success Case - Multiple Foos",
@@ -48,7 +48,6 @@ func TestFooController_GetAll(t *testing.T) {
 				{"id":"20000000-0000-0000-0000-000000000002", "label":"Foo2"},
 				{"id":"20000000-0000-0000-0000-000000000003", "label":"Foo3"}
 			]`,
-			expectedError: nil,
 		},
 		{
 			name: "Failure Case - Repository Error",
@@ -61,9 +60,8 @@ func TestFooController_GetAll(t *testing.T) {
 			mockResponse: nil,
 			mockError:    errors.New("repository error"),
 
-			statusCode:    http.StatusInternalServerError,
-			bodyResponse:  `{"error":"repository error"}`,
-			expectedError: errors.New("fail to find all foo: repository error"),
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error":"repository error"}`,
 		},
 	}
 
@@ -98,9 +96,8 @@ func TestFooController_GetByID(t *testing.T) {
 		mockResponse *model.Foo
 		mockError    error
 
-		statusCode    int
-		bodyResponse  string
-		expectedError error
+		statusCode   int
+		bodyResponse string
 	}{
 		{
 			name: "Success Case",
@@ -114,9 +111,8 @@ func TestFooController_GetByID(t *testing.T) {
 			},
 			mockError: nil,
 
-			statusCode:    http.StatusOK,
-			bodyResponse:  `{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"}`,
-			expectedError: nil,
+			statusCode:   http.StatusOK,
+			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"}`,
 		},
 		{
 			name: "Failure Case - Not Found",
@@ -126,9 +122,8 @@ func TestFooController_GetByID(t *testing.T) {
 			mockResponse: nil,
 			mockError:    repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"),
 
-			statusCode:    http.StatusNotFound,
-			bodyResponse:  `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
-			expectedError: errors.New("fail to find foo by id: repository error"),
+			statusCode:   http.StatusNotFound,
+			bodyResponse: `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
 		},
 		{
 			name: "Failure Case - Repository Error",
@@ -138,9 +133,8 @@ func TestFooController_GetByID(t *testing.T) {
 			mockResponse: nil,
 			mockError:    errors.New("repository error"),
 
-			statusCode:    http.StatusInternalServerError,
-			bodyResponse:  `{"error":"repository error"}`,
-			expectedError: errors.New("fail to find foo by id: repository error"),
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error":"repository error"}`,
 		},
 	}
 
@@ -162,6 +156,151 @@ func TestFooController_GetByID(t *testing.T) {
 			assert.Equal(t, testCase.statusCode, w.Code)
 			assert.JSONEq(t, testCase.bodyResponse, w.Body.String())
 			mockHandler.AssertExpectations(t)
+		})
+	}
+}
+
+func TestFooController_Create(t *testing.T) {
+	testCases := []struct {
+		name string
+		url  string
+		body string
+
+		mockRequest  handler.FooCreateInput
+		mockResponse *model.Foo
+		mockError    error
+
+		statusCode   int
+		bodyResponse string
+	}{
+		{
+			name: "Success Case",
+			url:  "/foos",
+			body: `{"label":"foo_create", "secret":"secret_create"}`,
+			mockRequest: handler.FooCreateInput{
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+			mockResponse: &model.Foo{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+			mockError: nil,
+
+			statusCode:   http.StatusCreated,
+			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001"}`,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("Create", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
+
+			controller := NewFooController(mockHandler)
+
+			req, err := http.NewRequest(http.MethodPost, testCase.url, strings.NewReader(testCase.body))
+			assert.NoError(t, err)
+			w := httptest.NewRecorder()
+
+			gin.SetMode(gin.TestMode)
+			router := gin.Default()
+			router.POST("/foos", controller.Create)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, testCase.statusCode, w.Code)
+			assert.JSONEq(t, testCase.bodyResponse, w.Body.String())
+			mockHandler.AssertExpectations(t)
+		})
+	}
+}
+
+func TestFooController_Update(t *testing.T) {
+	testCases := []struct {
+		name string
+		url  string
+		body string
+
+		mockRequest handler.FooUpdateInput
+		mockError   error
+
+		statusCode int
+	}{
+		{
+			name: "Success Case",
+			url:  "/foos/20000000-0000-0000-0000-000000000001",
+			body: `{"label":"foo_update", "secret":"secret_update"}`,
+
+			mockRequest: handler.FooUpdateInput{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:  "foo_update",
+				Secret: "secret_update",
+			},
+
+			statusCode: http.StatusNoContent,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("Update", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
+
+			controller := NewFooController(mockHandler)
+
+			req, err := http.NewRequest(http.MethodPut, testCase.url, strings.NewReader(testCase.body))
+			assert.NoError(t, err)
+			w := httptest.NewRecorder()
+
+			gin.SetMode(gin.TestMode)
+			router := gin.Default()
+			router.PUT("/foos/:id", controller.Update)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, testCase.statusCode, w.Code)
+			mockHandler.AssertExpectations(t)
+		})
+	}
+}
+
+func TestFooController_Delete(t *testing.T) {
+	testCases := []struct {
+		name string
+		url  string
+
+		mockRequest uuid.UUID
+		mockError   error
+
+		statusCode int
+	}{
+		{
+			name:        "Success Case",
+			url:         "/foos/20000000-0000-0000-0000-000000000001",
+			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			mockError:   nil,
+			statusCode:  http.StatusNoContent,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("DeleteByID", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
+			controller := NewFooController(mockHandler)
+
+			req, err := http.NewRequest(http.MethodDelete, testCase.url, nil)
+			assert.NoError(t, err)
+			w := httptest.NewRecorder()
+
+			gin.SetMode(gin.TestMode)
+			router := gin.Default()
+			router.DELETE("/foos/:id", controller.DeleteByID)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, testCase.statusCode, w.Code)
+			mockHandler.AssertExpectations(t)
+
 		})
 	}
 }
