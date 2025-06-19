@@ -77,6 +77,9 @@ jobs:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Cache Docker layers
         uses: actions/cache@v3
         with:
@@ -97,12 +100,13 @@ jobs:
       - name: 🔐 Login to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: 🐳 Build Docker image
+      - name: 🐳 Build Docker image with BuildKit
         run: |
-          docker build \
+          docker buildx build \
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
-            -t ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} .
+            --tag ghcr.io/${{ steps.vars.outputs.REPO_LOWER }}/astigo-api:${{ steps.vars.outputs.IMAGE_TAG }} \
+            --load .  # ← important pour `docker push` !
 
       - name: Move cache
         run: |
