@@ -3,6 +3,7 @@ package redis
 import (
 	"astigo/internal/domain/model"
 	"context"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,15 +11,15 @@ import (
 func TestFooRedis_GetByID(t *testing.T) {
 	testCases := []struct {
 		name           string
-		id             int
+		id             uuid.UUID
 		expectedResult *model.Foo
 		expectedError  error
 	}{
 		{
 			name: "Success Case",
-			id:   1,
+			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: &model.Foo{
-				Id:     1,
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo1",
 				Secret: "secret1",
 			},
@@ -26,7 +27,7 @@ func TestFooRedis_GetByID(t *testing.T) {
 		},
 		{
 			name:           "Success Case - Not exist",
-			id:             -1,
+			id:             uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 			expectedResult: nil,
 			expectedError:  nil,
 		},
@@ -73,7 +74,7 @@ func TestFooRedis_Set(t *testing.T) {
 		{
 			name: "Success Case - Create",
 			foo: model.Foo{
-				Id:     3,
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000003"),
 				Label:  "foo_created",
 				Secret: "secret_created",
 			},
@@ -82,7 +83,7 @@ func TestFooRedis_Set(t *testing.T) {
 		{
 			name: "Success Case - Update",
 			foo: model.Foo{
-				Id:     3,
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000003"),
 				Label:  "foo_updated",
 				Secret: "secret_updated",
 			},
@@ -113,6 +114,46 @@ func TestFooRedis_Set(t *testing.T) {
 				result, err := cache.GetByID(ctx, testCase.foo.Id)
 				assert.NoError(t, err)
 				assert.Equal(t, testCase.foo, *result)
+			}
+		})
+	}
+}
+
+func TestFooRedis_DeleteByID(t *testing.T) {
+	testCases := []struct {
+		name          string
+		id            uuid.UUID
+		expectedError error
+	}{
+		{
+			name:          "Success Case",
+			id:            uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			expectedError: nil,
+		},
+	}
+	ctx := context.Background()
+	container, err := CreateRedisContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	redis, err := NewRedis(container.Config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			cache := NewFooRedis(redis)
+
+			err := cache.DeleteByID(ctx, testCase.id)
+
+			if testCase.expectedError != nil {
+				assert.ErrorContains(t, err, testCase.expectedError.Error())
+			} else {
+				assert.NoError(t, err)
+				result, err := cache.GetByID(ctx, testCase.id)
+				assert.NoError(t, err)
+				assert.Nil(t, result)
 			}
 		})
 	}

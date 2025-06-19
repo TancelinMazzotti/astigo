@@ -5,6 +5,7 @@ import (
 	"astigo/internal/domain/model"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -72,15 +73,15 @@ func TestFooPostgres_FindAll(t *testing.T) {
 func TestFooPostgres_FindByID(t *testing.T) {
 	testCases := []struct {
 		name           string
-		id             int
+		id             uuid.UUID
 		expectedResult model.Foo
 		expectedError  error
 	}{
 		{
 			name: "Success Case",
-			id:   1,
+			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: model.Foo{
-				Id:     1,
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo1",
 				Secret: "secret1",
 			},
@@ -88,8 +89,8 @@ func TestFooPostgres_FindByID(t *testing.T) {
 		},
 		{
 			name:          "Fail Case - Not exist",
-			id:            -1,
-			expectedError: fmt.Errorf("foo with id 'id: -1' not found"),
+			id:            uuid.MustParse("40400000-0000-0000-0000-000000000000"),
+			expectedError: fmt.Errorf("foo with id 'id: 40400000-0000-0000-0000-000000000000' not found"),
 		},
 	}
 
@@ -123,12 +124,13 @@ func TestFooPostgres_FindByID(t *testing.T) {
 func TestFooPostgres_Create(t *testing.T) {
 	testCases := []struct {
 		name          string
-		foo           handler.FooCreateInput
+		foo           model.Foo
 		expectedError error
 	}{
 		{
 			name: "Success Case",
-			foo: handler.FooCreateInput{
+			foo: model.Foo{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-100000000000"),
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
@@ -165,13 +167,13 @@ func TestFooPostgres_Create(t *testing.T) {
 func TestFooPostgres_Update(t *testing.T) {
 	testCases := []struct {
 		name          string
-		foo           handler.FooUpdateInput
+		foo           model.Foo
 		expectedError error
 	}{
 		{
 			name: "Success Case",
-			foo: handler.FooUpdateInput{
-				Id:     1,
+			foo: model.Foo{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
 			},
@@ -179,8 +181,8 @@ func TestFooPostgres_Update(t *testing.T) {
 		},
 		{
 			name: "Fail Case - Not exist",
-			foo: handler.FooUpdateInput{
-				Id:     -1,
+			foo: model.Foo{
+				Id:     uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 				Label:  "foo_update",
 				Secret: "secret_update",
 			},
@@ -217,17 +219,17 @@ func TestFooPostgres_Update(t *testing.T) {
 func TestFooPostgres_DeleteByID(t *testing.T) {
 	testCases := []struct {
 		name          string
-		id            int
+		id            uuid.UUID
 		expectedError error
 	}{
 		{
 			name:          "Success Case",
-			id:            1,
+			id:            uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedError: nil,
 		},
 		{
 			name:          "Fail Case - Not exist",
-			id:            -1,
+			id:            uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 			expectedError: fmt.Errorf("no row affected"),
 		},
 	}

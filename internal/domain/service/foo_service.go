@@ -8,7 +8,11 @@ import (
 	"astigo/internal/domain/repository"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"time"
 )
+
+const FooCacheExpiration = time.Minute * 15
 
 var (
 	_ handler.IFooHandler = (*FooService)(nil)
@@ -29,7 +33,7 @@ func (s *FooService) GetAll(ctx context.Context, pagination handler.PaginationIn
 	return foos, nil
 }
 
-func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
+func (s *FooService) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	foo, err := s.cache.GetByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("fail to find foo by id from cache: %w", err)
@@ -41,7 +45,7 @@ func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
 			return nil, fmt.Errorf("fail to find foo by id: %w", err)
 		}
 
-		if err := s.cache.Set(ctx, *foo, 0); err != nil {
+		if err := s.cache.Set(ctx, *foo, FooCacheExpiration); err != nil {
 			return nil, fmt.Errorf("fail to create foo in cache: %w", err)
 		}
 	}
@@ -49,25 +53,48 @@ func (s *FooService) GetByID(ctx context.Context, id int) (*model.Foo, error) {
 	return foo, nil
 }
 
-func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) error {
-	if err := s.repo.Create(ctx, input); err != nil {
-		return fmt.Errorf("fail to create foo: %w", err)
+func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) (*model.Foo, error) {
+	foo := model.Foo{
+		Id:     uuid.New(),
+		Label:  input.Label,
+		Secret: input.Secret,
 	}
 
-	return nil
+	if err := s.repo.Create(ctx, foo); err != nil {
+		return nil, fmt.Errorf("fail to create foo: %w", err)
+	}
+
+	return &foo, nil
 }
 
 func (s *FooService) Update(ctx context.Context, input handler.FooUpdateInput) error {
-	if err := s.repo.Update(ctx, input); err != nil {
+	foo, err := s.repo.FindByID(ctx, input.Id)
+	if err != nil {
+		return fmt.Errorf("fail to get foo by id: %w", err)
+	}
+
+	if err := input.Merge(foo); err != nil {
+		return fmt.Errorf("fail to merge input: %w", err)
+	}
+
+	if err := s.repo.Update(ctx, *foo); err != nil {
 		return fmt.Errorf("fail to update foo: %w", err)
+	}
+
+	if err := s.cache.Set(ctx, *foo, FooCacheExpiration); err != nil {
+		return fmt.Errorf("fail to update foo in cache: %w", err)
 	}
 
 	return nil
 }
 
-func (s *FooService) DeleteByID(ctx context.Context, id int) error {
+func (s *FooService) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	if err := s.repo.DeleteByID(ctx, id); err != nil {
 		return fmt.Errorf("fail to delete foo by id: %w", err)
+	}
+
+	if err := s.cache.DeleteByID(ctx, id); err != nil {
+		return fmt.Errorf("fail to delete foo by id from cache: %w", err)
 	}
 
 	return nil

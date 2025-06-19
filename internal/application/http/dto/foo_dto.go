@@ -1,25 +1,27 @@
 package dto
 
+import "github.com/google/uuid"
+
 type FooReadRequest struct {
-	Id int `uri:"id" binding:"required,numeric"`
+	Id string `uri:"id" binding:"required"`
 }
 
 type FooReadResponse struct {
-	Id    int    `json:"id"`
-	Label string `json:"label"`
+	Id    uuid.UUID `json:"id" binding:"required"`
+	Label string    `json:"label" binding:"required"`
 }
 
 type FooCreateRequest struct {
-	Label  string `json:"label"`
-	Secret string `json:"secret"`
+	Label  string `json:"label" binding:"required"`
+	Secret string `json:"secret" binding:"required"`
 }
 
 type FooUpdateRequest struct {
-	Id     int    `json:"id"`
-	Label  string `json:"label"`
-	Secret string `json:"secret"`
+	Id     uuid.UUID `json:"id" binding:"required"`
+	Label  string    `json:"label" binding:"required"`
+	Secret string    `json:"secret" binding:"required"`
 }
 
 type FooDeleteRequest struct {
-	Id int `uri:"id" binding:"required,numeric"`
+	Id string `uri:"id" binding:"required"`
 }

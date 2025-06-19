@@ -3,30 +3,32 @@ DROP TABLE IF EXISTS bar;
 DROP TABLE IF EXISTS foo;
 
 -- CREATE TABLE
-CREATE TABLE IF NOT EXISTS foo (
-    foo_id int primary key GENERATED ALWAYS AS IDENTITY,
-    label varchar(32),
+CREATE TABLE IF NOT EXISTS foo
+(
+    foo_id UUID PRIMARY KEY,
+    label  varchar(32),
     secret varchar(32)
 );
 
-CREATE TABLE IF NOT EXISTS bar (
-    bar_id int primary key GENERATED ALWAYS AS IDENTITY,
-    label varchar(32),
-    foo_id int references foo(foo_id)
+CREATE TABLE IF NOT EXISTS bar
+(
+    bar_id UUID PRIMARY KEY,
+    label  varchar(32),
+    foo_id UUID references foo (foo_id)
 );
 
 
 -- INSERT DATA
-INSERT INTO foo(label, secret) VALUES
-('foo1', 'secret1'),
-('foo2', 'secret2'),
-('foo3', 'secret3');
+INSERT INTO foo(foo_id, label, secret)
+VALUES ('20000000-0000-0000-0000-000000000001', 'foo1', 'secret1'),
+       ('20000000-0000-0000-0000-000000000002', 'foo2', 'secret2'),
+       ('20000000-0000-0000-0000-000000000003', 'foo3', 'secret3');
 
-INSERT INTO bar(label, foo_id) VALUES
-('bar1',1),
-('bar2',1),
-('bar3',1),
-('bar4',1),
-('bar5',1),
-('bar6',2);
+INSERT INTO bar(bar_id,label, foo_id)
+VALUES ('20000000-0000-0000-0001-000000000001','bar1', '20000000-0000-0000-0000-000000000001'),
+       ('20000000-0000-0000-0001-000000000002','bar2', '20000000-0000-0000-0000-000000000001'),
+       ('20000000-0000-0000-0001-000000000003','bar3', '20000000-0000-0000-0000-000000000001'),
+       ('20000000-0000-0000-0001-000000000004','bar4', '20000000-0000-0000-0000-000000000001'),
+       ('20000000-0000-0000-0001-000000000005','bar5', '20000000-0000-0000-0000-000000000001'),
+       ('20000000-0000-0000-0001-000000000006','bar6', '20000000-0000-0000-0000-000000000002');
 

@@ -2,12 +2,13 @@ package entity
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 )
 
 type FooKey struct {
-	Id int
+	Id uuid.UUID
 }
 
 func (f FooKey) GetKey() string {
-	return fmt.Sprintf("foo:%d", f.Id)
+	return fmt.Sprintf("foo:%s", f.Id)
 }

@@ -6,6 +6,7 @@ import (
 	"astigo/internal/domain/repository"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"net/http"
@@ -35,17 +36,17 @@ func TestFooController_GetAll(t *testing.T) {
 				Limit:  10,
 			},
 			mockResponse: []model.Foo{
-				{Id: 1, Label: "Foo1"},
-				{Id: 2, Label: "Foo2"},
-				{Id: 3, Label: "Foo3"},
+				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
+				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
+				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
 			},
 			mockError: nil,
 
 			statusCode: http.StatusOK,
 			bodyResponse: `[
-				{"id":1, "label":"Foo1"},
-				{"id":2, "label":"Foo2"},
-				{"id":3, "label":"Foo3"}
+				{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"},
+				{"id":"20000000-0000-0000-0000-000000000002", "label":"Foo2"},
+				{"id":"20000000-0000-0000-0000-000000000003", "label":"Foo3"}
 			]`,
 			expectedError: nil,
 		},
@@ -93,7 +94,7 @@ func TestFooController_GetByID(t *testing.T) {
 		name string
 		url  string
 
-		mockRequest  int
+		mockRequest  uuid.UUID
 		mockResponse *model.Foo
 		mockError    error
 
@@ -103,37 +104,37 @@ func TestFooController_GetByID(t *testing.T) {
 	}{
 		{
 			name: "Success Case",
-			url:  "/foos/1",
+			url:  "/foos/20000000-0000-0000-0000-000000000001",
 
-			mockRequest: 1,
+			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			mockResponse: &model.Foo{
-				Id:     1,
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "Foo1",
 				Secret: "secret1",
 			},
 			mockError: nil,
 
 			statusCode:    http.StatusOK,
-			bodyResponse:  `{"id":1, "label":"Foo1"}`,
+			bodyResponse:  `{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"}`,
 			expectedError: nil,
 		},
 		{
 			name: "Failure Case - Not Found",
-			url:  "/foos/-1",
+			url:  "/foos/40400000-0000-0000-0000-000000000000",
 
-			mockRequest:  -1,
+			mockRequest:  uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 			mockResponse: nil,
-			mockError:    repository.NewNotFound("foo", "-1"),
+			mockError:    repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"),
 
 			statusCode:    http.StatusNotFound,
-			bodyResponse:  `{"error":"foo with id '-1' not found"}`,
+			bodyResponse:  `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
 			expectedError: errors.New("fail to find foo by id: repository error"),
 		},
 		{
 			name: "Failure Case - Repository Error",
-			url:  "/foos/-1",
+			url:  "/foos/40000000-0000-0000-0000-000000000000",
 
-			mockRequest:  -1,
+			mockRequest:  uuid.MustParse("40000000-0000-0000-0000-000000000000"),
 			mockResponse: nil,
 			mockError:    errors.New("repository error"),
 

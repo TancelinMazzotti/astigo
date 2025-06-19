@@ -6,6 +6,7 @@ import (
 	"astigo/internal/domain/repository"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -55,7 +56,7 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 // @Tags Foo
 // @Accept JSON
 // @Produce JSON
-// @Param id path int true "Foo id"
+// @Param id path uuid true "Foo id"
 // @Success 200 {object} dto.FooReadResponse
 // @Router /foos/{id} [get]
 func (c *FooController) GetByID(ctx *gin.Context) {
@@ -66,7 +67,13 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	foo, err := c.svc.GetByID(ctx, pathParams.Id)
+	id, err := uuid.Parse(pathParams.Id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	foo, err := c.svc.GetByID(ctx, id)
 	if err != nil {
 
 		if errors.As(err, &repository.ErrorNotFound) {
@@ -99,14 +106,15 @@ func (c *FooController) Create(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.svc.Create(ctx, handler.FooCreateInput{
+	foo, err := c.svc.Create(ctx, handler.FooCreateInput{
 		Label:  input.Label,
 		Secret: input.Secret,
-	}); err != nil {
+	})
+	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.Status(http.StatusCreated)
+	ctx.JSON(http.StatusCreated, gin.H{"id": foo.Id.String()})
 }
 
 // Update @Summary Update a foo
@@ -151,7 +159,13 @@ func (c *FooController) DeleteByID(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.svc.DeleteByID(ctx, pathParams.Id); err != nil {
+	id, err := uuid.Parse(pathParams.Id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := c.svc.DeleteByID(ctx, id); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

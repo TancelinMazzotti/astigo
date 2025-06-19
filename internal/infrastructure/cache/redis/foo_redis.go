@@ -6,7 +6,9 @@ import (
 	"astigo/internal/infrastructure/cache/redis/entity"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
 	"time"
 )
@@ -19,11 +21,11 @@ type FooRedis struct {
 	db *redis.Client
 }
 
-func (f FooRedis) GetByID(ctx context.Context, id int) (*model.Foo, error) {
+func (f FooRedis) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	key := entity.FooKey{Id: id}
 
 	value, err := f.db.Get(ctx, key.GetKey()).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		return nil, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("fail to find foo by id: %w", err)
@@ -47,6 +49,16 @@ func (f FooRedis) Set(ctx context.Context, foo model.Foo, expiration time.Durati
 
 	if result := f.db.Set(ctx, key.GetKey(), value, expiration); result.Err() != nil {
 		return fmt.Errorf("fail to set foo: %w", result.Err())
+	}
+
+	return nil
+}
+
+func (f FooRedis) DeleteByID(ctx context.Context, id uuid.UUID) error {
+	key := entity.FooKey{Id: id}
+
+	if result := f.db.Del(ctx, key.GetKey()); result.Err() != nil {
+		return fmt.Errorf("fail to delete foo: %w", result.Err())
 	}
 
 	return nil

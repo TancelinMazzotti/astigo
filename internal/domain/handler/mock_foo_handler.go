@@ -3,6 +3,7 @@ package handler
 import (
 	"astigo/internal/domain/model"
 	"context"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -19,14 +20,14 @@ func (m *MockFooHandler) GetAll(ctx context.Context, pagination PaginationInput)
 	return args.Get(0).([]model.Foo), args.Error(1)
 }
 
-func (m *MockFooHandler) GetByID(ctx context.Context, id int) (*model.Foo, error) {
+func (m *MockFooHandler) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
-func (m *MockFooHandler) Create(ctx context.Context, input FooCreateInput) error {
+func (m *MockFooHandler) Create(ctx context.Context, input FooCreateInput) (*model.Foo, error) {
 	args := m.Called(ctx, input)
-	return args.Error(0)
+	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
 func (m *MockFooHandler) Update(ctx context.Context, input FooUpdateInput) error {
@@ -34,7 +35,7 @@ func (m *MockFooHandler) Update(ctx context.Context, input FooUpdateInput) error
 	return args.Error(0)
 }
 
-func (m *MockFooHandler) DeleteByID(ctx context.Context, id int) error {
+func (m *MockFooHandler) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

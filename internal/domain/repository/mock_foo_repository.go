@@ -4,6 +4,7 @@ import (
 	"astigo/internal/domain/handler"
 	"astigo/internal/domain/model"
 	"context"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -20,22 +21,22 @@ func (m *MockFooRepository) FindAll(ctx context.Context, pagination handler.Pagi
 	return args.Get(0).([]model.Foo), args.Error(1)
 }
 
-func (m *MockFooRepository) FindByID(ctx context.Context, id int) (*model.Foo, error) {
+func (m *MockFooRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
-func (m *MockFooRepository) Create(ctx context.Context, foo handler.FooCreateInput) error {
+func (m *MockFooRepository) Create(ctx context.Context, foo model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }
 
-func (m *MockFooRepository) Update(ctx context.Context, foo handler.FooUpdateInput) error {
+func (m *MockFooRepository) Update(ctx context.Context, foo model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }
 
-func (m *MockFooRepository) DeleteByID(ctx context.Context, id int) error {
+func (m *MockFooRepository) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	args := m.Called(ctx, id)
 	return args.Error(0)
 }

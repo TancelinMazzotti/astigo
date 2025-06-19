@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 )
 
 var (
@@ -49,7 +50,7 @@ func (f FooPostgres) FindAll(ctx context.Context, pagination handler.PaginationI
 	return foos, nil
 }
 
-func (f FooPostgres) FindByID(ctx context.Context, id int) (*model.Foo, error) {
+func (f FooPostgres) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	query := `
         SELECT foo_id, foo.label, foo.secret
         FROM foo
@@ -60,7 +61,7 @@ func (f FooPostgres) FindByID(ctx context.Context, id int) (*model.Foo, error) {
 
 	if err := row.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.NewNotFound("foo", fmt.Sprintf("id: %d", id))
+			return nil, repository.NewNotFound("foo", fmt.Sprintf("id: %s", id))
 		}
 		return nil, fmt.Errorf("error scanning foo row: %w", err)
 	}
@@ -68,10 +69,10 @@ func (f FooPostgres) FindByID(ctx context.Context, id int) (*model.Foo, error) {
 	return &foo, nil
 }
 
-func (f FooPostgres) Create(ctx context.Context, foo handler.FooCreateInput) error {
-	query := `INSERT INTO foo (label, secret) VALUES ($1, $2)`
+func (f FooPostgres) Create(ctx context.Context, foo model.Foo) error {
+	query := `INSERT INTO foo (foo_id,label, secret) VALUES ($1, $2, $3)`
 
-	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret)
+	result, err := f.db.ExecContext(ctx, query, foo.Id, foo.Label, foo.Secret)
 	if err != nil {
 		return fmt.Errorf("error inserting foo: %w", err)
 	}
@@ -85,7 +86,7 @@ func (f FooPostgres) Create(ctx context.Context, foo handler.FooCreateInput) err
 	return nil
 }
 
-func (f FooPostgres) Update(ctx context.Context, foo handler.FooUpdateInput) error {
+func (f FooPostgres) Update(ctx context.Context, foo model.Foo) error {
 	query := `UPDATE foo SET label = $1, secret = $2 WHERE foo_id = $3`
 
 	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret, foo.Id)
@@ -102,7 +103,7 @@ func (f FooPostgres) Update(ctx context.Context, foo handler.FooUpdateInput) err
 	return nil
 }
 
-func (f FooPostgres) DeleteByID(ctx context.Context, id int) error {
+func (f FooPostgres) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	if err := f.DeleteBars(ctx, id); err != nil {
 		return fmt.Errorf("error deleting bars: %w", err)
 	}
@@ -123,7 +124,7 @@ func (f FooPostgres) DeleteByID(ctx context.Context, id int) error {
 	return nil
 }
 
-func (f FooPostgres) DeleteBars(ctx context.Context, id int) error {
+func (f FooPostgres) DeleteBars(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM bar WHERE foo_id = $1`
 
 	_, err := f.db.ExecContext(ctx, query, id)
