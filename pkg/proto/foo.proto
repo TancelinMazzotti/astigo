@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "your-project/pkg/proto;proto";
+
+// Service CRUD pour Foo
+service FooService {
+  rpc Create(CreateFooRequest) returns (FooResponse);
+  rpc Get(GetFooRequest) returns (FooResponse);
+  rpc Update(UpdateFooRequest) returns (FooResponse);
+  rpc Delete(DeleteFooRequest) returns (DeleteFooResponse);
+  rpc List(ListFoosRequest) returns (ListFoosResponse);
+}
+
+message Foo {
+  string id = 1;       // UUID
+  string label = 2;
+}
+
+message CreateFooRequest {
+  string label = 1;
+  string secret = 2;
+}
+
+message GetFooRequest {
+  string id = 1; // UUID
+}
+
+message UpdateFooRequest {
+  string id = 1; // UUID
+  string label = 2;
+  string secret = 3;
+}
+
+message DeleteFooRequest {
+  string id = 1; // UUID
+}
+
+message FooResponse {
+  Foo foo = 1;
+}
+
+// Requête de liste
+message ListFoosRequest {
+  int32 offset = 1;
+  int32 limit = 2;
+}
+
+message ListFoosResponse {
+  repeated Foo foos = 1;
+}
+
+message DeleteFooResponse {
+  bool success = 1;
+}

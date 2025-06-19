@@ -12,16 +12,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
 	"time"
 )
 
 var StartAt time.Time
 
 type Server struct {
-	Postgres  *sql.DB
-	Nats      *nats.Conn
-	Redis     *redis.Client
-	GinEngine *gin.Engine
+	Postgres   *sql.DB
+	Nats       *nats.Conn
+	Redis      *redis.Client
+	GinEngine  *gin.Engine
+	GrpcServer *grpc.Server
 }
 
 func (server *Server) Start() error {
@@ -51,13 +53,15 @@ func NewServer() (*Server, error) {
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}
 
+	fooService := service.NewFooService(
+		postgres.NewFooPostgres(server.Postgres),
+		redis2.NewFooRedis(server.Redis),
+		nats2.NewFooNats(server.Nats),
+	)
+
 	server.GinEngine = http.NewGin(
 		http.NewHealthController(),
-		http.NewFooController(service.NewFooService(
-			postgres.NewFooPostgres(server.Postgres),
-			redis2.NewFooRedis(server.Redis),
-			nats2.NewFooNats(server.Nats)),
-		),
+		http.NewFooController(fooService),
 	)
 
 	return server, nil

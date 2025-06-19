@@ -37,21 +37,14 @@ func NewGin(healthController *HealthController, fooController *FooController) *g
 
 	e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
-	{
-		health := e.Group("/health")
-		health.GET("/liveness", healthController.GetLiveness)
-		health.GET("/readiness", healthController.GetReadiness)
-	}
+	e.GET("/health/liveness", healthController.GetLiveness)
+	e.GET("/health/readiness", healthController.GetReadiness)
 
-	{
-		foos := e.Group("/foos")
-		foos.GET("", fooController.GetAll)
-		foos.GET("/:id", fooController.GetByID)
-		foos.POST("", fooController.Create)
-		foos.PUT("/:id", fooController.Update)
-		foos.DELETE("/:id", fooController.DeleteByID)
-
-	}
+	e.GET("/foos", fooController.GetAll)
+	e.GET("foos/:id", fooController.GetByID)
+	e.POST("/foos", fooController.Create)
+	e.PUT("/foos/:id", fooController.Update)
+	e.DELETE("/foos/:id", fooController.DeleteByID)
 
 	return e
 }
