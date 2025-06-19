@@ -1,0 +1,29 @@
+postgres:
+  host: "localhost"
+  port: 5432
+  user: "astigo"
+  password: "astigo_password"
+  dbname: "astigo"
+  sslmode: "disable"
+  max_open_conns: 10
+  max_idle_conns: 5
+  max_lifetime: 300
+
+http:
+  port: 8080
+  mode: "debug"
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+
+nats:
+  url: "nats://localhost:4222"
+  username: ""
+  password: ""
+
+log:
+  level: "debug"
+  encoding: "json"

@@ -1,0 +1,35 @@
+### GET All Foos
+GET http://localhost:8080/foos?offset=0&limit=10
+Accept: application/json
+
+### GET Foo By ID
+GET http://localhost:8080/foos/20000000-0000-0000-0000-000000000001
+Accept: application/json
+
+### Create Foo
+POST localhost:8080/foos
+Content-Type: application/json
+
+{
+  "label": "foo_created",
+  "secret": "secret_created"
+}
+
+> {%
+const id = response.body.id;
+client.global.set("fooId", id);
+%}
+
+### Update Foo
+PUT localhost:8080/foos
+Content-Type: application/json
+
+{
+  "id": "{{fooId}}",
+  "label": "foo_updated",
+  "secret": "secret_updated"
+}
+
+### Delete Foo
+DELETE http://localhost:8080/foos/{{fooId}}
+Accept: application/json

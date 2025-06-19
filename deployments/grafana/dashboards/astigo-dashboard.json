@@ -1,0 +1,134 @@
+{
+  "id": null,
+  "uid": "astigo-default",
+  "title": "Astigo - Monitoring API",
+  "tags": ["astigo", "api", "prometheus"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 5,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Requêtes HTTP par seconde",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total[1m])) by (method, path)",
+          "refId": "A",
+          "legendFormat": "{{method}} {{path}}"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 0
+        }
+      },
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Durée des requêtes (95e percentile)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1m])) by (le, path))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3
+        }
+      },
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Erreurs HTTP par endpoint et code",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{code=~\"4..|5..\"}[1m])) by (path, code)",
+          "refId": "A",
+          "legendFormat": "{{path}} - Code {{code}}"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "decimals": 0
+        }
+      },
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Taux d’erreurs HTTP (%) par endpoint",
+      "targets": [
+        {
+          "expr": "100 * (sum(rate(http_requests_total{code=~\"4..|5..\"}[1m])) by (path) / sum(rate(http_requests_total[1m])) by (path))",
+          "refId": "A",
+          "legendFormat": "{{path}}"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 2,
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Utilisation mémoire Go",
+      "targets": [
+        {
+          "expr": "go_memstats_alloc_bytes",
+          "refId": "A",
+          "legendFormat": "Mémoire allouée"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "decimals": 0
+        }
+      },
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Nombre de Goroutines",
+      "targets": [
+        {
+          "expr": "go_goroutines",
+          "refId": "A",
+          "legendFormat": "Goroutines"
+        }
+      ],
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0
+        }
+      },
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+services:
+  astigo:
+    container_name: astigo
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASTIGO_POSTGRES_HOST=postgres
+      - ASTIGO_POSTGRES_PORT=5432
+      - ASTIGO_POSTGRES_DB=astigo
+      - ASTIGO_POSTGRES_USER=astigo
+      - ASTIGO_POSTGRES_PASSWORD=astigo_password
+      - ASTIGO_NATS_URL=nats://nats:4222
+      - ASTIGO_HTTP_PORT=8080
+      - ASTIGO_LOG_LEVEL=info
+      - ASTIGO_LOG_OUTPUT=/app/logs/app.log
+      - ASTIGO_REDIS_PORT=6379
+      - ASTIGO_REDIS_HOST=redis
+      - ASTIGO_REDIS_DB=0
+    depends_on:
+      - postgres
+      - nats
+      - redis
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=astigo
+      - POSTGRES_USER=astigo
+      - POSTGRES_PASSWORD=astigo_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  nats:
+    image: nats:2-alpine
+    container_name: nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    command:
+      - "-m"
+      - "8222"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - "8090:8080"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./deployments/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - ./deployments/grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./deployments/grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./deployments/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+
+volumes:
+  postgres_data:
+  redis_data:
