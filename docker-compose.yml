@@ -6,16 +6,17 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - "8080:8080"
+      - "50051:50051"
     environment:
+      - ASTIGO_HTTP_PORT=8080
+      - ASTIGO_GRPC_PORT=50051
+      - ASTIGO_LOG_LEVEL=info
       - ASTIGO_POSTGRES_HOST=postgres
       - ASTIGO_POSTGRES_PORT=5432
       - ASTIGO_POSTGRES_DB=astigo
       - ASTIGO_POSTGRES_USER=astigo
       - ASTIGO_POSTGRES_PASSWORD=astigo_password
       - ASTIGO_NATS_URL=nats://nats:4222
-      - ASTIGO_HTTP_PORT=8080
-      - ASTIGO_LOG_LEVEL=info
-      - ASTIGO_LOG_OUTPUT=/app/logs/app.log
       - ASTIGO_REDIS_PORT=6379
       - ASTIGO_REDIS_HOST=redis
       - ASTIGO_REDIS_DB=0

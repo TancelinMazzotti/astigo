@@ -5,9 +5,10 @@ import (
 	"astigo/internal/domain/model"
 	"astigo/pkg/proto"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -53,13 +54,13 @@ func TestFooService_List(t *testing.T) {
 			resp, err := service.List(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), testCase.expectedError.Error())
-				require.Nil(t, resp)
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.expectedError.Error())
+				assert.Nil(t, resp)
 			} else {
-				require.NoError(t, err)
-				require.NotNil(t, resp)
-				require.Len(t, resp.Foos, testCase.expectedCount)
+				assert.NoError(t, err)
+				assert.NotNil(t, resp)
+				assert.Len(t, resp.Foos, testCase.expectedCount)
 			}
 
 			mockHandler.AssertExpectations(t)
@@ -100,6 +101,13 @@ func TestFooService_Get(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Failed Case - Not UUID",
+			request: &proto.GetFooRequest{
+				Id: "not uuid",
+			},
+			expectedError: fmt.Errorf("fail to parse id"),
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -111,13 +119,162 @@ func TestFooService_Get(t *testing.T) {
 			resp, err := service.Get(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), testCase.expectedError.Error())
-				require.Nil(t, resp)
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.expectedError.Error())
+				assert.Nil(t, resp)
 			} else {
-				require.NoError(t, err)
-				require.NotNil(t, resp)
-				require.Equal(t, testCase.expectedResult, resp)
+				assert.NoError(t, err)
+				assert.NotNil(t, resp)
+				assert.Equal(t, testCase.expectedResult, resp)
+			}
+		})
+	}
+}
+
+func TestFooService_Create(t *testing.T) {
+	testCases := []struct {
+		name           string
+		request        *proto.CreateFooRequest
+		mockRequest    handler.FooCreateInput
+		mockResponse   *model.Foo
+		mockError      error
+		expectedResult *proto.FooResponse
+		expectedError  error
+	}{
+		{
+			name: "Success Case",
+			request: &proto.CreateFooRequest{
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+			mockRequest: handler.FooCreateInput{
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+			mockResponse: &model.Foo{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+
+			expectedResult: &proto.FooResponse{
+				Foo: &proto.Foo{
+					Id:    "20000000-0000-0000-0000-000000000001",
+					Label: "foo_create",
+				},
+			},
+			expectedError: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("Create", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
+
+			service := NewFooService(mockHandler)
+
+			resp, err := service.Create(context.Background(), testCase.request)
+
+			if testCase.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.expectedError.Error())
+				assert.Nil(t, resp)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, resp)
+				assert.Equal(t, testCase.expectedResult, resp)
+			}
+		})
+	}
+}
+
+func TestFooService_Update(t *testing.T) {
+	testCases := []struct {
+		name           string
+		request        *proto.UpdateFooRequest
+		mockRequest    handler.FooUpdateInput
+		mockError      error
+		expectedResult *proto.FooResponse
+		expectedError  error
+	}{
+		{
+			name: "Success Case",
+			request: &proto.UpdateFooRequest{
+				Id:     "20000000-0000-0000-0000-000000000001",
+				Label:  "foo_update",
+				Secret: "secret_update",
+			},
+			mockRequest: handler.FooUpdateInput{
+				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:  "foo_update",
+				Secret: "secret_update",
+			},
+			mockError: nil,
+			expectedResult: &proto.FooResponse{
+				Foo: &proto.Foo{
+					Id:    "20000000-0000-0000-0000-000000000001",
+					Label: "foo_update",
+				},
+			},
+			expectedError: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("Update", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
+
+			service := NewFooService(mockHandler)
+
+			resp, err := service.Update(context.Background(), testCase.request)
+
+			if testCase.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.expectedError.Error())
+				assert.Nil(t, resp)
+			}
+		})
+	}
+}
+
+func TestFooService_Delete(t *testing.T) {
+	testCases := []struct {
+		name           string
+		request        *proto.DeleteFooRequest
+		mockRequest    uuid.UUID
+		mockError      error
+		expectedResult *proto.DeleteFooResponse
+		expectedError  error
+	}{
+		{
+			name: "Success Case",
+			request: &proto.DeleteFooRequest{
+				Id: "20000000-0000-0000-0000-000000000001",
+			},
+			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			mockError:   nil,
+			expectedResult: &proto.DeleteFooResponse{
+				Success: true,
+			},
+			expectedError: nil,
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			mockHandler := new(handler.MockFooHandler)
+			mockHandler.On("DeleteByID", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
+
+			service := NewFooService(mockHandler)
+
+			resp, err := service.Delete(context.Background(), testCase.request)
+
+			if testCase.expectedError != nil {
+				assert.Error(t, err)
+				assert.Contains(t, err.Error(), testCase.expectedError.Error())
+				assert.Nil(t, resp)
 			}
 		})
 	}
