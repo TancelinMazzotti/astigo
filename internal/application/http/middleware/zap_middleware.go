@@ -1,17 +1,16 @@
 package middleware
 
 import (
-	"astigo/internal/tool"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"time"
 )
 
-func ZapLoggerMiddleware() gin.HandlerFunc {
+func ZapLoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		c.Next()
-		tool.Logger.Info("HTTP request",
+		logger.Info("HTTP request",
 			zap.Int("status", c.Writer.Status()),
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
@@ -21,9 +20,9 @@ func ZapLoggerMiddleware() gin.HandlerFunc {
 	}
 }
 
-func ZapRecoveryMiddleware() gin.HandlerFunc {
+func ZapRecoveryMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return gin.CustomRecovery(func(c *gin.Context, err any) {
-		tool.Logger.Error("panic recovered",
+		logger.Error("panic recovered",
 			zap.Any("error", err),
 			zap.String("path", c.Request.URL.Path),
 		)

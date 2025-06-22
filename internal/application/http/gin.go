@@ -4,6 +4,7 @@ import (
 	"astigo/internal/application/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.uber.org/zap"
 	"net/http"
 	"time"
 )
@@ -15,12 +16,12 @@ type GinConfig struct {
 	Mode string `mapstructure:"mode"`
 }
 
-func NewGin(healthController *HealthController, fooController *FooController) *gin.Engine {
+func NewGin(logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
 	middleware.RegisterMetrics()
 
 	e := gin.New()
-	e.Use(middleware.ZapLoggerMiddleware())
-	e.Use(middleware.ZapRecoveryMiddleware())
+	e.Use(middleware.ZapLoggerMiddleware(logger))
+	e.Use(middleware.ZapRecoveryMiddleware(logger))
 	e.Use(middleware.MetricsMiddleware())
 
 	e.GET("/", func(c *gin.Context) {

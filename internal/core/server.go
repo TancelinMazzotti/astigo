@@ -3,12 +3,10 @@ package core
 import (
 	grpc2 "astigo/internal/application/grpc"
 	http2 "astigo/internal/application/http"
-	"astigo/internal/config"
 	"astigo/internal/domain/service"
 	redis2 "astigo/internal/infrastructure/cache/redis"
 	nats2 "astigo/internal/infrastructure/messaging/nats"
 	postgres2 "astigo/internal/infrastructure/repository/postgres"
-	"astigo/internal/tool"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,6 +14,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -23,12 +22,27 @@ import (
 	"time"
 )
 
+type Config struct {
+	Log LoggerConfig `mapstructure:"log"`
+
+	Gin  http2.GinConfig  `mapstructure:"http"`
+	Grpc grpc2.GrpcConfig `mapstructure:"grpc"`
+
+	Postgres postgres2.PostgresConfig `mapstructure:"postgres"`
+	Nats     nats2.NatsConfig         `mapstructure:"nats"`
+	Redis    redis2.RedisConfig       `mapstructure:"redis"`
+}
+
 type Server struct {
-	Postgres   *sql.DB
-	Nats       *nats.Conn
-	Redis      *redis.Client
+	Config Config
+	Logger *zap.Logger
+
 	GinEngine  *gin.Engine
 	GrpcServer *grpc.Server
+
+	Postgres *sql.DB
+	Nats     *nats.Conn
+	Redis    *redis.Client
 }
 
 func (server *Server) Start(ctx context.Context) error {
@@ -43,7 +57,6 @@ func (server *Server) Start(ctx context.Context) error {
 	server.startGrpcServer(grpcLis, errCh)
 	server.handleShutdown(ctx, httpSrv, errCh)
 
-	// Attend une erreur ou un arrêt normal
 	if err := <-errCh; err != nil {
 		return err
 	}
@@ -52,13 +65,13 @@ func (server *Server) Start(ctx context.Context) error {
 
 func (server *Server) startHTTPServer(errCh chan<- error) *http.Server {
 	srv := &http.Server{
-		Addr:    fmt.Sprintf(":%s", config.Cfg.Gin.Port),
+		Addr:    fmt.Sprintf(":%s", server.Config.Gin.Port),
 		Handler: server.GinEngine,
 	}
 
 	go func() {
 		http2.StartAt = time.Now()
-		tool.Logger.Info("HTTP server starting")
+		server.Logger.Info("HTTP server starting")
 		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- fmt.Errorf("http server error: %w", err)
 		}
@@ -69,7 +82,7 @@ func (server *Server) startHTTPServer(errCh chan<- error) *http.Server {
 
 func (server *Server) startGrpcServer(lis net.Listener, errCh chan<- error) {
 	go func() {
-		tool.Logger.Info("gRPC server starting...")
+		server.Logger.Info("gRPC server starting...")
 		if err := server.GrpcServer.Serve(lis); err != nil && !errors.Is(err, grpc.ErrServerStopped) {
 			errCh <- fmt.Errorf("grpc server error: %w", err)
 		}
@@ -95,23 +108,30 @@ func (server *Server) handleShutdown(ctx context.Context, httpSrv *http.Server, 
 		server.GrpcServer.GracefulStop()
 		log.Println("gRPC server stopped")
 
-		errCh <- nil // signal volontaire
+		errCh <- nil
 	}()
 }
 
-func NewServer() (*Server, error) {
+func NewServer(config Config) (*Server, error) {
 	var err error
-	server := &Server{}
+	server := &Server{
+		Config: config,
+	}
 
-	if server.Postgres, err = postgres2.NewPostgres(config.Cfg.Postgres); err != nil {
+	server.Logger, err = NewLogger(server.Config.Log)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create logger %w", err)
+	}
+
+	if server.Postgres, err = postgres2.NewPostgres(server.Config.Postgres); err != nil {
 		return nil, fmt.Errorf("fail to create postgres connector %w", err)
 	}
 
-	if server.Redis, err = redis2.NewRedis(config.Cfg.Redis); err != nil {
+	if server.Redis, err = redis2.NewRedis(server.Config.Redis); err != nil {
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}
 
-	if server.Nats, err = nats2.NewNats(config.Cfg.Nats); err != nil {
+	if server.Nats, err = nats2.NewNats(server.Config.Nats); err != nil {
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}
 
@@ -122,11 +142,13 @@ func NewServer() (*Server, error) {
 	)
 
 	server.GinEngine = http2.NewGin(
+		server.Logger,
 		http2.NewHealthController(),
 		http2.NewFooController(fooService),
 	)
 
 	server.GrpcServer = grpc2.NewGrpcServer(
+		server.Logger,
 		grpc2.NewFooService(fooService),
 	)
 
