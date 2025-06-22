@@ -30,4 +30,4 @@ EXPOSE 8080
 #GRPC
 EXPOSE 50051
 
-CMD ["./astigo", "serve"]
+CMD ["./astigo"]
