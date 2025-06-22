@@ -1,6 +1,7 @@
 package config
 
 import (
+	"astigo/internal/application/grpc"
 	"astigo/internal/application/http"
 	"astigo/internal/infrastructure/cache/redis"
 	"astigo/internal/infrastructure/messaging/nats"
@@ -15,8 +16,9 @@ import (
 var Cfg *Config
 
 type Config struct {
-	Gin http.GinConfig    `mapstructure:"http"`
-	Log tool.LoggerConfig `mapstructure:"log"`
+	Gin  http.GinConfig    `mapstructure:"http"`
+	Grpc grpc.GrpcConfig   `mapstructure:"grpc"`
+	Log  tool.LoggerConfig `mapstructure:"log"`
 
 	Postgres postgres.PostgresConfig `mapstructure:"postgres"`
 	Nats     nats.NatsConfig         `mapstructure:"nats"`
@@ -56,6 +58,17 @@ func Load() error {
 }
 
 func setDefaults() {
+	// HTTP defaults
+	viper.SetDefault("http.port", 8080)
+	viper.SetDefault("http.mode", "debug")
+
+	// GRPC defaults
+	viper.SetDefault("grpc.port", 50051)
+
+	// Log defaults
+	viper.SetDefault("log.level", "info")
+	viper.SetDefault("log.encoding", "json")
+
 	// Postgres defaults
 	viper.SetDefault("postgres.host", "localhost")
 	viper.SetDefault("postgres.port", 5432)
@@ -69,14 +82,7 @@ func setDefaults() {
 	viper.SetDefault("redis.port", 6379)
 	viper.SetDefault("redis.db", 0)
 
-	// HTTP defaults
-	viper.SetDefault("http.port", 8080)
-	viper.SetDefault("http.mode", "debug")
-
 	// NATS defaults
 	viper.SetDefault("nats.url", "nats://localhost:4222")
 
-	// Log defaults
-	viper.SetDefault("log.level", "info")
-	viper.SetDefault("log.encoding", "json")
 }

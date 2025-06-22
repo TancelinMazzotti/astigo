@@ -25,5 +25,9 @@ COPY --from=builder /app/astigo .
 COPY --chown=appuser:appuser config/config.yaml /app/config/
 
 USER appuser
+#HTTP
 EXPOSE 8080
+#GRPC
+EXPOSE 50051
+
 CMD ["./astigo", "serve"]

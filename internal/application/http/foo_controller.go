@@ -96,11 +96,11 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 // @Tags Foo
 // @Accept JSON
 // @Produce JSON
-// @Param foo body dto.FooCreateRequest true "Foo"
+// @Param foo body dto.FooCreateBody true "Foo"
 // @Success 201
 // @Router /foos [post]
 func (c *FooController) Create(ctx *gin.Context) {
-	var input dto.FooCreateRequest
+	var input dto.FooCreateBody
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -122,20 +122,32 @@ func (c *FooController) Create(ctx *gin.Context) {
 // @Tags Foo
 // @Accept JSON
 // @Produce JSON
-// @Param foo body dto.FooUpdateRequest true "Foo"
+// @Param foo body dto.FooUpdateBody true "Foo"
 // @Success 204
 // @Router /foos [put]
 func (c *FooController) Update(ctx *gin.Context) {
-	var input dto.FooUpdateRequest
-	if err := ctx.ShouldBindJSON(&input); err != nil {
+	var pathParams dto.FooReadRequest
+	var body dto.FooUpdateBody
+	if err := ctx.ShouldBindUri(&pathParams); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	id, err := uuid.Parse(pathParams.Id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&body); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := c.svc.Update(ctx, handler.FooUpdateInput{
-		Id:     input.Id,
-		Label:  input.Label,
-		Secret: input.Secret,
+		Id:     id,
+		Label:  body.Label,
+		Secret: body.Secret,
 	}); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

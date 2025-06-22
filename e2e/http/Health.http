@@ -1,0 +1,17 @@
+### GET Health liveness
+GET http://localhost:8080/health/liveness
+
+> {%
+    if (response.status !== 200) {
+        throw new Error(`Expected status 200 but got ${response.status}`);
+    }
+%}
+
+### GET Health readiness
+GET http://localhost:8080/health/readiness
+
+> {%
+    if (response.status !== 200) {
+        throw new Error(`Expected status 200 but got ${response.status}`);
+    }
+%}

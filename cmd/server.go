@@ -4,8 +4,12 @@ import (
 	"astigo/internal/config"
 	"astigo/internal/core"
 	"astigo/internal/tool"
+	"context"
 	"fmt"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 var (
@@ -30,8 +34,11 @@ var (
 				return fmt.Errorf("erreur lors de l'initialisation de l'application: %w", err)
 			}
 
+			ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+			defer stop()
+
 			// Lancer le serveur
-			if err := server.Start(); err != nil {
+			if err := server.Start(ctx); err != nil {
 				return fmt.Errorf("erreur lors du démarrage de l'application: %w", err)
 			}
 

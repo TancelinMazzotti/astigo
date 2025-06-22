@@ -32,7 +32,7 @@ func InitLogger(c LoggerConfig) error {
 				CallerKey:      "caller",
 				MessageKey:     "msg",
 				StacktraceKey:  "stacktrace",
-				EncodeLevel:    zapcore.CapitalColorLevelEncoder,
+				EncodeLevel:    zapcore.CapitalLevelEncoder,
 				EncodeTime:     zapcore.RFC3339TimeEncoder,
 				EncodeDuration: zapcore.MillisDurationEncoder,
 				EncodeCaller:   zapcore.ShortCallerEncoder,
@@ -56,11 +56,5 @@ func parseLevel(lvl string) zapcore.Level {
 		return zapcore.ErrorLevel
 	default:
 		return zapcore.InfoLevel
-	}
-}
-
-func Sync() {
-	if Logger != nil {
-		_ = Logger.Sync()
 	}
 }
