@@ -20,7 +20,7 @@ func TestFooController_GetAll(t *testing.T) {
 		name string
 		url  string
 
-		mockRequest  handler.PaginationInput
+		mockRequest  handler.FooReadListInput
 		mockResponse []model.Foo
 		mockError    error
 
@@ -31,7 +31,7 @@ func TestFooController_GetAll(t *testing.T) {
 			name: "Success Case - Multiple Foos",
 			url:  "/foos?offset=0&limit=10",
 
-			mockRequest: handler.PaginationInput{
+			mockRequest: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
@@ -53,7 +53,7 @@ func TestFooController_GetAll(t *testing.T) {
 			name: "Failure Case - Repository Error",
 			url:  "/foos?offset=0&limit=10",
 
-			mockRequest: handler.PaginationInput{
+			mockRequest: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},

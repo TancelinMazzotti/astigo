@@ -17,7 +17,7 @@ func TestFooService_List(t *testing.T) {
 		name    string
 		request *proto.ListFoosRequest
 
-		mockRequest  handler.PaginationInput
+		mockRequest  handler.FooReadListInput
 		mockResponse []model.Foo
 		mockError    error
 
@@ -31,7 +31,7 @@ func TestFooService_List(t *testing.T) {
 				Limit:  10,
 			},
 
-			mockRequest: handler.PaginationInput{Offset: 0, Limit: 10},
+			mockRequest: handler.FooReadListInput{Offset: 0, Limit: 10},
 			mockResponse: []model.Foo{
 				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
 				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},

@@ -24,7 +24,7 @@ type FooService struct {
 	messaging messaging.IFooMessaging
 }
 
-func (s *FooService) GetAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error) {
+func (s *FooService) GetAll(ctx context.Context, pagination handler.FooReadListInput) ([]model.Foo, error) {
 	foos, err := s.repo.FindAll(ctx, pagination)
 	if err != nil {
 		return nil, fmt.Errorf("fail to find all foo: %w", err)

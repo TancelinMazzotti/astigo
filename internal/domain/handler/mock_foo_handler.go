@@ -15,7 +15,7 @@ type MockFooHandler struct {
 	mock.Mock
 }
 
-func (m *MockFooHandler) GetAll(ctx context.Context, pagination PaginationInput) ([]model.Foo, error) {
+func (m *MockFooHandler) GetAll(ctx context.Context, pagination FooReadListInput) ([]model.Foo, error) {
 	args := m.Called(ctx, pagination)
 	return args.Get(0).([]model.Foo), args.Error(1)
 }

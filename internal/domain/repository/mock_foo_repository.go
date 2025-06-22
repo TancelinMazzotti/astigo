@@ -16,7 +16,7 @@ type MockFooRepository struct {
 	mock.Mock
 }
 
-func (m *MockFooRepository) FindAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error) {
+func (m *MockFooRepository) FindAll(ctx context.Context, pagination handler.FooReadListInput) ([]model.Foo, error) {
 	args := m.Called(ctx, pagination)
 	return args.Get(0).([]model.Foo), args.Error(1)
 }

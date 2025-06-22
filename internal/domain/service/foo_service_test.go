@@ -18,7 +18,7 @@ func TestFooService_GetAll(t *testing.T) {
 	// Scénarios de test
 	testCases := []struct {
 		name             string
-		mockRepoRequest  handler.PaginationInput
+		mockRepoRequest  handler.FooReadListInput
 		mockRepoResponse []model.Foo
 		mockRepoError    error
 		expectedCount    int
@@ -26,7 +26,7 @@ func TestFooService_GetAll(t *testing.T) {
 	}{
 		{
 			name: "Success Case - Multiple Foos",
-			mockRepoRequest: handler.PaginationInput{
+			mockRepoRequest: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
@@ -41,7 +41,7 @@ func TestFooService_GetAll(t *testing.T) {
 		},
 		{
 			name: "Success Case - Empty Foos",
-			mockRepoRequest: handler.PaginationInput{
+			mockRepoRequest: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
@@ -52,7 +52,7 @@ func TestFooService_GetAll(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Repository Error",
-			mockRepoRequest: handler.PaginationInput{
+			mockRepoRequest: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},

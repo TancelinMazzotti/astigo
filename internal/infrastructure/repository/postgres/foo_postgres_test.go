@@ -13,31 +13,31 @@ import (
 func TestFooPostgres_FindAll(t *testing.T) {
 	testCases := []struct {
 		name          string
-		pagination    handler.PaginationInput
+		pagination    handler.FooReadListInput
 		expectedCount int
 		expectedError error
 	}{
 		{
 			name:          "Success Case - Multiple Foos",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 20},
+			pagination:    handler.FooReadListInput{Offset: 0, Limit: 20},
 			expectedCount: 3,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - Empty Foos",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 0},
+			pagination:    handler.FooReadListInput{Offset: 0, Limit: 0},
 			expectedCount: 0,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - With Offset",
-			pagination:    handler.PaginationInput{Offset: 1, Limit: 20},
+			pagination:    handler.FooReadListInput{Offset: 1, Limit: 20},
 			expectedCount: 2,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - With Limit",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 2},
+			pagination:    handler.FooReadListInput{Offset: 0, Limit: 2},
 			expectedCount: 2,
 			expectedError: nil,
 		},

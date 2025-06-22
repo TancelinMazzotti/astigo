@@ -19,7 +19,7 @@ type FooPostgres struct {
 	db *sql.DB
 }
 
-func (f FooPostgres) FindAll(ctx context.Context, pagination handler.PaginationInput) ([]model.Foo, error) {
+func (f FooPostgres) FindAll(ctx context.Context, pagination handler.FooReadListInput) ([]model.Foo, error) {
 	query := `
         SELECT foo_id, foo.label, foo.secret
         FROM foo

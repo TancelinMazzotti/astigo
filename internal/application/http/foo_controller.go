@@ -31,7 +31,7 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	foos, err := c.svc.GetAll(ctx, handler.PaginationInput{
+	foos, err := c.svc.GetAll(ctx, handler.FooReadListInput{
 		Offset: queryParams.Offset,
 		Limit:  queryParams.Limit,
 	})
