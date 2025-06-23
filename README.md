@@ -56,3 +56,33 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
   - Runtime metrics
   - Custom business metrics
 
+---
+
+## Environement variable
+
+| Environment Variable | Default Value | Description |
+| --- | --- | --- |
+| `ASTIGO_HTTP_MODE` | `debug` | HTTP server mode (debug/release) |
+| `ASTIGO_GRPC_PORT` | `50051` | gRPC server listening port |
+| `ASTIGO_LOG_LEVEL` | `info` | Application logging level (info, debug, error, etc.) |
+| `ASTIGO_LOG_ENCODING` | `json` | Log format encoding (json/console) |
+| `ASTIGO_POSTGRES_HOST` | `localhost` | PostgreSQL server hostname |
+| `ASTIGO_POSTGRES_PORT` | `5432` | PostgreSQL connection port |
+| `ASTIGO_POSTGRES_DB` | `astigo` | PostgreSQL database name |
+| `ASTIGO_POSTGRES_USER` | `astigo` | PostgreSQL username |
+| `ASTIGO_POSTGRES_PASSWORD` | `astigo_password` | PostgreSQL password |
+| `ASTIGO_POSTGRES_SSLMODE` | `disable` | PostgreSQL SSL mode |
+| `ASTIGO_POSTGRES_MAX_OPEN_CONNS` | `10` | PostgreSQL maximum open connections |
+| `ASTIGO_POSTGRES_MAX_IDLE_CONNS` | `5` | PostgreSQL maximum idle connections |
+| `ASTIGO_POSTGRES_MAX_LIFETIME` | `300` | PostgreSQL connection maximum lifetime (seconds) |
+| `ASTIGO_NATS_URL` | `nats://localhost:4222` | NATS server connection URL |
+| `ASTIGO_REDIS_HOST` | `localhost` | Redis server hostname |
+| `ASTIGO_REDIS_PORT` | `6379` | Redis connection port |
+| `ASTIGO_REDIS_DB` | `0` | Redis database index |
+
+All variables are prefixed with `ASTIGO_` to prevent conflicts with other applications. Each variable controls a specific aspect of the application configuration:
+- Server settings (HTTP/gRPC)
+- Logging
+- PostgreSQL database connection
+- NATS message broker connection
+- Redis cache connection
