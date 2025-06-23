@@ -55,6 +55,10 @@ services:
     command:
       - "-m"
       - "8222"
+      - "-D"
+      - "-V"
+      - "-V"
+  
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest

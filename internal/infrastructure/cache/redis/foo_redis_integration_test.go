@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestFooRedis_GetByID(t *testing.T) {
+func TestIntegrationFooRedis_GetByID(t *testing.T) {
 	testCases := []struct {
 		name           string
 		id             uuid.UUID
@@ -65,7 +65,7 @@ func TestFooRedis_GetByID(t *testing.T) {
 	}
 }
 
-func TestFooRedis_Set(t *testing.T) {
+func TestIntegrationFooRedis_Set(t *testing.T) {
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -119,7 +119,7 @@ func TestFooRedis_Set(t *testing.T) {
 	}
 }
 
-func TestFooRedis_DeleteByID(t *testing.T) {
+func TestIntegrationFooRedis_DeleteByID(t *testing.T) {
 	testCases := []struct {
 		name          string
 		id            uuid.UUID

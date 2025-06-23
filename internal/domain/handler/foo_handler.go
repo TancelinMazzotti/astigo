@@ -7,7 +7,7 @@ import (
 )
 
 type IFooHandler interface {
-	GetAll(ctx context.Context, pagination FooReadListInput) ([]model.Foo, error)
+	GetAll(ctx context.Context, input FooReadListInput) ([]model.Foo, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error)
 	Create(ctx context.Context, input FooCreateInput) (*model.Foo, error)
 	Update(ctx context.Context, input FooUpdateInput) error

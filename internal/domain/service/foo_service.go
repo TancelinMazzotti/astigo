@@ -24,8 +24,8 @@ type FooService struct {
 	messaging messaging.IFooMessaging
 }
 
-func (s *FooService) GetAll(ctx context.Context, pagination handler.FooReadListInput) ([]model.Foo, error) {
-	foos, err := s.repo.FindAll(ctx, pagination)
+func (s *FooService) GetAll(ctx context.Context, input handler.FooReadListInput) ([]model.Foo, error) {
+	foos, err := s.repo.FindAll(ctx, input)
 	if err != nil {
 		return nil, fmt.Errorf("fail to find all foo: %w", err)
 	}
@@ -64,6 +64,14 @@ func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) (
 		return nil, fmt.Errorf("fail to create foo: %w", err)
 	}
 
+	if err := s.cache.Set(ctx, foo, FooCacheExpiration); err != nil {
+		return nil, fmt.Errorf("fail to create foo in cache: %w", err)
+	}
+
+	if err := s.messaging.PublishFooCreated(ctx, foo); err != nil {
+		return nil, fmt.Errorf("fail to publish foo created: %w", err)
+	}
+
 	return &foo, nil
 }
 
@@ -85,6 +93,10 @@ func (s *FooService) Update(ctx context.Context, input handler.FooUpdateInput) e
 		return fmt.Errorf("fail to update foo in cache: %w", err)
 	}
 
+	if err := s.messaging.PublishFooUpdated(ctx, *foo); err != nil {
+		return fmt.Errorf("fail to publish foo updated: %w", err)
+	}
+
 	return nil
 }
 
@@ -95,6 +107,10 @@ func (s *FooService) DeleteByID(ctx context.Context, id uuid.UUID) error {
 
 	if err := s.cache.DeleteByID(ctx, id); err != nil {
 		return fmt.Errorf("fail to delete foo by id from cache: %w", err)
+	}
+
+	if err := s.messaging.PublishFooDeleted(ctx, id); err != nil {
+		return fmt.Errorf("fail to publish foo deleted: %w", err)
 	}
 
 	return nil
