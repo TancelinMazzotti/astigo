@@ -18,7 +18,7 @@ type FooService struct {
 }
 
 func (s *FooService) List(ctx context.Context, req *proto.ListFoosRequest) (*proto.ListFoosResponse, error) {
-	foos, err := s.svc.GetAll(ctx, handler.PaginationInput{
+	foos, err := s.svc.GetAll(ctx, handler.FooReadListInput{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	})

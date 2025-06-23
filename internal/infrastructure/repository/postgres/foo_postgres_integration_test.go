@@ -10,34 +10,34 @@ import (
 	"testing"
 )
 
-func TestFooPostgres_FindAll(t *testing.T) {
+func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 	testCases := []struct {
 		name          string
-		pagination    handler.PaginationInput
+		input         handler.FooReadListInput
 		expectedCount int
 		expectedError error
 	}{
 		{
 			name:          "Success Case - Multiple Foos",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 20},
+			input:         handler.FooReadListInput{Offset: 0, Limit: 20},
 			expectedCount: 3,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - Empty Foos",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 0},
+			input:         handler.FooReadListInput{Offset: 0, Limit: 0},
 			expectedCount: 0,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - With Offset",
-			pagination:    handler.PaginationInput{Offset: 1, Limit: 20},
+			input:         handler.FooReadListInput{Offset: 1, Limit: 20},
 			expectedCount: 2,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - With Limit",
-			pagination:    handler.PaginationInput{Offset: 0, Limit: 2},
+			input:         handler.FooReadListInput{Offset: 0, Limit: 2},
 			expectedCount: 2,
 			expectedError: nil,
 		},
@@ -58,7 +58,7 @@ func TestFooPostgres_FindAll(t *testing.T) {
 		t.Run(testCase.name, func(t *testing.T) {
 			repo := NewFooPostgres(pg)
 
-			result, err := repo.FindAll(context.Background(), testCase.pagination)
+			result, err := repo.FindAll(context.Background(), testCase.input)
 
 			if testCase.expectedError != nil {
 				assert.EqualError(t, err, testCase.expectedError.Error())
@@ -70,7 +70,7 @@ func TestFooPostgres_FindAll(t *testing.T) {
 	}
 }
 
-func TestFooPostgres_FindByID(t *testing.T) {
+func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 	testCases := []struct {
 		name           string
 		id             uuid.UUID
@@ -121,7 +121,7 @@ func TestFooPostgres_FindByID(t *testing.T) {
 	}
 }
 
-func TestFooPostgres_Create(t *testing.T) {
+func TestIntegrationFooPostgres_Create(t *testing.T) {
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -164,7 +164,7 @@ func TestFooPostgres_Create(t *testing.T) {
 	}
 }
 
-func TestFooPostgres_Update(t *testing.T) {
+func TestIntegrationFooPostgres_Update(t *testing.T) {
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -216,7 +216,7 @@ func TestFooPostgres_Update(t *testing.T) {
 	}
 }
 
-func TestFooPostgres_DeleteByID(t *testing.T) {
+func TestIntegrationFooPostgres_DeleteByID(t *testing.T) {
 	testCases := []struct {
 		name          string
 		id            uuid.UUID

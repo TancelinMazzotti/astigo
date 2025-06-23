@@ -3,25 +3,24 @@ package handler
 import (
 	"astigo/internal/domain/model"
 	"context"
-	"encoding/json"
 	"github.com/google/uuid"
 )
 
 type IFooHandler interface {
-	GetAll(ctx context.Context, pagination PaginationInput) ([]model.Foo, error)
+	GetAll(ctx context.Context, input FooReadListInput) ([]model.Foo, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error)
 	Create(ctx context.Context, input FooCreateInput) (*model.Foo, error)
 	Update(ctx context.Context, input FooUpdateInput) error
 	DeleteByID(ctx context.Context, id uuid.UUID) error
 }
 
-type FooReadInput struct {
-	Id uuid.UUID
+type FooReadListInput struct {
+	Offset int
+	Limit  int
 }
 
-type FooReadOutput struct {
-	Id    uuid.UUID
-	Label string
+type FooReadInput struct {
+	Id uuid.UUID
 }
 
 type FooCreateInput struct {
@@ -41,8 +40,6 @@ func (f FooUpdateInput) Merge(foo *model.Foo) error {
 
 	return nil
 }
-
-type FooPatchInput json.RawMessage
 
 type FooDeleteInput struct {
 	Id uuid.UUID

@@ -14,15 +14,12 @@ import (
 
 func TestFooService_List(t *testing.T) {
 	testCases := []struct {
-		name    string
-		request *proto.ListFoosRequest
-
-		mockRequest  handler.PaginationInput
-		mockResponse []model.Foo
-		mockError    error
-
+		name          string
+		request       *proto.ListFoosRequest
 		expectedError error
 		expectedCount int
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
 			name: "Success Case",
@@ -30,26 +27,29 @@ func TestFooService_List(t *testing.T) {
 				Offset: 0,
 				Limit:  10,
 			},
-
-			mockRequest: handler.PaginationInput{Offset: 0, Limit: 10},
-			mockResponse: []model.Foo{
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
-			},
-			mockError: nil,
-
 			expectedCount: 3,
 			expectedError: nil,
+
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+				mockRepo.On("GetAll",
+					mock.Anything,
+					handler.FooReadListInput{Offset: 0, Limit: 10},
+				).Return(
+					[]model.Foo{
+						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
+						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
+						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"}},
+					nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("GetAll", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
-
 			service := NewFooService(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			resp, err := service.List(context.Background(), testCase.request)
 
@@ -62,37 +62,24 @@ func TestFooService_List(t *testing.T) {
 				assert.NotNil(t, resp)
 				assert.Len(t, resp.Foos, testCase.expectedCount)
 			}
-
-			mockHandler.AssertExpectations(t)
 		})
 	}
 }
 
 func TestFooService_Get(t *testing.T) {
 	testCases := []struct {
-		name    string
-		request *proto.GetFooRequest
-
-		mockRequest  uuid.UUID
-		mockResponse *model.Foo
-		mockError    error
-
+		name           string
+		request        *proto.GetFooRequest
 		expectedError  error
 		expectedResult *proto.FooResponse
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
 			name: "Success Case",
 			request: &proto.GetFooRequest{
 				Id: "20000000-0000-0000-0000-000000000001",
 			},
-			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "Foo1",
-				Secret: "secret1",
-			},
-			mockError: nil,
-
 			expectedError: nil,
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
@@ -100,21 +87,34 @@ func TestFooService_Get(t *testing.T) {
 					Label: "Foo1",
 				},
 			},
+
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+				mockRepo.On("GetByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(
+					&model.Foo{
+						Id:    uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label: "Foo1",
+					}, nil)
+			},
 		},
 		{
 			name: "Failed Case - Not UUID",
 			request: &proto.GetFooRequest{
 				Id: "not uuid",
 			},
-			expectedError: fmt.Errorf("fail to parse id"),
+			expectedError:    fmt.Errorf("fail to parse id"),
+			expectedResult:   nil,
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("GetByID", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
-
 			service := NewFooService(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			resp, err := service.Get(context.Background(), testCase.request)
 
@@ -135,11 +135,10 @@ func TestFooService_Create(t *testing.T) {
 	testCases := []struct {
 		name           string
 		request        *proto.CreateFooRequest
-		mockRequest    handler.FooCreateInput
-		mockResponse   *model.Foo
-		mockError      error
 		expectedResult *proto.FooResponse
 		expectedError  error
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
 			name: "Success Case",
@@ -147,16 +146,6 @@ func TestFooService_Create(t *testing.T) {
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
-			mockRequest: handler.FooCreateInput{
-				Label:  "foo_create",
-				Secret: "secret_create",
-			},
-			mockResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_create",
-				Secret: "secret_create",
-			},
-
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
 					Id:    "20000000-0000-0000-0000-000000000001",
@@ -164,15 +153,29 @@ func TestFooService_Create(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+				mockRepo.On("Create",
+					mock.Anything,
+					handler.FooCreateInput{
+						Label:  "foo_create",
+						Secret: "secret_create",
+					},
+				).Return(&model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo_create",
+					Secret: "secret_create",
+				}, nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("Create", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
-
 			service := NewFooService(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			resp, err := service.Create(context.Background(), testCase.request)
 
@@ -193,10 +196,10 @@ func TestFooService_Update(t *testing.T) {
 	testCases := []struct {
 		name           string
 		request        *proto.UpdateFooRequest
-		mockRequest    handler.FooUpdateInput
-		mockError      error
 		expectedResult *proto.FooResponse
 		expectedError  error
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
 			name: "Success Case",
@@ -205,12 +208,6 @@ func TestFooService_Update(t *testing.T) {
 				Label:  "foo_update",
 				Secret: "secret_update",
 			},
-			mockRequest: handler.FooUpdateInput{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_update",
-				Secret: "secret_update",
-			},
-			mockError: nil,
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
 					Id:    "20000000-0000-0000-0000-000000000001",
@@ -218,15 +215,23 @@ func TestFooService_Update(t *testing.T) {
 				},
 			},
 			expectedError: nil,
+
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+				mockRepo.On("Update", mock.Anything, handler.FooUpdateInput{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo_update",
+					Secret: "secret_update",
+				}).Return(nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("Update", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
-
 			service := NewFooService(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			resp, err := service.Update(context.Background(), testCase.request)
 
@@ -243,31 +248,33 @@ func TestFooService_Delete(t *testing.T) {
 	testCases := []struct {
 		name           string
 		request        *proto.DeleteFooRequest
-		mockRequest    uuid.UUID
-		mockError      error
 		expectedResult *proto.DeleteFooResponse
 		expectedError  error
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
 			name: "Success Case",
 			request: &proto.DeleteFooRequest{
 				Id: "20000000-0000-0000-0000-000000000001",
 			},
-			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockError:   nil,
 			expectedResult: &proto.DeleteFooResponse{
 				Success: true,
 			},
 			expectedError: nil,
+
+			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+				mockRepo.On("DeleteByID", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("DeleteByID", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
-
 			service := NewFooService(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			resp, err := service.Delete(context.Background(), testCase.request)
 

@@ -17,59 +17,57 @@ import (
 
 func TestFooController_GetAll(t *testing.T) {
 	testCases := []struct {
-		name string
-		url  string
-
-		mockRequest  handler.PaginationInput
-		mockResponse []model.Foo
-		mockError    error
-
+		name         string
+		url          string
 		statusCode   int
 		bodyResponse string
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
-			name: "Success Case - Multiple Foos",
-			url:  "/foos?offset=0&limit=10",
-
-			mockRequest: handler.PaginationInput{
-				Offset: 0,
-				Limit:  10,
-			},
-			mockResponse: []model.Foo{
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
-			},
-			mockError: nil,
-
+			name:       "Success Case - Multiple Foos",
+			url:        "/foos?offset=0&limit=10",
 			statusCode: http.StatusOK,
 			bodyResponse: `[
 				{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"},
 				{"id":"20000000-0000-0000-0000-000000000002", "label":"Foo2"},
 				{"id":"20000000-0000-0000-0000-000000000003", "label":"Foo3"}
 			]`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"GetAll",
+					mock.Anything,
+					handler.FooReadListInput{Offset: 0, Limit: 10},
+				).Return([]model.Foo{
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
+				}, nil)
+			},
 		},
 		{
-			name: "Failure Case - Repository Error",
-			url:  "/foos?offset=0&limit=10",
-
-			mockRequest: handler.PaginationInput{
-				Offset: 0,
-				Limit:  10,
-			},
-			mockResponse: nil,
-			mockError:    errors.New("repository error"),
-
+			name:         "Failure Case - Repository Error",
+			url:          "/foos?offset=0&limit=10",
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"repository error"}`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"GetAll",
+					mock.Anything,
+					handler.FooReadListInput{Offset: 0, Limit: 10},
+				).Return(([]model.Foo)(nil), errors.New("repository error"))
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("GetAll", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
 			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			req, err := http.NewRequest(http.MethodGet, testCase.url, nil)
 			assert.NoError(t, err)
@@ -89,60 +87,74 @@ func TestFooController_GetAll(t *testing.T) {
 
 func TestFooController_GetByID(t *testing.T) {
 	testCases := []struct {
-		name string
-		url  string
-
-		mockRequest  uuid.UUID
-		mockResponse *model.Foo
-		mockError    error
-
+		name         string
+		url          string
 		statusCode   int
 		bodyResponse string
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
-			name: "Success Case",
-			url:  "/foos/20000000-0000-0000-0000-000000000001",
-
-			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "Foo1",
-				Secret: "secret1",
-			},
-			mockError: nil,
-
+			name:         "Success Case",
+			url:          "/foos/20000000-0000-0000-0000-000000000001",
 			statusCode:   http.StatusOK,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"}`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(
+					&model.Foo{
+						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:  "Foo1",
+						Secret: "secret1",
+					}, nil)
+			},
 		},
 		{
-			name: "Failure Case - Not Found",
-			url:  "/foos/40400000-0000-0000-0000-000000000000",
-
-			mockRequest:  uuid.MustParse("40400000-0000-0000-0000-000000000000"),
-			mockResponse: nil,
-			mockError:    repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"),
-
+			name:         "Failure Case - Not Found",
+			url:          "/foos/40400000-0000-0000-0000-000000000000",
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
+				).Return(
+					(*model.Foo)(nil),
+					repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"),
+				)
+			},
 		},
 		{
-			name: "Failure Case - Repository Error",
-			url:  "/foos/40000000-0000-0000-0000-000000000000",
-
-			mockRequest:  uuid.MustParse("40000000-0000-0000-0000-000000000000"),
-			mockResponse: nil,
-			mockError:    errors.New("repository error"),
-
+			name:         "Failure Case - Repository Error",
+			url:          "/foos/40000000-0000-0000-0000-000000000000",
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"repository error"}`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("40000000-0000-0000-0000-000000000000"),
+				).Return(
+					(*model.Foo)(nil),
+					errors.New("repository error"),
+				)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("GetByID", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
 			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			req, err := http.NewRequest(http.MethodGet, testCase.url, nil)
 			assert.NoError(t, err)
@@ -162,43 +174,44 @@ func TestFooController_GetByID(t *testing.T) {
 
 func TestFooController_Create(t *testing.T) {
 	testCases := []struct {
-		name string
-		url  string
-		body string
-
-		mockRequest  handler.FooCreateInput
-		mockResponse *model.Foo
-		mockError    error
-
+		name         string
+		url          string
+		body         string
 		statusCode   int
 		bodyResponse string
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
-			name: "Success Case",
-			url:  "/foos",
-			body: `{"label":"foo_create", "secret":"secret_create"}`,
-			mockRequest: handler.FooCreateInput{
-				Label:  "foo_create",
-				Secret: "secret_create",
-			},
-			mockResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_create",
-				Secret: "secret_create",
-			},
-			mockError: nil,
-
+			name:         "Success Case",
+			url:          "/foos",
+			body:         `{"label":"foo_create", "secret":"secret_create"}`,
 			statusCode:   http.StatusCreated,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001"}`,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"Create",
+					mock.Anything,
+					handler.FooCreateInput{
+						Label:  "foo_create",
+						Secret: "secret_create",
+					}).Return(
+					&model.Foo{
+						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:  "foo_create",
+						Secret: "secret_create",
+					}, nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("Create", mock.Anything, testCase.mockRequest).Return(testCase.mockResponse, testCase.mockError)
-
 			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			req, err := http.NewRequest(http.MethodPost, testCase.url, strings.NewReader(testCase.body))
 			assert.NoError(t, err)
@@ -218,36 +231,38 @@ func TestFooController_Create(t *testing.T) {
 
 func TestFooController_Update(t *testing.T) {
 	testCases := []struct {
-		name string
-		url  string
-		body string
-
-		mockRequest handler.FooUpdateInput
-		mockError   error
-
+		name       string
+		url        string
+		body       string
 		statusCode int
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
-			name: "Success Case",
-			url:  "/foos/20000000-0000-0000-0000-000000000001",
-			body: `{"label":"foo_update", "secret":"secret_update"}`,
-
-			mockRequest: handler.FooUpdateInput{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_update",
-				Secret: "secret_update",
-			},
-
+			name:       "Success Case",
+			url:        "/foos/20000000-0000-0000-0000-000000000001",
+			body:       `{"label":"foo_update", "secret":"secret_update"}`,
 			statusCode: http.StatusNoContent,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					handler.FooUpdateInput{
+						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:  "foo_update",
+						Secret: "secret_update",
+					}).Return(nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("Update", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
-
 			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			req, err := http.NewRequest(http.MethodPut, testCase.url, strings.NewReader(testCase.body))
 			assert.NoError(t, err)
@@ -266,28 +281,33 @@ func TestFooController_Update(t *testing.T) {
 
 func TestFooController_Delete(t *testing.T) {
 	testCases := []struct {
-		name string
-		url  string
-
-		mockRequest uuid.UUID
-		mockError   error
-
+		name       string
+		url        string
 		statusCode int
+
+		setupMockHandler func(*handler.MockFooHandler)
 	}{
 		{
-			name:        "Success Case",
-			url:         "/foos/20000000-0000-0000-0000-000000000001",
-			mockRequest: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockError:   nil,
-			statusCode:  http.StatusNoContent,
+			name:       "Success Case",
+			url:        "/foos/20000000-0000-0000-0000-000000000001",
+			statusCode: http.StatusNoContent,
+
+			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+				mockHandler.On(
+					"DeleteByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(nil)
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockHandler := new(handler.MockFooHandler)
-			mockHandler.On("DeleteByID", mock.Anything, testCase.mockRequest).Return(testCase.mockError)
 			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
 
 			req, err := http.NewRequest(http.MethodDelete, testCase.url, nil)
 			assert.NoError(t, err)

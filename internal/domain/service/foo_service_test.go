@@ -8,6 +8,7 @@ import (
 	"astigo/internal/domain/repository"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,64 +16,85 @@ import (
 )
 
 func TestFooService_GetAll(t *testing.T) {
-	// Scénarios de test
 	testCases := []struct {
-		name             string
-		mockRepoRequest  handler.PaginationInput
-		mockRepoResponse []model.Foo
-		mockRepoError    error
-		expectedCount    int
-		expectedError    error
+		name          string
+		input         handler.FooReadListInput
+		expectedCount int
+		expectedError error
+
+		setupMockRepository func(*repository.MockFooRepository)
+		setupMockCache      func(*cache.MockFooCache)
+		setupMockMessaging  func(*messaging.MockFooMessaging)
 	}{
 		{
 			name: "Success Case - Multiple Foos",
-			mockRepoRequest: handler.PaginationInput{
+			input: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
-			mockRepoResponse: []model.Foo{
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-				{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
-			},
-			mockRepoError: nil,
 			expectedCount: 3,
 			expectedError: nil,
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+					Offset: 0,
+					Limit:  10,
+				}).Return([]model.Foo{
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
+				}, nil)
+			},
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 		{
 			name: "Success Case - Empty Foos",
-			mockRepoRequest: handler.PaginationInput{
+			input: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
-			mockRepoResponse: []model.Foo{},
-			mockRepoError:    nil,
-			expectedCount:    0,
-			expectedError:    nil,
+			expectedCount: 0,
+			expectedError: nil,
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+					Offset: 0,
+					Limit:  10,
+				}).Return([]model.Foo{}, nil)
+			},
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 		{
 			name: "Failure Case - Repository Error",
-			mockRepoRequest: handler.PaginationInput{
+			input: handler.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
-			mockRepoResponse: nil,
-			mockRepoError:    errors.New("repository error"),
-			expectedCount:    0,
-			expectedError:    errors.New("fail to find all foo: repository error"),
+			expectedCount: 0,
+			expectedError: errors.New("fail to find all foo: repository error"),
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+					Offset: 0,
+					Limit:  10,
+				}).Return(([]model.Foo)(nil), errors.New("repository error"))
+			},
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("FindAll", mock.Anything, testCase.mockRepoRequest).Return(testCase.mockRepoResponse, testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
 			mockMessaging := new(messaging.MockFooMessaging)
-
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
 
-			result, err := service.GetAll(context.Background(), testCase.mockRepoRequest)
+			testCase.setupMockRepository(mockRepo)
+			testCase.setupMockCache(mockCache)
+			testCase.setupMockMessaging(mockMessaging)
+
+			result, err := service.GetAll(context.Background(), testCase.input)
 
 			if testCase.expectedError != nil {
 				assert.EqualError(t, err, testCase.expectedError.Error())
@@ -88,85 +110,112 @@ func TestFooService_GetAll(t *testing.T) {
 
 func TestFooService_GetByID(t *testing.T) {
 	testCases := []struct {
-		name              string
-		id                uuid.UUID
-		mockCacheResponse *model.Foo
-		mockCacheError    error
-		isCached          bool
-		mockRepoResponse  *model.Foo
-		mockRepoError     error
-		expectedResult    *model.Foo
-		expectedError     error
+		name           string
+		id             uuid.UUID
+		expectedResult *model.Foo
+		expectedError  error
+
+		setupMockCache      func(*cache.MockFooCache)
+		setupMockRepository func(*repository.MockFooRepository)
+		setupMockMessaging  func(*messaging.MockFooMessaging)
 	}{
 		{
-			name:              "Success Case",
-			id:                uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockCacheResponse: nil,
-			mockCacheError:    nil,
-			isCached:          false,
-			mockRepoResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
-			},
+			name: "Success Case",
+			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: &model.Foo{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo1",
 				Secret: "secret1",
 			},
-			mockRepoError: nil,
+			expectedError: nil,
+
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return((*model.Foo)(nil), nil)
+
+				mockCache.On("Set",
+					mock.Anything,
+					model.Foo{
+						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:  "foo1",
+						Secret: "secret1",
+					}, FooCacheExpiration).Return(nil)
+			},
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On(
+					"FindByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(&model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo1",
+					Secret: "secret1",
+				}, nil)
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 		{
 			name: "Success Case - Cache Hit",
 			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockCacheResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
-			},
-			mockCacheError: nil,
-			isCached:       true,
 			expectedResult: &model.Foo{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo1",
 				Secret: "secret1",
 			},
-			mockRepoError: nil,
+			expectedError: nil,
+
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(&model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo1",
+					Secret: "secret1",
+				}, nil)
+			},
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {},
+			setupMockMessaging:  func(mockMess *messaging.MockFooMessaging) {},
 		},
 		{
-			name:              "Failure Case - Cache Error",
-			id:                uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockCacheResponse: nil,
-			mockCacheError:    errors.New("cache error"),
-			expectedError:     errors.New("fail to find foo by id from cache: cache error"),
-		},
-		{
-			name:              "Failure Case - Repository Error",
-			id:                uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockCacheResponse: nil,
-			mockCacheError:    nil,
-			isCached:          false,
-			mockRepoResponse:  nil,
-			mockRepoError:     errors.New("repository error"),
-			expectedError:     errors.New("fail to find foo by id: repository error"),
+			name:           "Failure Case - Repository Error",
+			id:             uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			expectedResult: nil,
+			expectedError:  fmt.Errorf("fail to find foo by id: repository error"),
+
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On(
+					"GetByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return((*model.Foo)(nil), nil)
+
+			},
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On(
+					"FindByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return((*model.Foo)(nil), fmt.Errorf("repository error"))
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			mockCache := new(cache.MockFooCache)
-			mockCache.On("GetByID", mock.Anything, testCase.id).Return(testCase.mockCacheResponse, testCase.mockCacheError)
-
 			mockRepo := new(repository.MockFooRepository)
-			if !testCase.isCached {
-				mockRepo.On("FindByID", mock.Anything, testCase.id).Return(testCase.mockRepoResponse, testCase.mockRepoError)
-				if (testCase.mockRepoResponse != nil) && (testCase.mockRepoError == nil) {
-					mockCache.On("Set", mock.Anything, *testCase.mockRepoResponse, FooCacheExpiration).Return(nil)
-				}
-			}
+			mockCache := new(cache.MockFooCache)
 			mockMessaging := new(messaging.MockFooMessaging)
-
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
+
+			testCase.setupMockRepository(mockRepo)
+			testCase.setupMockCache(mockCache)
+			testCase.setupMockMessaging(mockMessaging)
 
 			result, err := service.GetByID(context.Background(), testCase.id)
 
@@ -182,12 +231,14 @@ func TestFooService_GetByID(t *testing.T) {
 
 func TestFooService_Create(t *testing.T) {
 	testCases := []struct {
-		name            string
-		input           handler.FooCreateInput
-		mockRepoRequest model.Foo
-		mockRepoError   error
-		expectedResult  *model.Foo
-		expectedError   error
+		name           string
+		input          handler.FooCreateInput
+		expectedResult *model.Foo
+		expectedError  error
+
+		setupMockRepository func(*repository.MockFooRepository)
+		setupMockCache      func(*cache.MockFooCache)
+		setupMockMessaging  func(*messaging.MockFooMessaging)
 	}{
 		{
 			name: "Success Case",
@@ -195,16 +246,30 @@ func TestFooService_Create(t *testing.T) {
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
-			mockRepoRequest: model.Foo{
-				Label:  "foo_create",
-				Secret: "secret_create",
-			},
-			mockRepoError: nil,
 			expectedResult: &model.Foo{
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
 			expectedError: nil,
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(nil)
+			},
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				}), FooCacheExpiration).Return(nil)
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
+				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(nil)
+			},
 		},
 		{
 			name: "Failure Case - Repository Error",
@@ -212,23 +277,78 @@ func TestFooService_Create(t *testing.T) {
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
-			mockRepoRequest: model.Foo{
+			expectedError: errors.New("fail to create foo: repository error"),
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(fmt.Errorf("repository error"))
+			},
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
+		},
+		{
+			name: "Failure Case - Cache Error",
+			input: handler.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 			},
-			mockRepoError: errors.New("repository error"),
-			expectedError: errors.New("fail to create foo: repository error"),
+			expectedError: errors.New("fail to create foo in cache: cache error"),
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(nil)
+			},
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				}), FooCacheExpiration).Return(fmt.Errorf("cache error"))
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
+		},
+		{
+			name: "Failure Case - Messaging Error",
+			input: handler.FooCreateInput{
+				Label:  "foo_create",
+				Secret: "secret_create",
+			},
+			expectedError: errors.New("fail to publish foo created: messaging error"),
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(nil)
+			},
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				}), FooCacheExpiration).Return(nil)
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
+				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+					return foo.Label == "foo_create" &&
+						foo.Secret == "secret_create"
+				})).Return(fmt.Errorf("messaging error"))
+			},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("Create", mock.Anything, mock.Anything).Return(testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
 			mockMessaging := new(messaging.MockFooMessaging)
-
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
+
+			testCase.setupMockRepository(mockRepo)
+			testCase.setupMockCache(mockCache)
+			testCase.setupMockMessaging(mockMessaging)
 
 			foo, err := service.Create(context.Background(), testCase.input)
 
@@ -246,17 +366,13 @@ func TestFooService_Create(t *testing.T) {
 
 func TestFooService_Update(t *testing.T) {
 	testCases := []struct {
-		name  string
-		input handler.FooUpdateInput
+		name          string
+		input         handler.FooUpdateInput
+		expectedError error
 
-		mockRepoGetResponse   *model.Foo
-		mockRepoGetError      error
-		mockRepoUpdateRequest model.Foo
-		mockRepoUpdateError   error
-
-		mockCacheRequest model.Foo
-		mockCacheError   error
-		expectedError    error
+		setupMockRepository func(*repository.MockFooRepository)
+		setupMockCache      func(*cache.MockFooCache)
+		setupMockMessaging  func(*messaging.MockFooMessaging)
 	}{
 		{
 			name: "Success Case",
@@ -265,60 +381,71 @@ func TestFooService_Update(t *testing.T) {
 				Label:  "foo_update",
 				Secret: "secret_update",
 			},
+			expectedError: nil,
 
-			mockRepoGetResponse: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On(
+					"FindByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(&model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo1",
+					Secret: "secret1",
+				}, nil)
+
+				mockRepo.On("Update", mock.Anything, model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo_update",
+					Secret: "secret_update",
+				}).Return(nil)
 			},
-
-			mockRepoUpdateRequest: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_update",
-				Secret: "secret_update",
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On("Set", mock.Anything, model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo_update",
+					Secret: "secret_update",
+				}, FooCacheExpiration).Return(nil)
 			},
-
-			mockCacheRequest: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_update",
-				Secret: "secret_update",
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
+				mockMess.On("PublishFooUpdated", mock.Anything, model.Foo{
+					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:  "foo_update",
+					Secret: "secret_update",
+				}).Return(nil)
 			},
 		},
 		{
-			name: "Failure Case - Repository Error",
+			name: "Failure Case - Repository Get Error",
 			input: handler.FooUpdateInput{
 				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
 				Label:  "foo_update",
 				Secret: "secret_update",
 			},
+			expectedError: errors.New("fail to get foo by id: repository error"),
 
-			mockRepoGetResponse: &model.Foo{
-				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
-				Label:  "foo1",
-				Secret: "secret1",
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On(
+					"FindByID",
+					mock.Anything,
+					uuid.MustParse("40000000-0000-0000-0000-000000000000"),
+				).Return((*model.Foo)(nil), errors.New("repository error"))
 			},
-
-			mockRepoUpdateRequest: model.Foo{
-				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
-				Label:  "foo_update",
-				Secret: "secret_update",
-			},
-			mockRepoUpdateError: errors.New("repository error"),
-			expectedError:       errors.New("fail to update foo: repository error"),
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("FindByID", mock.Anything, testCase.input.Id).Return(testCase.mockRepoGetResponse, testCase.mockRepoGetError)
-			mockRepo.On("Update", mock.Anything, testCase.mockRepoUpdateRequest).Return(testCase.mockRepoUpdateError)
-
 			mockCache := new(cache.MockFooCache)
-			mockCache.On("Set", mock.Anything, testCase.mockCacheRequest, FooCacheExpiration).Return(testCase.mockCacheError)
 			mockMessaging := new(messaging.MockFooMessaging)
-
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
+
+			testCase.setupMockRepository(mockRepo)
+			testCase.setupMockCache(mockCache)
+			testCase.setupMockMessaging(mockMessaging)
 
 			err := service.Update(context.Background(), testCase.input)
 
@@ -333,50 +460,52 @@ func TestFooService_Update(t *testing.T) {
 
 func TestFooService_DeleteByID(t *testing.T) {
 	testCases := []struct {
-		name           string
-		id             uuid.UUID
-		mockRepoError  error
-		mockCacheError error
-		isCached       bool
-		expectedError  error
+		name          string
+		id            uuid.UUID
+		expectedError error
+
+		setupMockRepository func(*repository.MockFooRepository)
+		setupMockCache      func(*cache.MockFooCache)
+		setupMockMessaging  func(*messaging.MockFooMessaging)
 	}{
 		{
-			name:           "Success Case",
-			id:             uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-			mockRepoError:  nil,
-			mockCacheError: nil,
-			isCached:       true,
-			expectedError:  nil,
+			name:          "Success Case",
+			id:            uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			expectedError: nil,
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("DeleteByID", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
+			},
+			setupMockCache: func(mockCache *cache.MockFooCache) {
+				mockCache.On("DeleteByID", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
+			},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
+				mockMess.On("PublishFooDeleted", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
+			},
 		},
 		{
-			name:           "Failure Case - Repository Error",
-			id:             uuid.MustParse("40000000-0000-0000-0000-000000000000"),
-			mockRepoError:  errors.New("repository error"),
-			mockCacheError: nil,
-			isCached:       false,
-			expectedError:  errors.New("fail to delete foo by id: repository error"),
-		},
-		{
-			name:           "Failure Case - Cache Error",
-			id:             uuid.MustParse("40000000-0000-0000-0000-000000000000"),
-			mockRepoError:  nil,
-			mockCacheError: errors.New("cache error"),
-			isCached:       true,
-			expectedError:  errors.New("fail to delete foo by id from cache: cache error"),
+			name:          "Failure Case - Repository Error",
+			id:            uuid.MustParse("40000000-0000-0000-0000-000000000000"),
+			expectedError: errors.New("fail to delete foo by id: repository error"),
+
+			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
+				mockRepo.On("DeleteByID", mock.Anything, uuid.MustParse("40000000-0000-0000-0000-000000000000")).Return(errors.New("repository error"))
+			},
+			setupMockCache:     func(mockCache *cache.MockFooCache) {},
+			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
 		},
 	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			mockRepo := new(repository.MockFooRepository)
-			mockRepo.On("DeleteByID", mock.Anything, testCase.id).Return(testCase.mockRepoError)
 			mockCache := new(cache.MockFooCache)
-			if testCase.isCached {
-				mockCache.On("DeleteByID", mock.Anything, testCase.id).Return(testCase.mockCacheError)
-			}
 			mockMessaging := new(messaging.MockFooMessaging)
-
 			service := NewFooService(mockRepo, mockCache, mockMessaging)
+
+			testCase.setupMockRepository(mockRepo)
+			testCase.setupMockCache(mockCache)
+			testCase.setupMockMessaging(mockMessaging)
 
 			err := service.DeleteByID(context.Background(), testCase.id)
 
