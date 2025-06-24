@@ -49,7 +49,7 @@ func (server *Server) Start(ctx context.Context) error {
 	errCh := make(chan error, 2)
 
 	httpSrv := server.startHTTPServer(errCh)
-	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", 50051))
+	grpcLis, err := net.Listen("tcp", fmt.Sprintf(":%d", server.Config.Grpc.Port))
 	if err != nil {
 		return fmt.Errorf("failed to listen for gRPC: %w", err)
 	}

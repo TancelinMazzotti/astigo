@@ -39,7 +39,7 @@ func (s *FooService) GetAll(ctx context.Context, input handler.FooReadListInput)
 func (s *FooService) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	foo, err := s.cache.GetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("fail to find foo by id from cache: %w", err)
+		s.logger.Warn("fail to find foo by id from cache", zap.Error(err))
 	}
 
 	if foo == nil {
@@ -49,7 +49,7 @@ func (s *FooService) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, err
 		}
 
 		if err := s.cache.Set(ctx, *foo, FooCacheExpiration); err != nil {
-			return nil, fmt.Errorf("fail to create foo in cache: %w", err)
+			s.logger.Warn("fail to create foo in cache: %w", zap.Error(err))
 		}
 	}
 
