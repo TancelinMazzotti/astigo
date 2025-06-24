@@ -16,6 +16,7 @@ import (
 )
 
 func TestFooController_GetAll(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		url          string
@@ -64,6 +65,7 @@ func TestFooController_GetAll(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			controller := NewFooController(mockHandler)
 
@@ -86,6 +88,7 @@ func TestFooController_GetAll(t *testing.T) {
 }
 
 func TestFooController_GetByID(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		url          string
@@ -151,6 +154,7 @@ func TestFooController_GetByID(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			controller := NewFooController(mockHandler)
 
@@ -173,6 +177,7 @@ func TestFooController_GetByID(t *testing.T) {
 }
 
 func TestFooController_Create(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name         string
 		url          string
@@ -208,6 +213,7 @@ func TestFooController_Create(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			controller := NewFooController(mockHandler)
 
@@ -230,6 +236,7 @@ func TestFooController_Create(t *testing.T) {
 }
 
 func TestFooController_Update(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name       string
 		url        string
@@ -259,6 +266,7 @@ func TestFooController_Update(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			controller := NewFooController(mockHandler)
 
@@ -280,6 +288,7 @@ func TestFooController_Update(t *testing.T) {
 }
 
 func TestFooController_Delete(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name       string
 		url        string
@@ -304,6 +313,7 @@ func TestFooController_Delete(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			controller := NewFooController(mockHandler)
 

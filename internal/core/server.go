@@ -136,6 +136,7 @@ func NewServer(config Config) (*Server, error) {
 	}
 
 	fooService := service.NewFooService(
+		server.Logger,
 		postgres2.NewFooPostgres(server.Postgres),
 		redis2.NewFooRedis(server.Redis),
 		nats2.NewFooNats(server.Nats),

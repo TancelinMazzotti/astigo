@@ -11,6 +11,7 @@ import (
 )
 
 func TestIntegrationFooPostgres_FindAll(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		input         handler.FooReadListInput
@@ -71,6 +72,7 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 }
 
 func TestIntegrationFooPostgres_FindByID(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		id             uuid.UUID
@@ -122,6 +124,7 @@ func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 }
 
 func TestIntegrationFooPostgres_Create(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -165,6 +168,7 @@ func TestIntegrationFooPostgres_Create(t *testing.T) {
 }
 
 func TestIntegrationFooPostgres_Update(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -217,6 +221,7 @@ func TestIntegrationFooPostgres_Update(t *testing.T) {
 }
 
 func TestIntegrationFooPostgres_DeleteByID(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		id            uuid.UUID

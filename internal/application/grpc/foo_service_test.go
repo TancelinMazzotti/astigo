@@ -13,6 +13,7 @@ import (
 )
 
 func TestFooService_List(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		request       *proto.ListFoosRequest
@@ -46,6 +47,7 @@ func TestFooService_List(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			service := NewFooService(mockHandler)
 
@@ -67,6 +69,7 @@ func TestFooService_List(t *testing.T) {
 }
 
 func TestFooService_Get(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		request        *proto.GetFooRequest
@@ -111,6 +114,7 @@ func TestFooService_Get(t *testing.T) {
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			service := NewFooService(mockHandler)
 
@@ -132,6 +136,7 @@ func TestFooService_Get(t *testing.T) {
 }
 
 func TestFooService_Create(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		request        *proto.CreateFooRequest
@@ -172,6 +177,7 @@ func TestFooService_Create(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			service := NewFooService(mockHandler)
 
@@ -193,6 +199,7 @@ func TestFooService_Create(t *testing.T) {
 }
 
 func TestFooService_Update(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		request        *proto.UpdateFooRequest
@@ -228,6 +235,7 @@ func TestFooService_Update(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			service := NewFooService(mockHandler)
 
@@ -245,6 +253,7 @@ func TestFooService_Update(t *testing.T) {
 }
 
 func TestFooService_Delete(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		request        *proto.DeleteFooRequest
@@ -271,6 +280,7 @@ func TestFooService_Delete(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
 			mockHandler := new(handler.MockFooHandler)
 			service := NewFooService(mockHandler)
 

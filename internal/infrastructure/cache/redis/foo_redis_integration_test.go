@@ -9,6 +9,7 @@ import (
 )
 
 func TestIntegrationFooRedis_GetByID(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name           string
 		id             uuid.UUID
@@ -66,6 +67,7 @@ func TestIntegrationFooRedis_GetByID(t *testing.T) {
 }
 
 func TestIntegrationFooRedis_Set(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -120,6 +122,7 @@ func TestIntegrationFooRedis_Set(t *testing.T) {
 }
 
 func TestIntegrationFooRedis_DeleteByID(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		id            uuid.UUID

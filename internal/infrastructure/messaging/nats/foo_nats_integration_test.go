@@ -12,6 +12,7 @@ import (
 )
 
 func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -85,6 +86,7 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 }
 
 func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		foo           model.Foo
@@ -158,6 +160,7 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 }
 
 func TestIntegrationFooNats_PublishFooDeleted(t *testing.T) {
+	t.Parallel()
 	testCases := []struct {
 		name          string
 		id            uuid.UUID
