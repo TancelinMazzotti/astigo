@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// PostgresConfig represents the configuration settings required to connect to a PostgreSQL database.
 type PostgresConfig struct {
 	Host         string `mapstructure:"host"`
 	Port         int    `mapstructure:"port"`
@@ -20,6 +21,8 @@ type PostgresConfig struct {
 	MaxLifetime  int    `mapstructure:"max_lifetime"`
 }
 
+// NewPostgres initializes and returns a PostgreSQL database connection based on the provided configuration.
+// It configures connection pool settings and verifies connectivity by pinging the database.
 func NewPostgres(config PostgresConfig) (*sql.DB, error) {
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s",

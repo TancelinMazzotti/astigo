@@ -36,7 +36,7 @@ func TestFooService_List(t *testing.T) {
 					mock.Anything,
 					handler.FooReadListInput{Offset: 0, Limit: 10},
 				).Return(
-					[]model.Foo{
+					[]*model.Foo{
 						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
 						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
 						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"}},

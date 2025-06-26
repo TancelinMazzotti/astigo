@@ -15,12 +15,12 @@ type MockFooMessaging struct {
 	mock.Mock
 }
 
-func (m *MockFooMessaging) PublishFooCreated(ctx context.Context, foo model.Foo) error {
+func (m *MockFooMessaging) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }
 
-func (m *MockFooMessaging) PublishFooUpdated(ctx context.Context, foo model.Foo) error {
+func (m *MockFooMessaging) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }

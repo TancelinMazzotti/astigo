@@ -16,9 +16,9 @@ type MockFooRepository struct {
 	mock.Mock
 }
 
-func (m *MockFooRepository) FindAll(ctx context.Context, pagination handler.FooReadListInput) ([]model.Foo, error) {
+func (m *MockFooRepository) FindAll(ctx context.Context, pagination handler.FooReadListInput) ([]*model.Foo, error) {
 	args := m.Called(ctx, pagination)
-	return args.Get(0).([]model.Foo), args.Error(1)
+	return args.Get(0).([]*model.Foo), args.Error(1)
 }
 
 func (m *MockFooRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
@@ -26,12 +26,12 @@ func (m *MockFooRepository) FindByID(ctx context.Context, id uuid.UUID) (*model.
 	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
-func (m *MockFooRepository) Create(ctx context.Context, foo model.Foo) error {
+func (m *MockFooRepository) Create(ctx context.Context, foo *model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }
 
-func (m *MockFooRepository) Update(ctx context.Context, foo model.Foo) error {
+func (m *MockFooRepository) Update(ctx context.Context, foo *model.Foo) error {
 	args := m.Called(ctx, foo)
 	return args.Error(0)
 }
