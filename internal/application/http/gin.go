@@ -17,8 +17,9 @@ type GinConfig struct {
 	Mode string `mapstructure:"mode"`
 }
 
-func NewGin(logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
+func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
 	middleware.RegisterMetrics()
+	gin.SetMode(config.Mode)
 
 	e := gin.New()
 	e.Use(otelgin.Middleware("astigo"))

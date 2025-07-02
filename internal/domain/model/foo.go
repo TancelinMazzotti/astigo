@@ -12,8 +12,8 @@ type Foo struct {
 	Value  int       `validate:"required,gte=0,lte=1000"`
 	Weight float32   `validate:"required,gte=0"`
 
-	CreatedAt time.Time  `validate:"omitempty,datetime"`
-	UpdatedAt *time.Time `validate:"omitempty,datetime"`
+	CreatedAt time.Time  `validate:"omitempty"`
+	UpdatedAt *time.Time `validate:"omitempty"`
 
 	Bars []*Bar `validate:"dive"`
 }

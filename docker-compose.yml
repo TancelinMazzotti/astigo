@@ -10,8 +10,10 @@ services:
       - "50051:50051"
     environment:
       - ASTIGO_HTTP_PORT=8080
+      - ASTIGO_HTTP_MODE=debug
       - ASTIGO_GRPC_PORT=50051
       - ASTIGO_LOG_LEVEL=info
+      - ASTIGO_LOG_ENCODING=json
       - ASTIGO_JAEGER_URL=jaeger:4318
       - ASTIGO_JAEGER_SERVICE_NAME=astigo
       - ASTIGO_POSTGRES_HOST=postgres
@@ -62,7 +64,6 @@ services:
       - "-D"
       - "-V"
       - "-V"
-  
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
