@@ -4,6 +4,7 @@ import (
 	"astigo/internal/application/http/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
 	"net/http"
 	"time"
@@ -20,6 +21,7 @@ func NewGin(logger *zap.Logger, healthController *HealthController, fooControlle
 	middleware.RegisterMetrics()
 
 	e := gin.New()
+	e.Use(otelgin.Middleware("astigo"))
 	e.Use(middleware.ZapLoggerMiddleware(logger))
 	e.Use(middleware.ZapRecoveryMiddleware(logger))
 	e.Use(middleware.MetricsMiddleware())

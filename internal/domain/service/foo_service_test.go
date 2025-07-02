@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
 	"testing"
+	"time"
 )
 
 func TestFooService_GetAll(t *testing.T) {
@@ -40,10 +41,10 @@ func TestFooService_GetAll(t *testing.T) {
 				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
-				}).Return([]model.Foo{
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
+				}).Return([]*model.Foo{
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1", Secret: "secret1", Value: 1, Weight: 1.5, CreatedAt: time.Now()},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2", Secret: "secret2", Value: 2, Weight: 2.5, CreatedAt: time.Now()},
+					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3", Secret: "secret3", Value: 3, Weight: 3.5, CreatedAt: time.Now()},
 				}, nil)
 			},
 			setupMockCache:     func(mockCache *cache.MockFooCache) {},
@@ -61,7 +62,7 @@ func TestFooService_GetAll(t *testing.T) {
 				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
-				}).Return([]model.Foo{}, nil)
+				}).Return([]*model.Foo{}, nil)
 			},
 			setupMockCache:     func(mockCache *cache.MockFooCache) {},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
@@ -78,7 +79,7 @@ func TestFooService_GetAll(t *testing.T) {
 				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
-				}).Return(([]model.Foo)(nil), errors.New("repository error"))
+				}).Return(([]*model.Foo)(nil), errors.New("repository error"))
 			},
 			setupMockCache:     func(mockCache *cache.MockFooCache) {},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
@@ -111,6 +112,9 @@ func TestFooService_GetAll(t *testing.T) {
 
 func TestFooService_GetByID(t *testing.T) {
 	t.Parallel()
+	now := time.Now()
+	createdTime := now.Add(-1 * time.Hour)
+
 	testCases := []struct {
 		name           string
 		id             uuid.UUID
@@ -125,9 +129,13 @@ func TestFooService_GetByID(t *testing.T) {
 			name: "Success Case",
 			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo1",
+				Secret:    "secret1",
+				Value:     1,
+				Weight:    1.5,
+				CreatedAt: createdTime,
+				UpdatedAt: &now,
 			},
 			expectedError: nil,
 
@@ -140,10 +148,14 @@ func TestFooService_GetByID(t *testing.T) {
 
 				mockCache.On("Set",
 					mock.Anything,
-					model.Foo{
-						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label:  "foo1",
-						Secret: "secret1",
+					&model.Foo{
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "foo1",
+						Secret:    "secret1",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: createdTime,
+						UpdatedAt: &now,
 					}, FooCacheExpiration).Return(nil)
 			},
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
@@ -152,9 +164,13 @@ func TestFooService_GetByID(t *testing.T) {
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(&model.Foo{
-					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-					Label:  "foo1",
-					Secret: "secret1",
+					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:     "foo1",
+					Secret:    "secret1",
+					Value:     1,
+					Weight:    1.5,
+					CreatedAt: createdTime,
+					UpdatedAt: &now,
 				}, nil)
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
@@ -163,9 +179,13 @@ func TestFooService_GetByID(t *testing.T) {
 			name: "Success Case - Cache Hit",
 			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo1",
+				Secret:    "secret1",
+				Value:     1,
+				Weight:    1.5,
+				CreatedAt: createdTime,
+				UpdatedAt: &now,
 			},
 			expectedError: nil,
 
@@ -175,9 +195,13 @@ func TestFooService_GetByID(t *testing.T) {
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(&model.Foo{
-					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-					Label:  "foo1",
-					Secret: "secret1",
+					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:     "foo1",
+					Secret:    "secret1",
+					Value:     1,
+					Weight:    1.5,
+					CreatedAt: createdTime,
+					UpdatedAt: &now,
 				}, nil)
 			},
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {},
@@ -187,9 +211,13 @@ func TestFooService_GetByID(t *testing.T) {
 			name: "Success Case - Cache Error",
 			id:   uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 			expectedResult: &model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo1",
-				Secret: "secret1",
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo1",
+				Secret:    "secret1",
+				Value:     1,
+				Weight:    1.5,
+				CreatedAt: createdTime,
+				UpdatedAt: &now,
 			},
 			expectedError: nil,
 
@@ -202,10 +230,14 @@ func TestFooService_GetByID(t *testing.T) {
 
 				mockCache.On("Set",
 					mock.Anything,
-					model.Foo{
-						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label:  "foo1",
-						Secret: "secret1",
+					&model.Foo{
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "foo1",
+						Secret:    "secret1",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: createdTime,
+						UpdatedAt: &now,
 					}, FooCacheExpiration).Return(fmt.Errorf("cache error"))
 			},
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
@@ -214,9 +246,13 @@ func TestFooService_GetByID(t *testing.T) {
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(&model.Foo{
-					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-					Label:  "foo1",
-					Secret: "secret1",
+					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:     "foo1",
+					Secret:    "secret1",
+					Value:     1,
+					Weight:    1.5,
+					CreatedAt: createdTime,
+					UpdatedAt: &now,
 				}, nil)
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {},
@@ -287,29 +323,39 @@ func TestFooService_Create(t *testing.T) {
 			input: handler.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedResult: &model.Foo{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: nil,
 
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(nil)
 			},
 			setupMockCache: func(mockCache *cache.MockFooCache) {
-				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(nil)
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(nil)
 			},
 		},
@@ -318,29 +364,39 @@ func TestFooService_Create(t *testing.T) {
 			input: handler.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedResult: &model.Foo{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: nil,
 
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(nil)
 			},
 			setupMockCache: func(mockCache *cache.MockFooCache) {
-				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(fmt.Errorf("cache error"))
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(nil)
 			},
 		},
@@ -349,13 +405,17 @@ func TestFooService_Create(t *testing.T) {
 			input: handler.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: errors.New("fail to create foo: repository error"),
 
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(fmt.Errorf("repository error"))
 			},
 			setupMockCache:     func(mockCache *cache.MockFooCache) {},
@@ -366,25 +426,33 @@ func TestFooService_Create(t *testing.T) {
 			input: handler.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: errors.New("fail to publish foo created: messaging error"),
 
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(nil)
 			},
 			setupMockCache: func(mockCache *cache.MockFooCache) {
-				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockCache.On("Set", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(nil)
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo model.Foo) bool {
+				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
-						foo.Secret == "secret_create"
+						foo.Secret == "secret_create" &&
+						foo.Value == 1 &&
+						foo.Weight == 1.5
 				})).Return(fmt.Errorf("messaging error"))
 			},
 		},
@@ -433,6 +501,8 @@ func TestFooService_Update(t *testing.T) {
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: nil,
 
@@ -445,26 +515,34 @@ func TestFooService_Update(t *testing.T) {
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo1",
 					Secret: "secret1",
+					Value:  0,
+					Weight: 1,
 				}, nil)
 
-				mockRepo.On("Update", mock.Anything, model.Foo{
+				mockRepo.On("Update", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}).Return(nil)
 			},
 			setupMockCache: func(mockCache *cache.MockFooCache) {
-				mockCache.On("Set", mock.Anything, model.Foo{
+				mockCache.On("Set", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}, FooCacheExpiration).Return(nil)
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
-				mockMess.On("PublishFooUpdated", mock.Anything, model.Foo{
+				mockMess.On("PublishFooUpdated", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}).Return(nil)
 			},
 		},
@@ -474,6 +552,8 @@ func TestFooService_Update(t *testing.T) {
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: nil,
 
@@ -486,26 +566,34 @@ func TestFooService_Update(t *testing.T) {
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo1",
 					Secret: "secret1",
+					Value:  0,
+					Weight: 1,
 				}, nil)
 
-				mockRepo.On("Update", mock.Anything, model.Foo{
+				mockRepo.On("Update", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}).Return(nil)
 			},
 			setupMockCache: func(mockCache *cache.MockFooCache) {
-				mockCache.On("Set", mock.Anything, model.Foo{
+				mockCache.On("Set", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}, FooCacheExpiration).Return(fmt.Errorf("cache error"))
 			},
 			setupMockMessaging: func(mockMess *messaging.MockFooMessaging) {
-				mockMess.On("PublishFooUpdated", mock.Anything, model.Foo{
+				mockMess.On("PublishFooUpdated", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}).Return(nil)
 			},
 		},
@@ -515,6 +603,8 @@ func TestFooService_Update(t *testing.T) {
 				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
 				Label:  "foo_update",
 				Secret: "secret_update",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedError: errors.New("fail to get foo by id: repository error"),
 

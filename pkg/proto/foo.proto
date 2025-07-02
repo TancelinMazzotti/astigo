@@ -2,9 +2,8 @@ syntax = "proto3";
 
 package proto;
 
-option go_package = "your-project/pkg/proto;proto";
+option go_package = "astigo/pkg/proto;proto";
 
-// Service CRUD pour Foo
 service FooService {
   rpc Create(CreateFooRequest) returns (FooResponse);
   rpc Get(GetFooRequest) returns (FooResponse);
@@ -16,11 +15,15 @@ service FooService {
 message Foo {
   string id = 1;       // UUID
   string label = 2;
+  int32 value = 3;
+  float weight = 4;
 }
 
 message CreateFooRequest {
   string label = 1;
   string secret = 2;
+  int32 value = 3;
+  float weight = 4;
 }
 
 message GetFooRequest {
@@ -31,6 +34,8 @@ message UpdateFooRequest {
   string id = 1; // UUID
   string label = 2;
   string secret = 3;
+  int32 value = 4;
+  float weight = 5;
 }
 
 message DeleteFooRequest {

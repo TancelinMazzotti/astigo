@@ -4,26 +4,37 @@ import (
 	"astigo/internal/domain/handler"
 	"astigo/internal/domain/model"
 	"astigo/internal/domain/repository"
+	"astigo/internal/infrastructure/repository/postgres/entity"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"time"
 )
 
 var (
 	_ repository.IFooRepository = (*FooPostgres)(nil)
 )
 
+// FooPostgres is a concrete implementation of the IFooRepository interface that interacts with a PostgreSQL database.
 type FooPostgres struct {
 	db *sql.DB
 }
 
-func (f FooPostgres) FindAll(ctx context.Context, input handler.FooReadListInput) ([]model.Foo, error) {
+// FindAll retrieves a list of Foo records from the database based on the provided pagination input (limit and offset).
+func (f FooPostgres) FindAll(ctx context.Context, input handler.FooReadListInput) ([]*model.Foo, error) {
 	query := `
-        SELECT foo_id, foo.label, foo.secret
+        SELECT 
+            foo.foo_id,
+            foo.label,
+            foo.secret,
+            foo.value,
+            foo.weight,
+            foo.created_at,
+            foo.updated_at
         FROM foo
-        ORDER BY foo_id
+        ORDER BY foo.foo_id
         LIMIT $1 OFFSET $2`
 
 	rows, err := f.db.QueryContext(ctx, query, input.Limit, input.Offset)
@@ -32,14 +43,22 @@ func (f FooPostgres) FindAll(ctx context.Context, input handler.FooReadListInput
 	}
 	defer rows.Close()
 
-	var foos []model.Foo
+	var foos []*model.Foo
 	for rows.Next() {
-		var foo model.Foo
-
-		if err := rows.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
+		fooEntity := entity.Foo{}
+		if err := rows.Scan(
+			&fooEntity.FooId,
+			&fooEntity.Label,
+			&fooEntity.Secret,
+			&fooEntity.Value,
+			&fooEntity.Weight,
+			&fooEntity.CreatedAt,
+			&fooEntity.UpdatedAt,
+		); err != nil {
 			return nil, fmt.Errorf("error scanning foo row: %w", err)
 		}
 
+		foo := fooEntity.ToModel()
 		foos = append(foos, foo)
 	}
 
@@ -50,29 +69,51 @@ func (f FooPostgres) FindAll(ctx context.Context, input handler.FooReadListInput
 	return foos, nil
 }
 
+// FindByID retrieves a Foo record by its unique identifier from the database. Returns the Foo model or an error if not found.
 func (f FooPostgres) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
 	query := `
-        SELECT foo_id, foo.label, foo.secret
+        SELECT
+            foo.foo_id,
+            foo.label,
+            foo.secret,
+            foo.value,
+            foo.weight,
+            foo.created_at,
+            foo.updated_at
         FROM foo
-        WHERE foo_id = $1`
+        WHERE foo.foo_id = $1`
 
 	row := f.db.QueryRowContext(ctx, query, id)
-	var foo model.Foo
 
-	if err := row.Scan(&foo.Id, &foo.Label, &foo.Secret); err != nil {
+	fooEntity := entity.Foo{}
+	if err := row.Scan(
+		&fooEntity.FooId,
+		&fooEntity.Label,
+		&fooEntity.Secret,
+		&fooEntity.Value,
+		&fooEntity.Weight,
+		&fooEntity.CreatedAt,
+		&fooEntity.UpdatedAt,
+	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, repository.NewNotFound("foo", fmt.Sprintf("id: %s", id))
 		}
 		return nil, fmt.Errorf("error scanning foo row: %w", err)
 	}
 
-	return &foo, nil
+	foo := fooEntity.ToModel()
+
+	return foo, nil
 }
 
-func (f FooPostgres) Create(ctx context.Context, foo model.Foo) error {
-	query := `INSERT INTO foo (foo_id,label, secret) VALUES ($1, $2, $3)`
+// Create inserts a new Foo record into the database and returns an error if the operation fails.
+func (f FooPostgres) Create(ctx context.Context, foo *model.Foo) error {
+	query := `
+	INSERT INTO foo (foo_id,label, secret, value, weight)
+	VALUES ($1, $2, $3, $4, $5)
+	`
 
-	result, err := f.db.ExecContext(ctx, query, foo.Id, foo.Label, foo.Secret)
+	result, err := f.db.ExecContext(ctx, query, foo.Id, foo.Label, foo.Secret, foo.Value, foo.Weight)
 	if err != nil {
 		return fmt.Errorf("error inserting foo: %w", err)
 	}
@@ -86,10 +127,19 @@ func (f FooPostgres) Create(ctx context.Context, foo model.Foo) error {
 	return nil
 }
 
-func (f FooPostgres) Update(ctx context.Context, foo model.Foo) error {
-	query := `UPDATE foo SET label = $1, secret = $2 WHERE foo_id = $3`
+func (f FooPostgres) Update(ctx context.Context, foo *model.Foo) error {
+	now := time.Now()
+	query := `
+	UPDATE foo 
+	SET label = $1, 
+	    secret = $2,
+	    value = $3,
+	    weight = $4,
+	    updated_at = $5
+	WHERE foo_id = $6
+	`
 
-	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret, foo.Id)
+	result, err := f.db.ExecContext(ctx, query, foo.Label, foo.Secret, foo.Value, foo.Weight, now, foo.Id)
 	if err != nil {
 		return fmt.Errorf("error updating foo: %w", err)
 	}
@@ -100,9 +150,13 @@ func (f FooPostgres) Update(ctx context.Context, foo model.Foo) error {
 		return fmt.Errorf("no row affected")
 	}
 
+	foo.UpdatedAt = &now
+
 	return nil
 }
 
+// DeleteByID removes a Foo record and its associated Bar records from the database by the provided unique identifier.
+// Returns an error if the operation fails or no records are affected.
 func (f FooPostgres) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	if err := f.DeleteBars(ctx, id); err != nil {
 		return fmt.Errorf("error deleting bars: %w", err)
@@ -124,6 +178,7 @@ func (f FooPostgres) DeleteByID(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+// DeleteBars removes all Bar records associated with a given Foo ID from the database. Returns an error if the operation fails.
 func (f FooPostgres) DeleteBars(ctx context.Context, id uuid.UUID) error {
 	query := `DELETE FROM bar WHERE foo_id = $1`
 

@@ -2,6 +2,7 @@ package nats
 
 import (
 	"astigo/internal/domain/model"
+	"astigo/internal/infrastructure/messaging/nats/message"
 	"context"
 	"encoding/json"
 	"github.com/google/uuid"
@@ -11,26 +12,36 @@ import (
 	"time"
 )
 
+// TestIntegrationFooNats_PublishFooCreated tests the FooNats integration by publishing a "foo.created" message to NATS.
 func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 	t.Parallel()
+	now := time.Now()
 	testCases := []struct {
 		name          string
-		foo           model.Foo
+		foo           *model.Foo
 		expectedError error
-		receivedFoo   model.Foo
+		receivedData  message.FooMessage
 	}{
 		{
 			name: "Success Case",
-			foo: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_create",
-				Secret: "secret_create",
+			foo: &model.Foo{
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo_create",
+				Secret:    "secret_create",
+				Value:     10,
+				Weight:    1.5,
+				CreatedAt: now,
+				UpdatedAt: nil,
+				Bars:      nil,
 			},
 			expectedError: nil,
-			receivedFoo: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_create",
-				Secret: "secret_create",
+			receivedData: message.FooMessage{
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo_create",
+				Value:     10,
+				Weight:    1.5,
+				CreatedAt: now,
+				UpdatedAt: nil,
 			},
 		},
 	}
@@ -47,15 +58,15 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			messageChan := make(chan model.Foo, 1)
+			messageChan := make(chan message.FooMessage, 1)
 			sub, err := nc.Subscribe(fooCreatedSubject, func(msg *nats.Msg) {
-				var receivedFoo model.Foo
-				err := json.Unmarshal(msg.Data, &receivedFoo)
+				var receivedDta message.FooMessage
+				err := json.Unmarshal(msg.Data, &receivedDta)
 				if err != nil {
 					t.Error("failed to unmarshal data:", err)
 					return
 				}
-				messageChan <- receivedFoo
+				messageChan <- receivedDta
 			})
 			if err != nil {
 				t.Fatal("failed to subscribe:", err)
@@ -74,9 +85,15 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 
 			select {
 			case receivedFoo := <-messageChan:
-				assert.Equal(t, testCase.receivedFoo.Id, receivedFoo.Id)
-				assert.Equal(t, testCase.receivedFoo.Label, receivedFoo.Label)
-				assert.Equal(t, testCase.receivedFoo.Secret, receivedFoo.Secret)
+				assert.Equal(t, testCase.foo.Id, receivedFoo.Id)
+				assert.Equal(t, testCase.foo.Label, receivedFoo.Label)
+				assert.Equal(t, testCase.foo.Value, receivedFoo.Value)
+				assert.Equal(t, testCase.foo.Weight, receivedFoo.Weight)
+				// We allow a one-second difference because NATS internal conversions
+				// (serialization/deserialization) may slightly modify the timestamp precision
+				assert.WithinDuration(t, testCase.foo.CreatedAt, receivedFoo.CreatedAt, time.Second)
+				assert.Nil(t, receivedFoo.UpdatedAt)
+
 			case <-time.After(2 * time.Second):
 				t.Error("timeout: no message received")
 			}
@@ -85,26 +102,36 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 	}
 }
 
+// TestIntegrationFooNats_PublishFooUpdated tests the PublishFooUpdated method by verifying NATS message delivery and content.
 func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 	t.Parallel()
+	now := time.Now()
+	created := now.Add(-1 * time.Hour)
 	testCases := []struct {
 		name          string
-		foo           model.Foo
+		foo           *model.Foo
 		expectedError error
-		receivedFoo   model.Foo
+		receivedData  message.FooMessage
 	}{
 		{
 			name: "Success Case",
-			foo: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_updated",
-				Secret: "secret_updated",
+			foo: &model.Foo{
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo_updated",
+				Secret:    "secret_updated",
+				Value:     10,
+				Weight:    1.5,
+				CreatedAt: created,
+				UpdatedAt: &now,
 			},
 			expectedError: nil,
-			receivedFoo: model.Foo{
-				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-				Label:  "foo_updated",
-				Secret: "secret_updated",
+			receivedData: message.FooMessage{
+				Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				Label:     "foo_updated",
+				Value:     10,
+				Weight:    1.5,
+				CreatedAt: created,
+				UpdatedAt: &now,
 			},
 		},
 	}
@@ -121,9 +148,9 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			messageChan := make(chan model.Foo, 1)
+			messageChan := make(chan message.FooMessage, 1)
 			sub, err := nc.Subscribe(fooUpdatedSubject, func(msg *nats.Msg) {
-				var receivedFoo model.Foo
+				var receivedFoo message.FooMessage
 				err := json.Unmarshal(msg.Data, &receivedFoo)
 				if err != nil {
 					t.Error("failed to unmarshal data:", err)
@@ -148,9 +175,14 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 
 			select {
 			case receivedFoo := <-messageChan:
-				assert.Equal(t, testCase.receivedFoo.Id, receivedFoo.Id)
-				assert.Equal(t, testCase.receivedFoo.Label, receivedFoo.Label)
-				assert.Equal(t, testCase.receivedFoo.Secret, receivedFoo.Secret)
+				assert.Equal(t, testCase.foo.Id, receivedFoo.Id)
+				assert.Equal(t, testCase.foo.Label, receivedFoo.Label)
+				assert.Equal(t, testCase.foo.Value, receivedFoo.Value)
+				assert.Equal(t, testCase.foo.Weight, receivedFoo.Weight)
+				// We allow a one-second difference because NATS internal conversions
+				// (serialization/deserialization) may slightly modify the timestamp precision
+				assert.WithinDuration(t, testCase.foo.CreatedAt, receivedFoo.CreatedAt, time.Second)
+				assert.WithinDuration(t, *testCase.foo.UpdatedAt, *receivedFoo.UpdatedAt, time.Second)
 			case <-time.After(2 * time.Second):
 				t.Error("timeout: no message received")
 			}
@@ -159,6 +191,7 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 	}
 }
 
+// TestIntegrationFooNats_PublishFooDeleted validates that the "foo.deleted" message is published correctly to the NATS server.
 func TestIntegrationFooNats_PublishFooDeleted(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {

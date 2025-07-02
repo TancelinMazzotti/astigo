@@ -24,7 +24,9 @@ Content-Type: application/json
 
 {
   "label": "foo_created",
-  "secret": "secret_created"
+  "secret": "secret_created",
+  "value": 10,
+  "weight": 10.5
 }
 
 > {%
@@ -41,7 +43,9 @@ Content-Type: application/json
 
 {
   "label": "foo_updated",
-  "secret": "secret_updated"
+  "secret": "secret_updated",
+  "value": 20,
+  "weight": 20.5
 }
 
 > {%

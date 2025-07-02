@@ -13,6 +13,7 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestFooController_GetAll(t *testing.T) {
@@ -30,9 +31,9 @@ func TestFooController_GetAll(t *testing.T) {
 			url:        "/foos?offset=0&limit=10",
 			statusCode: http.StatusOK,
 			bodyResponse: `[
-				{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"},
-				{"id":"20000000-0000-0000-0000-000000000002", "label":"Foo2"},
-				{"id":"20000000-0000-0000-0000-000000000003", "label":"Foo3"}
+				{"id":"20000000-0000-0000-0000-000000000001", "label":"foo1", "value":1, "weight":1.5},
+				{"id":"20000000-0000-0000-0000-000000000002", "label":"foo2", "value":2, "weight":2.5},
+				{"id":"20000000-0000-0000-0000-000000000003", "label":"foo3", "value":3, "weight":3.5}
 			]`,
 
 			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
@@ -40,10 +41,31 @@ func TestFooController_GetAll(t *testing.T) {
 					"GetAll",
 					mock.Anything,
 					handler.FooReadListInput{Offset: 0, Limit: 10},
-				).Return([]model.Foo{
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-					{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"},
+				).Return([]*model.Foo{
+					{
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "foo1",
+						Secret:    "secret1",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: time.Now(),
+					},
+					{
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000002"),
+						Label:     "foo2",
+						Secret:    "secret2",
+						Value:     2,
+						Weight:    2.5,
+						CreatedAt: time.Now(),
+					},
+					{
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000003"),
+						Label:     "foo3",
+						Secret:    "",
+						Value:     3,
+						Weight:    3.5,
+						CreatedAt: time.Now(),
+					},
 				}, nil)
 			},
 		},
@@ -58,7 +80,7 @@ func TestFooController_GetAll(t *testing.T) {
 					"GetAll",
 					mock.Anything,
 					handler.FooReadListInput{Offset: 0, Limit: 10},
-				).Return(([]model.Foo)(nil), errors.New("repository error"))
+				).Return(([]*model.Foo)(nil), errors.New("repository error"))
 			},
 		},
 	}
@@ -101,7 +123,7 @@ func TestFooController_GetByID(t *testing.T) {
 			name:         "Success Case",
 			url:          "/foos/20000000-0000-0000-0000-000000000001",
 			statusCode:   http.StatusOK,
-			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"Foo1"}`,
+			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"foo1", "value":1, "weight":1.5}`,
 
 			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
 				mockHandler.On(
@@ -110,9 +132,12 @@ func TestFooController_GetByID(t *testing.T) {
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(
 					&model.Foo{
-						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label:  "Foo1",
-						Secret: "secret1",
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "foo1",
+						Secret:    "secret1",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: time.Now(),
 					}, nil)
 			},
 		},
@@ -190,7 +215,7 @@ func TestFooController_Create(t *testing.T) {
 		{
 			name:         "Success Case",
 			url:          "/foos",
-			body:         `{"label":"foo_create", "secret":"secret_create"}`,
+			body:         `{"label":"foo_create", "secret":"secret_create", "value":1, "weight":1.5}`,
 			statusCode:   http.StatusCreated,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001"}`,
 
@@ -201,11 +226,17 @@ func TestFooController_Create(t *testing.T) {
 					handler.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
+						Value:  1,
+						Weight: 1.5,
 					}).Return(
 					&model.Foo{
-						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label:  "foo_create",
-						Secret: "secret_create",
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "foo_create",
+						Secret:    "secret_create",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: time.Now(),
+						UpdatedAt: nil,
 					}, nil)
 			},
 		},
@@ -248,7 +279,7 @@ func TestFooController_Update(t *testing.T) {
 		{
 			name:       "Success Case",
 			url:        "/foos/20000000-0000-0000-0000-000000000001",
-			body:       `{"label":"foo_update", "secret":"secret_update"}`,
+			body:       `{"label":"foo_update", "secret":"secret_update", "value":1, "weight":1.5}`,
 			statusCode: http.StatusNoContent,
 
 			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
@@ -259,6 +290,8 @@ func TestFooController_Update(t *testing.T) {
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
+						Value:  1,
+						Weight: 1.5,
 					}).Return(nil)
 			},
 		},

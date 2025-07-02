@@ -9,11 +9,13 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+// PostgresContainer represents a PostgreSQL container with its configuration settings encapsulated.
 type PostgresContainer struct {
 	*postgres.PostgresContainer
 	Config PostgresConfig
 }
 
+// CreatePostgresContainer initializes and starts a PostgreSQL container with predefined configurations and returns its instance.
 func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 	config := PostgresConfig{
 		Host:         "localhost",

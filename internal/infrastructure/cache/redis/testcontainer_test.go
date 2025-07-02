@@ -8,11 +8,14 @@ import (
 	"os"
 )
 
+// RedisContainer represents a wrapper around a Redis container with configuration and container-related functionalities.
 type RedisContainer struct {
 	*redis.RedisContainer
 	Config RedisConfig
 }
 
+// CreateRedisContainer initializes and runs a Redis container with specified configurations and seeds data from JSON.
+// Returns a RedisContainer instance and any error encountered during creation or data seeding.
 func CreateRedisContainer(ctx context.Context) (*RedisContainer, error) {
 	config := RedisConfig{
 		Host:     "localhost",
@@ -43,6 +46,7 @@ func CreateRedisContainer(ctx context.Context) (*RedisContainer, error) {
 	}, nil
 }
 
+// SeedFromJSON reads a JSON file and populates a Redis instance with key-value pairs derived from the file's content.
 func SeedFromJSON(ctx context.Context, config RedisConfig) error {
 	data, err := os.ReadFile("testdata.json")
 	if err != nil {

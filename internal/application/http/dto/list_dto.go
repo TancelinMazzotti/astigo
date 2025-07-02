@@ -1,8 +1,8 @@
 package dto
 
 type ListRequest struct {
-	Offset int `form:"offset,default=0" binding:"numeric"`
-	Limit  int `form:"limit,default=10" binding:"numeric"`
+	Offset int `form:"offset,default=0" binding:"numeric,gte=0"`
+	Limit  int `form:"limit,default=10" binding:"numeric,gte=1,lte=50"`
 }
 
 type SortOrder struct {

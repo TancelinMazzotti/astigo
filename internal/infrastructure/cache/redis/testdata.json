@@ -2,11 +2,19 @@
   "foo:20000000-0000-0000-0000-000000000001": {
     "id": "20000000-0000-0000-0000-000000000001",
     "label": "foo1",
-    "secret": "secret1"
+    "secret": "secret1",
+    "value": 1,
+    "weight": 1.0,
+    "created_at": null,
+    "updated_at": null
   },
   "foo:20000000-0000-0000-0000-000000000002": {
     "id": "20000000-0000-0000-0000-000000000002",
     "label": "foo2",
-    "secret": "secret2"
+    "secret": "secret2",
+    "value": 2,
+    "weight": 2.0,
+    "created_at": null,
+    "updated_at": null
   }
 }

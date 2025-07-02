@@ -1,6 +1,7 @@
 services:
   astigo:
     container_name: astigo
+    restart: always
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -11,6 +12,8 @@ services:
       - ASTIGO_HTTP_PORT=8080
       - ASTIGO_GRPC_PORT=50051
       - ASTIGO_LOG_LEVEL=info
+      - ASTIGO_JAEGER_URL=jaeger:4318
+      - ASTIGO_JAEGER_SERVICE_NAME=astigo
       - ASTIGO_POSTGRES_HOST=postgres
       - ASTIGO_POSTGRES_PORT=5432
       - ASTIGO_POSTGRES_DB=astigo
@@ -36,6 +39,7 @@ services:
       - POSTGRES_PASSWORD=astigo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./deployments/postgres/init-db:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:alpine
@@ -70,6 +74,17 @@ services:
     ports:
       - "8090:8080"
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"  # UI Jaeger
+      - "4318:4318"     # Port OTLP HTTP
+      - "4317:4317"     # Port OTLP gRPC
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -78,6 +93,34 @@ services:
     ports:
       - "9090:9090"
 
+  loki:
+    image: grafana/loki:2.9.3
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/loki-config.yaml
+    volumes:
+      - ./deployments/loki/loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - type: tmpfs
+        target: /loki/index
+      - type: tmpfs
+        target: /loki/cache
+      - type: tmpfs
+        target: /loki/chunks
+      - type: tmpfs
+        target: /wal
+
+  promtail:
+    image: grafana/promtail:2.9.3
+    container_name: promtail
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    volumes:
+      - ./deployments/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    depends_on:
+      - loki
+
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -85,10 +128,11 @@ services:
       - "3000:3000"
     depends_on:
       - prometheus
+      - loki
     volumes:
-      - ./deployments/grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
-      - ./deployments/grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
-      - ./deployments/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployments/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./deployments/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployments/grafana/dashboards:/etc/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

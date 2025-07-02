@@ -9,11 +9,14 @@ import (
 	"time"
 )
 
+// NatsContainer is a type that embeds a NATS container and its configuration for managing NATS server instances.
 type NatsContainer struct {
 	*nats.NATSContainer
 	Config NatsConfig
 }
 
+// CreateNatsContainer creates and initializes a NATS container in a Docker environment with the provided context.
+// Returns a pointer to a NatsContainer instance containing the container instance and its configuration, or an error.
 func CreateNatsContainer(ctx context.Context) (*NatsContainer, error) {
 	config := NatsConfig{
 		URL:      "localhost",

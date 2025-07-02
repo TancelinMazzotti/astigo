@@ -40,12 +40,9 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	results := make([]dto.FooReadResponse, len(foos))
+	results := make([]*dto.FooReadResponse, len(foos))
 	for i, foo := range foos {
-		results[i] = dto.FooReadResponse{
-			Id:    foo.Id,
-			Label: foo.Label,
-		}
+		results[i] = dto.NewFooReadResponse(foo)
 	}
 
 	ctx.JSON(http.StatusOK, results)
@@ -84,10 +81,7 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 		return
 	}
 
-	result := dto.FooReadResponse{
-		Id:    foo.Id,
-		Label: foo.Label,
-	}
+	result := dto.NewFooReadResponse(foo)
 	ctx.JSON(http.StatusOK, result)
 }
 
@@ -109,6 +103,8 @@ func (c *FooController) Create(ctx *gin.Context) {
 	foo, err := c.svc.Create(ctx, handler.FooCreateInput{
 		Label:  input.Label,
 		Secret: input.Secret,
+		Value:  input.Value,
+		Weight: input.Weight,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -148,6 +144,8 @@ func (c *FooController) Update(ctx *gin.Context) {
 		Id:     id,
 		Label:  body.Label,
 		Secret: body.Secret,
+		Value:  body.Value,
+		Weight: body.Weight,
 	}); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

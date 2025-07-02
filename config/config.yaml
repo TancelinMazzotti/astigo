@@ -9,6 +9,11 @@ http:
 grpc:
   port: 50051
 
+jaeger:
+  url: "localhost:4318"
+  service_name: "astigo"
+
+
 postgres:
   host: "localhost"
   port: 5432

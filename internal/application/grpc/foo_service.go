@@ -29,8 +29,10 @@ func (s *FooService) List(ctx context.Context, req *proto.ListFoosRequest) (*pro
 	foosProto := make([]*proto.Foo, len(foos))
 	for i, foo := range foos {
 		foosProto[i] = &proto.Foo{
-			Id:    foo.Id.String(),
-			Label: foo.Label,
+			Id:     foo.Id.String(),
+			Label:  foo.Label,
+			Value:  int32(foo.Value),
+			Weight: foo.Weight,
 		}
 	}
 
@@ -50,8 +52,10 @@ func (s *FooService) Get(ctx context.Context, req *proto.GetFooRequest) (*proto.
 
 	return &proto.FooResponse{
 		Foo: &proto.Foo{
-			Id:    foo.Id.String(),
-			Label: foo.Label,
+			Id:     foo.Id.String(),
+			Label:  foo.Label,
+			Value:  int32(foo.Value),
+			Weight: foo.Weight,
 		},
 	}, nil
 }
@@ -60,6 +64,8 @@ func (s *FooService) Create(ctx context.Context, req *proto.CreateFooRequest) (*
 	foo, err := s.svc.Create(ctx, handler.FooCreateInput{
 		Label:  req.Label,
 		Secret: req.Secret,
+		Value:  int(req.Value),
+		Weight: req.Weight,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("fail to create foo: %w", err)
@@ -67,8 +73,10 @@ func (s *FooService) Create(ctx context.Context, req *proto.CreateFooRequest) (*
 
 	return &proto.FooResponse{
 		Foo: &proto.Foo{
-			Id:    foo.Id.String(),
-			Label: foo.Label,
+			Id:     foo.Id.String(),
+			Label:  foo.Label,
+			Value:  int32(foo.Value),
+			Weight: foo.Weight,
 		},
 	}, nil
 }
@@ -83,14 +91,18 @@ func (s *FooService) Update(ctx context.Context, req *proto.UpdateFooRequest) (*
 		Id:     id,
 		Label:  req.Label,
 		Secret: req.Secret,
+		Value:  int(req.Value),
+		Weight: req.Weight,
 	}); err != nil {
 		return nil, fmt.Errorf("fail to update foo: %w", err)
 	}
 
 	return &proto.FooResponse{
 		Foo: &proto.Foo{
-			Id:    id.String(),
-			Label: req.Label,
+			Id:     id.String(),
+			Label:  req.Label,
+			Value:  req.Value,
+			Weight: req.Weight,
 		},
 	}, nil
 }

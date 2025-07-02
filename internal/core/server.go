@@ -7,6 +7,7 @@ import (
 	redis2 "astigo/internal/infrastructure/cache/redis"
 	nats2 "astigo/internal/infrastructure/messaging/nats"
 	postgres2 "astigo/internal/infrastructure/repository/postgres"
+	"astigo/internal/infrastructure/tracer"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,7 +17,6 @@ import (
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"net/http"
 	"time"
@@ -25,8 +25,9 @@ import (
 type Config struct {
 	Log LoggerConfig `mapstructure:"log"`
 
-	Gin  http2.GinConfig  `mapstructure:"http"`
-	Grpc grpc2.GrpcConfig `mapstructure:"grpc"`
+	Gin    http2.GinConfig     `mapstructure:"http"`
+	Grpc   grpc2.GrpcConfig    `mapstructure:"grpc"`
+	Jaeger tracer.JaegerConfig `mapstructure:"jaeger"`
 
 	Postgres postgres2.PostgresConfig `mapstructure:"postgres"`
 	Nats     nats2.NatsConfig         `mapstructure:"nats"`
@@ -39,6 +40,7 @@ type Server struct {
 
 	GinEngine  *gin.Engine
 	GrpcServer *grpc.Server
+	Jaeger     *tracer.Jaeger
 
 	Postgres *sql.DB
 	Nats     *nats.Conn
@@ -92,21 +94,25 @@ func (server *Server) startGrpcServer(lis net.Listener, errCh chan<- error) {
 func (server *Server) handleShutdown(ctx context.Context, httpSrv *http.Server, errCh chan<- error) {
 	go func() {
 		<-ctx.Done()
-		log.Println("Shutdown signal received...")
+		server.Logger.Info("Shutdown signal received...")
 
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
 		// Shutdown HTTP
 		if err := httpSrv.Shutdown(shutdownCtx); err != nil {
-			log.Printf("HTTP shutdown error: %v", err)
+			server.Logger.Error("HTTP shutdown error", zap.Error(err))
 		} else {
-			log.Println("HTTP server stopped")
+			server.Logger.Info("HTTP server stopped")
 		}
 
 		// Shutdown gRPC
 		server.GrpcServer.GracefulStop()
-		log.Println("gRPC server stopped")
+		server.Logger.Info("gRPC server stopped")
+
+		if err := server.Jaeger.Shutdown(ctx); err != nil {
+			server.Logger.Error("erreur lors de l'arrêt du traceur", zap.Error(err))
+		}
 
 		errCh <- nil
 	}()
@@ -121,6 +127,11 @@ func NewServer(config Config) (*Server, error) {
 	server.Logger, err = NewLogger(server.Config.Log)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create logger %w", err)
+	}
+
+	server.Jaeger, err = tracer.NewJaeger(server.Config.Jaeger)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create jaeger tracer %w", err)
 	}
 
 	if server.Postgres, err = postgres2.NewPostgres(server.Config.Postgres); err != nil {

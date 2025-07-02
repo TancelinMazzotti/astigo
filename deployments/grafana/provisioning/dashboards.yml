@@ -1,9 +1,0 @@
-apiVersion: 1
-
-providers:
-  - name: 'astigo dashboards'
-    orgId: 1
-    folder: 'Astigo'
-    type: file
-    options:
-      path: /etc/grafana/provisioning/dashboards
