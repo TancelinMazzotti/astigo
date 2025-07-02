@@ -3,7 +3,7 @@ package tracer
 import (
 	"context"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/jaeger"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
@@ -19,7 +19,12 @@ type Jaeger struct {
 }
 
 func NewJaeger(config JaegerConfig) (*Jaeger, error) {
-	exporter, err := jaeger.New(jaeger.WithCollectorEndpoint(jaeger.WithEndpoint(config.URL)))
+	ctx := context.Background()
+
+	exporter, err := otlptracehttp.New(ctx,
+		otlptracehttp.WithEndpoint(config.URL),
+		otlptracehttp.WithInsecure(), // Pour le développement, retirez en production si vous utilisez TLS
+	)
 	if err != nil {
 		return nil, err
 	}
