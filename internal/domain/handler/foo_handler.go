@@ -40,11 +40,15 @@ type FooUpdateInput struct {
 	Id     uuid.UUID
 	Label  string
 	Secret string
+	Value  int
+	Weight float32
 }
 
 func (f FooUpdateInput) Merge(foo *model.Foo) error {
 	foo.Label = f.Label
 	foo.Secret = f.Secret
+	foo.Value = f.Value
+	foo.Weight = f.Weight
 
 	return nil
 }

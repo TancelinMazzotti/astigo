@@ -29,8 +29,6 @@ const (
 // FooServiceClient is the client API for FooService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Service CRUD pour Foo
 type FooServiceClient interface {
 	Create(ctx context.Context, in *CreateFooRequest, opts ...grpc.CallOption) (*FooResponse, error)
 	Get(ctx context.Context, in *GetFooRequest, opts ...grpc.CallOption) (*FooResponse, error)
@@ -100,8 +98,6 @@ func (c *fooServiceClient) List(ctx context.Context, in *ListFoosRequest, opts .
 // FooServiceServer is the server API for FooService service.
 // All implementations must embed UnimplementedFooServiceServer
 // for forward compatibility.
-//
-// Service CRUD pour Foo
 type FooServiceServer interface {
 	Create(context.Context, *CreateFooRequest) (*FooResponse, error)
 	Get(context.Context, *GetFooRequest) (*FooResponse, error)

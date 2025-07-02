@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
+	"time"
 )
 
 func TestFooService_List(t *testing.T) {
@@ -37,9 +38,33 @@ func TestFooService_List(t *testing.T) {
 					handler.FooReadListInput{Offset: 0, Limit: 10},
 				).Return(
 					[]*model.Foo{
-						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"), Label: "Foo1"},
-						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000002"), Label: "Foo2"},
-						{Id: uuid.MustParse("20000000-0000-0000-0000-000000000003"), Label: "Foo3"}},
+						{
+							Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+							Label:     "foo1",
+							Secret:    "secret1",
+							Value:     1,
+							Weight:    1.5,
+							CreatedAt: time.Now(),
+							UpdatedAt: nil,
+						},
+						{
+							Id:        uuid.MustParse("20000000-0000-0000-0000-000000000002"),
+							Label:     "foo2",
+							Secret:    "secret2",
+							Value:     2,
+							Weight:    2.5,
+							CreatedAt: time.Now(),
+							UpdatedAt: nil,
+						},
+						{
+							Id:        uuid.MustParse("20000000-0000-0000-0000-000000000003"),
+							Label:     "foo3",
+							Secret:    "secret3",
+							Value:     3,
+							Weight:    3.5,
+							CreatedAt: time.Now(),
+							UpdatedAt: nil,
+						}},
 					nil)
 			},
 		},
@@ -86,8 +111,10 @@ func TestFooService_Get(t *testing.T) {
 			expectedError: nil,
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
-					Id:    "20000000-0000-0000-0000-000000000001",
-					Label: "Foo1",
+					Id:     "20000000-0000-0000-0000-000000000001",
+					Label:  "Foo1",
+					Value:  1,
+					Weight: 1.5,
 				},
 			},
 
@@ -97,8 +124,12 @@ func TestFooService_Get(t *testing.T) {
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(
 					&model.Foo{
-						Id:    uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label: "Foo1",
+						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:     "Foo1",
+						Value:     1,
+						Weight:    1.5,
+						CreatedAt: time.Now(),
+						UpdatedAt: nil,
 					}, nil)
 			},
 		},
@@ -150,11 +181,15 @@ func TestFooService_Create(t *testing.T) {
 			request: &proto.CreateFooRequest{
 				Label:  "foo_create",
 				Secret: "secret_create",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
-					Id:    "20000000-0000-0000-0000-000000000001",
-					Label: "foo_create",
+					Id:     "20000000-0000-0000-0000-000000000001",
+					Label:  "foo_create",
+					Value:  1,
+					Weight: 1.5,
 				},
 			},
 			expectedError: nil,
@@ -165,11 +200,17 @@ func TestFooService_Create(t *testing.T) {
 					handler.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
+						Value:  1,
+						Weight: 1.5,
 					},
 				).Return(&model.Foo{
-					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-					Label:  "foo_create",
-					Secret: "secret_create",
+					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+					Label:     "foo_create",
+					Secret:    "secret_create",
+					Value:     1,
+					Weight:    1.5,
+					CreatedAt: time.Now(),
+					UpdatedAt: nil,
 				}, nil)
 			},
 		},
@@ -214,11 +255,15 @@ func TestFooService_Update(t *testing.T) {
 				Id:     "20000000-0000-0000-0000-000000000001",
 				Label:  "foo_update",
 				Secret: "secret_update",
+				Value:  1,
+				Weight: 1.5,
 			},
 			expectedResult: &proto.FooResponse{
 				Foo: &proto.Foo{
-					Id:    "20000000-0000-0000-0000-000000000001",
-					Label: "foo_update",
+					Id:     "20000000-0000-0000-0000-000000000001",
+					Label:  "foo_update",
+					Value:  1,
+					Weight: 1.5,
 				},
 			},
 			expectedError: nil,
@@ -228,6 +273,8 @@ func TestFooService_Update(t *testing.T) {
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
+					Value:  1,
+					Weight: 1.5,
 				}).Return(nil)
 			},
 		},

@@ -54,6 +54,10 @@ func setDefaults() {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.encoding", "json")
 
+	// Jaeger configuration
+	viper.SetDefault("jaeger.url", "http://localhost:14268/api/traces")
+	viper.SetDefault("jaeger.service_name", "astigo")
+
 	// PostgreSQL connection defaults
 	viper.SetDefault("postgres.host", "localhost")
 	viper.SetDefault("postgres.port", 5432)

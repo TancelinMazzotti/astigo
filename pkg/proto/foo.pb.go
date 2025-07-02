@@ -25,6 +25,8 @@ type Foo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
+	Value         int32                  `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
+	Weight        float32                `protobuf:"fixed32,4,opt,name=weight,proto3" json:"weight,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,10 +75,26 @@ func (x *Foo) GetLabel() string {
 	return ""
 }
 
+func (x *Foo) GetValue() int32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *Foo) GetWeight() float32 {
+	if x != nil {
+		return x.Weight
+	}
+	return 0
+}
+
 type CreateFooRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
 	Secret        string                 `protobuf:"bytes,2,opt,name=secret,proto3" json:"secret,omitempty"`
+	Value         int32                  `protobuf:"varint,3,opt,name=value,proto3" json:"value,omitempty"`
+	Weight        float32                `protobuf:"fixed32,4,opt,name=weight,proto3" json:"weight,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -123,6 +141,20 @@ func (x *CreateFooRequest) GetSecret() string {
 		return x.Secret
 	}
 	return ""
+}
+
+func (x *CreateFooRequest) GetValue() int32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *CreateFooRequest) GetWeight() float32 {
+	if x != nil {
+		return x.Weight
+	}
+	return 0
 }
 
 type GetFooRequest struct {
@@ -174,6 +206,8 @@ type UpdateFooRequest struct {
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
 	Label         string                 `protobuf:"bytes,2,opt,name=label,proto3" json:"label,omitempty"`
 	Secret        string                 `protobuf:"bytes,3,opt,name=secret,proto3" json:"secret,omitempty"`
+	Value         int32                  `protobuf:"varint,4,opt,name=value,proto3" json:"value,omitempty"`
+	Weight        float32                `protobuf:"fixed32,5,opt,name=weight,proto3" json:"weight,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -227,6 +261,20 @@ func (x *UpdateFooRequest) GetSecret() string {
 		return x.Secret
 	}
 	return ""
+}
+
+func (x *UpdateFooRequest) GetValue() int32 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *UpdateFooRequest) GetWeight() float32 {
+	if x != nil {
+		return x.Weight
+	}
+	return 0
 }
 
 type DeleteFooRequest struct {
@@ -462,19 +510,25 @@ var File_foo_proto protoreflect.FileDescriptor
 
 const file_foo_proto_rawDesc = "" +
 	"\n" +
-	"\tfoo.proto\x12\x05proto\"+\n" +
+	"\tfoo.proto\x12\x05proto\"Y\n" +
 	"\x03Foo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
-	"\x05label\x18\x02 \x01(\tR\x05label\"@\n" +
+	"\x05label\x18\x02 \x01(\tR\x05label\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x05R\x05value\x12\x16\n" +
+	"\x06weight\x18\x04 \x01(\x02R\x06weight\"n\n" +
 	"\x10CreateFooRequest\x12\x14\n" +
 	"\x05label\x18\x01 \x01(\tR\x05label\x12\x16\n" +
-	"\x06secret\x18\x02 \x01(\tR\x06secret\"\x1f\n" +
+	"\x06secret\x18\x02 \x01(\tR\x06secret\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x05R\x05value\x12\x16\n" +
+	"\x06weight\x18\x04 \x01(\x02R\x06weight\"\x1f\n" +
 	"\rGetFooRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"P\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"~\n" +
 	"\x10UpdateFooRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05label\x18\x02 \x01(\tR\x05label\x12\x16\n" +
-	"\x06secret\x18\x03 \x01(\tR\x06secret\"\"\n" +
+	"\x06secret\x18\x03 \x01(\tR\x06secret\x12\x14\n" +
+	"\x05value\x18\x04 \x01(\x05R\x05value\x12\x16\n" +
+	"\x06weight\x18\x05 \x01(\x02R\x06weight\"\"\n" +
 	"\x10DeleteFooRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"+\n" +
 	"\vFooResponse\x12\x1c\n" +
@@ -494,7 +548,7 @@ const file_foo_proto_rawDesc = "" +
 	"\x03Get\x12\x14.proto.GetFooRequest\x1a\x12.proto.FooResponse\x125\n" +
 	"\x06Update\x12\x17.proto.UpdateFooRequest\x1a\x12.proto.FooResponse\x12;\n" +
 	"\x06Delete\x12\x17.proto.DeleteFooRequest\x1a\x18.proto.DeleteFooResponse\x127\n" +
-	"\x04List\x12\x16.proto.ListFoosRequest\x1a\x17.proto.ListFoosResponseB\x1eZ\x1cyour-project/pkg/proto;protob\x06proto3"
+	"\x04List\x12\x16.proto.ListFoosRequest\x1a\x17.proto.ListFoosResponseB\x18Z\x16astigo/pkg/proto;protob\x06proto3"
 
 var (
 	file_foo_proto_rawDescOnce sync.Once

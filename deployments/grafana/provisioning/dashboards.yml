@@ -7,3 +7,10 @@ providers:
     type: file
     options:
       path: /etc/grafana/provisioning/dashboards
+
+  - name: 'loki dashboards'
+    orgId: 1
+    folder: 'Loki'
+    type: file
+    options:
+      path: /etc/grafana/provisioning/dashboards/loki
