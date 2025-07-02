@@ -128,9 +128,9 @@ services:
       - prometheus
       - loki
     volumes:
-      - ./deployments/grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
-      - ./deployments/grafana/provisioning/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
-      - ./deployments/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployments/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./deployments/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./deployments/grafana/dashboards:/etc/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin

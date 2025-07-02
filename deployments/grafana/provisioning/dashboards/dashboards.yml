@@ -6,7 +6,7 @@ providers:
     folder: 'Astigo'
     type: file
     options:
-      path: /etc/grafana/provisioning/dashboards
+      path: /etc/grafana/provisioning/dashboards/astigo
 
   - name: 'loki dashboards'
     orgId: 1
