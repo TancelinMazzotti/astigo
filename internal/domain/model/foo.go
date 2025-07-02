@@ -6,14 +6,14 @@ import (
 )
 
 type Foo struct {
-	Id     uuid.UUID
-	Label  string
-	Secret string
-	Value  int
-	Weight float32
+	Id     uuid.UUID `validate:"required"`
+	Label  string    `validate:"required,min=3,max=100"`
+	Secret string    `validate:"required,min=3,max=100"`
+	Value  int       `validate:"required,gte=0,lte=1000"`
+	Weight float32   `validate:"required,gte=0"`
 
-	CreatedAt time.Time
-	UpdatedAt *time.Time
+	CreatedAt time.Time  `validate:"omitempty,datetime"`
+	UpdatedAt *time.Time `validate:"omitempty,datetime"`
 
-	Bars []*Bar
+	Bars []*Bar `validate:"dive"`
 }

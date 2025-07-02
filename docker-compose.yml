@@ -1,6 +1,7 @@
 services:
   astigo:
     container_name: astigo
+    restart: always
     build:
       context: .
       dockerfile: ./Dockerfile
@@ -38,6 +39,7 @@ services:
       - POSTGRES_PASSWORD=astigo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./deployments/postgres/init-db:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:alpine

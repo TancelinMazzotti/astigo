@@ -6,13 +6,13 @@ import (
 )
 
 type Bar struct {
-	Id     uuid.UUID
-	Label  string
-	Secret string
-	Value  int
-	FooID  uuid.UUID
-	Foo    *Foo
+	Id     uuid.UUID `validate:"required"`
+	Label  string    `validate:"required,min=3,max=100"`
+	Secret string    `validate:"required,min=3,max=100"`
+	Value  int       `validate:"required,gte=0,lte=1000"`
+	FooID  uuid.UUID `validate:"required"`
+	Foo    *Foo      `validate:"-"`
 
-	CreatedAt time.Time
-	UpdatedAt *time.Time
+	CreatedAt time.Time  `validate:"omitempty,datetime"`
+	UpdatedAt *time.Time `validate:"omitempty,datetime"`
 }

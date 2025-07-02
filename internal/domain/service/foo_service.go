@@ -8,6 +8,7 @@ import (
 	"astigo/internal/domain/repository"
 	"context"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"sync"
@@ -69,6 +70,11 @@ func (s *FooService) Create(ctx context.Context, input handler.FooCreateInput) (
 		Weight: input.Weight,
 	}
 
+	var validate = validator.New()
+	if err := validate.Struct(foo); err != nil {
+		return nil, fmt.Errorf("invalid input: %w", err)
+	}
+
 	if err := s.repo.Create(ctx, foo); err != nil {
 		return nil, fmt.Errorf("fail to create foo: %w", err)
 	}
@@ -108,6 +114,11 @@ func (s *FooService) Update(ctx context.Context, input handler.FooUpdateInput) e
 
 	if err := input.Merge(foo); err != nil {
 		return fmt.Errorf("fail to merge input: %w", err)
+	}
+
+	var validate = validator.New()
+	if err := validate.Struct(foo); err != nil {
+		return fmt.Errorf("invalid input: %w", err)
 	}
 
 	if err := s.repo.Update(ctx, foo); err != nil {
