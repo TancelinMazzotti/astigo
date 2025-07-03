@@ -46,6 +46,8 @@ func setDefaults() {
 	// HTTP server defaults
 	viper.SetDefault("http.port", 8080)
 	viper.SetDefault("http.mode", "debug")
+	viper.SetDefault("http.issuer", "http://localhost:8080/realms/astigo")
+	viper.SetDefault("http.client_id", "astigo-api")
 
 	// gRPC server defaults
 	viper.SetDefault("grpc.port", 50051)

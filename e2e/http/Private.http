@@ -1,0 +1,28 @@
+POST http://host.docker.internal:8090/realms/astigo/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=password&client_id=astigo-api&client_secret=NGFt7wURs6H3sRmSDrbiLyUz6avZ7dkp&username=astigo&password=astigo&scope=openid
+
+
+> {%
+    if (response.status !== 200) {
+        throw new Error(`Expected status 200 but got ${response.status}`);
+    }
+    if ("access_token" in response.body){
+        client.global.set("access_token", response.body.access_token);
+    } else {
+        throw new Error("No access token in response");
+    }
+
+%}
+
+### GET request with a header
+GET http://localhost:8080/private
+Accept: application/json
+Authorization: Bearer {{access_token}}
+
+> {%
+    if (response.status !== 200) {
+        throw new Error(`Expected status 200 but got ${response.status}`);
+    }
+%}

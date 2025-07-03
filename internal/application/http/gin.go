@@ -13,13 +13,16 @@ import (
 var StartAt time.Time
 
 type GinConfig struct {
-	Port string `mapstructure:"port"`
-	Mode string `mapstructure:"mode"`
+	Port     string `mapstructure:"port"`
+	Mode     string `mapstructure:"mode"`
+	Issuer   string `mapstructure:"issuer"`
+	ClientID string `mapstructure:"client_id"`
 }
 
 func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
 	middleware.RegisterMetrics()
 	gin.SetMode(config.Mode)
+	authMiddleware := middleware.NewAuthMiddleware(config.Issuer, config.ClientID)
 
 	e := gin.New()
 	e.Use(otelgin.Middleware("astigo"))
@@ -49,6 +52,13 @@ func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthContro
 	e.POST("/foos", fooController.Create)
 	e.PUT("/foos/:id", fooController.Update)
 	e.DELETE("/foos/:id", fooController.DeleteByID)
+
+	e.GET("/private", authMiddleware.Middleware, func(c *gin.Context) {
+		claims, _ := c.Get("claims")
+		c.JSON(http.StatusOK, gin.H{
+			"claims": claims,
+		})
+	})
 
 	return e
 }
