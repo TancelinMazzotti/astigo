@@ -29,6 +29,7 @@ type Config struct {
 	Gin    http2.GinConfig     `mapstructure:"http"`
 	Grpc   grpc2.GrpcConfig    `mapstructure:"grpc"`
 	Jaeger tracer.JaegerConfig `mapstructure:"jaeger"`
+	Auth   service.AuthConfig  `mapstructure:"auth"`
 
 	Postgres postgres2.PostgresConfig `mapstructure:"postgres"`
 	Nats     nats2.NatsConfig         `mapstructure:"nats"`
@@ -177,6 +178,8 @@ func NewServer(config Config) (*Server, error) {
 		return nil, fmt.Errorf("fail to create nats consumer %w", err)
 	}
 
+	authService := service.NewAuthService(server.Config.Auth)
+
 	fooService := service.NewFooService(
 		server.Logger,
 		postgres2.NewFooPostgres(server.Postgres),
@@ -187,6 +190,7 @@ func NewServer(config Config) (*Server, error) {
 	server.GinEngine = http2.NewGin(
 		server.Config.Gin,
 		server.Logger,
+		authService,
 		http2.NewHealthController(),
 		http2.NewFooController(fooService),
 	)

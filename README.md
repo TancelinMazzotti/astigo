@@ -72,8 +72,8 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 | `ASTIGO_HTTP_MODE`               | `debug`                               | HTTP server mode (debug/release)                            |
 | `ASTIGO_HTTP_PORT`               | `8080`                                | HTTP server listening port                                  |
 | `ASTIGO_GRPC_PORT`               | `50051`                               | gRPC server listening port                                  |
-| `ASTIGO_HTTP_ISSUER`             | `http://localhost:8080/realms/astigo` | Keycloak realm URL used for JWT token validation            |
-| `ASTIGO_HTTP_CLIENT_ID`          | `astigo-api`                          | Keycloak client ID used for API authentication              |
+| `ASTIGO_AUTH_ISSUER`             | `http://localhost:8080/realms/astigo` | Keycloak realm URL used for JWT token validation            |
+| `ASTIGO_AUTH_CLIENT_ID`          | `astigo-api`                          | Keycloak client ID used for API authentication              |
 | `ASTIGO_LOG_LEVEL`               | `info`                                | Application logging level (info, debug, error, etc.)        |
 | `ASTIGO_LOG_ENCODING`            | `json`                                | Log format encoding (json/console)                          |
 | `ASTIGO_JAEGER_URL`              | `localhost:4318`                      | Jaeger collector endpoint URL for distributed tracing       |

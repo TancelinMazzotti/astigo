@@ -2,11 +2,13 @@ log:
   level: "debug"
   encoding: "json"
 
+auth:
+  issuer: "http://localhost:8090/realms/astigo"
+  client_id: "astigo-api"
+
 http:
   port: 8080
   mode: "debug"
-  issuer: "http://localhost:8080/realms/astigo"
-  client_id: "astigo-api"
 
 grpc:
   port: 50051

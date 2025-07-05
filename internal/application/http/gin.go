@@ -2,6 +2,7 @@ package http
 
 import (
 	"astigo/internal/application/http/middleware"
+	"astigo/internal/domain/handler"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -19,10 +20,17 @@ type GinConfig struct {
 	ClientID string `mapstructure:"client_id"`
 }
 
-func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
+func NewGin(
+	config GinConfig,
+	logger *zap.Logger,
+	authHandler handler.IAuthHandler,
+	healthController *HealthController,
+	fooController *FooController,
+) *gin.Engine {
+
 	middleware.RegisterMetrics()
 	gin.SetMode(config.Mode)
-	authMiddleware := middleware.NewAuthMiddleware(config.Issuer, config.ClientID)
+	authMiddleware := middleware.NewAuthMiddleware(authHandler)
 
 	e := gin.New()
 	e.Use(otelgin.Middleware("astigo"))
