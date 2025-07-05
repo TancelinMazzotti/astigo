@@ -4,10 +4,15 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.debug
+    security_opt:
+      - "seccomp:unconfined"
+    cap_add:
+      - SYS_PTRACE
     ports:
       - "8080:8080"
       - "50051:50051"
+      - "2345:2345"
     environment:
       - ASTIGO_HTTP_PORT=8080
       - ASTIGO_HTTP_MODE=debug

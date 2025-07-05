@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.24.2-alpine AS debugger
 
 RUN apk add --update --no-cache build-base vim curl htop
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
