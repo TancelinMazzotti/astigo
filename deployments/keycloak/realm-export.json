@@ -500,6 +500,33 @@
       ],
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "username": "astigo",
+      "emailVerified": true,
+      "createdTimestamp": 1751485383931,
+      "enabled": true,
+      "email": "astigo@gmail.com",
+      "firstName": "Asti",
+      "lastName": "Go",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "astigo"
+        }
+      ],
+      "realmRoles": [
+        "default-roles-astigo"
+      ],
+      "clientRoles": {
+        "account": [
+          "view-profile",
+          "manage-account"
+        ],
+        "astigo-api": [
+          "manager"
+        ]
+      }
     }
   ],
   "scopeMappings": [
@@ -683,7 +710,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "astigo_secret",
       "redirectUris": [
         "http://localhost:8080/*"
       ],

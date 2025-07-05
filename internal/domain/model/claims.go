@@ -7,6 +7,10 @@ import (
 	"slices"
 )
 
+const (
+	ClaimsContextKey = "claims"
+)
+
 type Claims struct {
 	jwt.RegisteredClaims
 	Email             string `json:"email"`
@@ -38,11 +42,11 @@ func (c *Claims) HasResourceRole(resource string, role string) bool {
 }
 
 func SetClaimsInContext(ctx context.Context, claims *Claims) context.Context {
-	return context.WithValue(ctx, "claims", claims)
+	return context.WithValue(ctx, ClaimsContextKey, claims)
 }
 
 func GetClaimsInContext(ctx context.Context) (*Claims, error) {
-	value := ctx.Value("claims")
+	value := ctx.Value(ClaimsContextKey)
 	if value == nil {
 		return nil, fmt.Errorf("no claims found in context")
 	}
