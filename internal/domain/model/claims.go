@@ -7,8 +7,10 @@ import (
 	"slices"
 )
 
+type ContextKey string
+
 const (
-	ClaimsContextKey = "claims"
+	ClaimsContextKey ContextKey = "claims"
 )
 
 type Claims struct {
