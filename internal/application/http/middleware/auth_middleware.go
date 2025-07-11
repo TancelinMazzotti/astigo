@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"astigo/internal/domain/model"
 	"astigo/internal/domain/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -38,7 +39,7 @@ func (m *AuthMiddleware) Middleware(c *gin.Context) {
 	claims, err := m.handler.GetClaims(idToken)
 	if err != nil {
 
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse claims"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid payload"})
 		return
 	}
 
@@ -46,6 +47,58 @@ func (m *AuthMiddleware) Middleware(c *gin.Context) {
 
 	c.Next()
 
+}
+
+// CheckRealmMiddleware checks if a user's JWT claims include at least one of the specified realm roles and authorizes accordingly.
+func (m *AuthMiddleware) CheckRealmMiddleware(roles []string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		claimsCtx, exists := c.Get("claims")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		claims, ok := claimsCtx.(*model.Claims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		for _, role := range roles {
+			if claims.HasRealmRole(role) {
+				c.Next()
+				return
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "forbidden"})
+	}
+}
+
+// CheckResourceRoleMiddleware validates whether the user's claims include the required roles for a specific resource.
+func (m *AuthMiddleware) CheckResourceRoleMiddleware(resource string, roles []string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		claimsCtx, exists := c.Get("claims")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		claims, ok := claimsCtx.(*model.Claims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		for _, role := range roles {
+			if claims.HasResourceRole(resource, role) {
+				c.Next()
+				return
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "forbidden"})
+	}
 }
 
 // NewAuthMiddleware creates and returns an instance of AuthMiddleware using the provided IAuthService for authentication.
