@@ -45,7 +45,7 @@ func TestIntegrationFooRedis_GetByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	redis, err := NewRedis(container.Config)
+	redis, err := NewRedis(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,7 +117,7 @@ func TestIntegrationFooRedis_Set(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	redis, err := NewRedis(container.Config)
+	redis, err := NewRedis(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestIntegrationFooRedis_DeleteByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	redis, err := NewRedis(container.Config)
+	redis, err := NewRedis(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -58,7 +58,7 @@ func SeedFromJSON(ctx context.Context, config RedisConfig) error {
 		return fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
-	r, err := NewRedis(config)
+	r, err := NewRedis(ctx, config)
 	if err != nil {
 		return err
 	}

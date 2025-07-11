@@ -2,16 +2,34 @@ package http
 
 import (
 	"astigo/internal/application/http/dto"
-	"astigo/internal/domain/handler"
-	"astigo/internal/domain/repository"
+	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/adapter/repository"
+	"astigo/internal/domain/service"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
 )
 
+var _ IFooController = (*FooController)(nil)
+
+// IFooController defines an interface for managing Foo entity operations through HTTP handlers.
+// GetAll retrieves all Foo entities.
+// GetByID retrieves a Foo entity by its unique identifier.
+// Create handles the creation of a new Foo entity.
+// Update modifies an existing Foo entity.
+// DeleteByID deletes a Foo entity by its unique identifier.
+type IFooController interface {
+	GetAll(ctx *gin.Context)
+	GetByID(ctx *gin.Context)
+	Create(ctx *gin.Context)
+	Update(ctx *gin.Context)
+	DeleteByID(ctx *gin.Context)
+}
+
+// FooController manages the HTTP request handling for operations related to Foo entities.
 type FooController struct {
-	svc handler.IFooHandler
+	svc service.IFooService
 }
 
 // GetAll @Summary Get all foo
@@ -31,7 +49,7 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	foos, err := c.svc.GetAll(ctx, handler.FooReadListInput{
+	foos, err := c.svc.GetAll(ctx, data.FooReadListInput{
 		Offset: queryParams.Offset,
 		Limit:  queryParams.Limit,
 	})
@@ -91,7 +109,7 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 // @Accept JSON
 // @Produce JSON
 // @Param foo body dto.FooCreateBody true "Foo"
-// @Success 201
+// @Success 201 {object} dto.FooCreateResponse
 // @Router /foos [post]
 func (c *FooController) Create(ctx *gin.Context) {
 	var input dto.FooCreateBody
@@ -100,7 +118,7 @@ func (c *FooController) Create(ctx *gin.Context) {
 		return
 	}
 
-	foo, err := c.svc.Create(ctx, handler.FooCreateInput{
+	foo, err := c.svc.Create(ctx, data.FooCreateInput{
 		Label:  input.Label,
 		Secret: input.Secret,
 		Value:  input.Value,
@@ -110,7 +128,11 @@ func (c *FooController) Create(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	ctx.JSON(http.StatusCreated, gin.H{"id": foo.Id.String()})
+
+	result := &dto.FooCreateResponse{
+		Id: foo.Id,
+	}
+	ctx.JSON(http.StatusCreated, result)
 }
 
 // Update @Summary Update a foo
@@ -140,7 +162,7 @@ func (c *FooController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.svc.Update(ctx, handler.FooUpdateInput{
+	if err := c.svc.Update(ctx, data.FooUpdateInput{
 		Id:     id,
 		Label:  body.Label,
 		Secret: body.Secret,
@@ -158,7 +180,7 @@ func (c *FooController) Update(ctx *gin.Context) {
 // @Tags Foo
 // @Accept JSON
 // @Produce JSON
-// @Param id path int true "Foo id"
+// @Param id path uuid true "Foo id"
 // @Success 204
 // @Router /foos/{id} [delete]
 func (c *FooController) DeleteByID(ctx *gin.Context) {
@@ -182,7 +204,8 @@ func (c *FooController) DeleteByID(ctx *gin.Context) {
 	ctx.Status(http.StatusNoContent)
 }
 
-func NewFooController(svc handler.IFooHandler) *FooController {
+// NewFooController initializes a new FooController with the provided IFooService dependency.
+func NewFooController(svc service.IFooService) *FooController {
 	c := &FooController{
 		svc: svc,
 	}

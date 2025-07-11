@@ -1,11 +1,11 @@
 package service
 
 import (
-	"astigo/internal/domain/cache"
-	"astigo/internal/domain/handler"
-	"astigo/internal/domain/messaging"
+	"astigo/internal/domain/adapter/cache"
+	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/adapter/messaging"
+	"astigo/internal/domain/adapter/repository"
 	"astigo/internal/domain/model"
-	"astigo/internal/domain/repository"
 	"context"
 	"errors"
 	"fmt"
@@ -21,7 +21,7 @@ func TestFooService_GetAll(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name          string
-		input         handler.FooReadListInput
+		input         data.FooReadListInput
 		expectedCount int
 		expectedError error
 
@@ -31,14 +31,14 @@ func TestFooService_GetAll(t *testing.T) {
 	}{
 		{
 			name: "Success Case - Multiple Foos",
-			input: handler.FooReadListInput{
+			input: data.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
 			expectedCount: 3,
 			expectedError: nil,
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+				mockRepo.On("FindAll", mock.Anything, data.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
 				}).Return([]*model.Foo{
@@ -52,14 +52,14 @@ func TestFooService_GetAll(t *testing.T) {
 		},
 		{
 			name: "Success Case - Empty Foos",
-			input: handler.FooReadListInput{
+			input: data.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
 			expectedCount: 0,
 			expectedError: nil,
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+				mockRepo.On("FindAll", mock.Anything, data.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
 				}).Return([]*model.Foo{}, nil)
@@ -69,14 +69,14 @@ func TestFooService_GetAll(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Repository Error",
-			input: handler.FooReadListInput{
+			input: data.FooReadListInput{
 				Offset: 0,
 				Limit:  10,
 			},
 			expectedCount: 0,
 			expectedError: errors.New("fail to find all foo: repository error"),
 			setupMockRepository: func(mockRepo *repository.MockFooRepository) {
-				mockRepo.On("FindAll", mock.Anything, handler.FooReadListInput{
+				mockRepo.On("FindAll", mock.Anything, data.FooReadListInput{
 					Offset: 0,
 					Limit:  10,
 				}).Return(([]*model.Foo)(nil), errors.New("repository error"))
@@ -310,7 +310,7 @@ func TestFooService_Create(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name           string
-		input          handler.FooCreateInput
+		input          data.FooCreateInput
 		expectedResult *model.Foo
 		expectedError  error
 
@@ -320,7 +320,7 @@ func TestFooService_Create(t *testing.T) {
 	}{
 		{
 			name: "Success Case",
-			input: handler.FooCreateInput{
+			input: data.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 				Value:  1,
@@ -361,7 +361,7 @@ func TestFooService_Create(t *testing.T) {
 		},
 		{
 			name: "Success Case - Cache Error",
-			input: handler.FooCreateInput{
+			input: data.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 				Value:  1,
@@ -402,7 +402,7 @@ func TestFooService_Create(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Repository Error",
-			input: handler.FooCreateInput{
+			input: data.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 				Value:  1,
@@ -423,7 +423,7 @@ func TestFooService_Create(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Messaging Error",
-			input: handler.FooCreateInput{
+			input: data.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 				Value:  1,
@@ -488,7 +488,7 @@ func TestFooService_Update(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name          string
-		input         handler.FooUpdateInput
+		input         data.FooUpdateInput
 		expectedError error
 
 		setupMockRepository func(*repository.MockFooRepository)
@@ -497,7 +497,7 @@ func TestFooService_Update(t *testing.T) {
 	}{
 		{
 			name: "Success Case",
-			input: handler.FooUpdateInput{
+			input: data.FooUpdateInput{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
@@ -548,7 +548,7 @@ func TestFooService_Update(t *testing.T) {
 		},
 		{
 			name: "Success Case - Cache Error",
-			input: handler.FooUpdateInput{
+			input: data.FooUpdateInput{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
@@ -599,7 +599,7 @@ func TestFooService_Update(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Repository Get Error",
-			input: handler.FooUpdateInput{
+			input: data.FooUpdateInput{
 				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
 				Label:  "foo_update",
 				Secret: "secret_update",

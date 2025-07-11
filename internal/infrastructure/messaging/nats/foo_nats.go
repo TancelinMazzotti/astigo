@@ -1,7 +1,7 @@
 package nats
 
 import (
-	"astigo/internal/domain/messaging"
+	"astigo/internal/domain/adapter/messaging"
 	"astigo/internal/domain/model"
 	"astigo/internal/infrastructure/messaging/nats/message"
 	"context"

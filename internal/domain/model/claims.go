@@ -1,16 +1,8 @@
 package model
 
 import (
-	"context"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"slices"
-)
-
-type ContextKey string
-
-const (
-	ClaimsContextKey ContextKey = "claims"
 )
 
 type Claims struct {
@@ -41,22 +33,4 @@ func (c *Claims) HasResourceRole(resource string, role string) bool {
 	}
 
 	return slices.Contains(c.ResourceAccess[resource].Roles, role)
-}
-
-func SetClaimsInContext(ctx context.Context, claims *Claims) context.Context {
-	return context.WithValue(ctx, ClaimsContextKey, claims)
-}
-
-func GetClaimsInContext(ctx context.Context) (*Claims, error) {
-	value := ctx.Value(ClaimsContextKey)
-	if value == nil {
-		return nil, fmt.Errorf("no claims found in context")
-	}
-
-	claims, ok := value.(*Claims)
-	if !ok {
-		return nil, fmt.Errorf("invalid claims type in context")
-	}
-
-	return claims, nil
 }

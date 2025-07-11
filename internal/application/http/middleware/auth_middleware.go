@@ -1,16 +1,19 @@
 package middleware
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
 
+// AuthMiddleware handles authentication by validating JWT tokens in incoming requests.
+// It uses a provided implementation of IAuthService for token verification and claims extraction.
 type AuthMiddleware struct {
-	handler handler.IAuthHandler
+	handler service.IAuthService
 }
 
+// Middleware is a Gin middleware function that validates JWT Authorization headers for protected routes.
 func (m *AuthMiddleware) Middleware(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -45,7 +48,8 @@ func (m *AuthMiddleware) Middleware(c *gin.Context) {
 
 }
 
-func NewAuthMiddleware(authHandler handler.IAuthHandler) *AuthMiddleware {
+// NewAuthMiddleware creates and returns an instance of AuthMiddleware using the provided IAuthService for authentication.
+func NewAuthMiddleware(authHandler service.IAuthService) *AuthMiddleware {
 	return &AuthMiddleware{
 		handler: authHandler,
 	}

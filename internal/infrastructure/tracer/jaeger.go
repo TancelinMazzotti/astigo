@@ -18,9 +18,7 @@ type Jaeger struct {
 	provider *sdktrace.TracerProvider
 }
 
-func NewJaeger(config JaegerConfig) (*Jaeger, error) {
-	ctx := context.Background()
-
+func NewJaeger(ctx context.Context, config JaegerConfig) (*Jaeger, error) {
 	exporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithEndpoint(config.URL),
 		otlptracehttp.WithInsecure(), // Pour le développement, retirez en production si vous utilisez TLS

@@ -23,7 +23,7 @@ type PostgresConfig struct {
 
 // NewPostgres initializes and returns a PostgreSQL database connection based on the provided configuration.
 // It configures connection pool settings and verifies connectivity by pinging the database.
-func NewPostgres(config PostgresConfig) (*sql.DB, error) {
+func NewPostgres(ctx context.Context, config PostgresConfig) (*sql.DB, error) {
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s",
 		config.User, config.Password, config.Host, config.Port, config.DBName, config.SSLMode,
@@ -38,7 +38,7 @@ func NewPostgres(config PostgresConfig) (*sql.DB, error) {
 	db.SetMaxIdleConns(config.MaxIdleConns)
 	db.SetConnMaxLifetime(time.Duration(config.MaxLifetime) * time.Second)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
 	if err := db.PingContext(ctx); err != nil {

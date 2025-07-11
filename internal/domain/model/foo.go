@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/google/uuid"
+	"sync"
 	"time"
 )
 
@@ -16,4 +17,30 @@ type Foo struct {
 	UpdatedAt *time.Time `validate:"omitempty"`
 
 	Bars []*Bar `validate:"dive"`
+}
+
+var fooPool = &sync.Pool{
+	New: func() interface{} {
+		return &Foo{}
+	},
+}
+
+func GetFoo() *Foo {
+	return fooPool.Get().(*Foo)
+}
+
+func PutFoo(foo *Foo) {
+	foo.Id = uuid.Nil
+	foo.Label = ""
+	foo.Secret = ""
+	foo.Value = 0
+	foo.Weight = 0
+
+	foo.CreatedAt = time.Time{}
+	foo.UpdatedAt = nil
+
+	foo.Bars = nil
+
+	fooPool.Put(foo)
+
 }

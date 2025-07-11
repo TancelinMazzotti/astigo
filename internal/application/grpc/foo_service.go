@@ -1,7 +1,8 @@
 package grpc
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/service"
 	"astigo/pkg/proto"
 	"context"
 	"fmt"
@@ -14,11 +15,11 @@ var (
 
 type FooService struct {
 	proto.UnimplementedFooServiceServer
-	svc handler.IFooHandler
+	svc service.IFooService
 }
 
 func (s *FooService) List(ctx context.Context, req *proto.ListFoosRequest) (*proto.ListFoosResponse, error) {
-	foos, err := s.svc.GetAll(ctx, handler.FooReadListInput{
+	foos, err := s.svc.GetAll(ctx, data.FooReadListInput{
 		Offset: int(req.Offset),
 		Limit:  int(req.Limit),
 	})
@@ -61,7 +62,7 @@ func (s *FooService) Get(ctx context.Context, req *proto.GetFooRequest) (*proto.
 }
 
 func (s *FooService) Create(ctx context.Context, req *proto.CreateFooRequest) (*proto.FooResponse, error) {
-	foo, err := s.svc.Create(ctx, handler.FooCreateInput{
+	foo, err := s.svc.Create(ctx, data.FooCreateInput{
 		Label:  req.Label,
 		Secret: req.Secret,
 		Value:  int(req.Value),
@@ -87,7 +88,7 @@ func (s *FooService) Update(ctx context.Context, req *proto.UpdateFooRequest) (*
 		return nil, fmt.Errorf("fail to parse id: %w", err)
 	}
 
-	if err := s.svc.Update(ctx, handler.FooUpdateInput{
+	if err := s.svc.Update(ctx, data.FooUpdateInput{
 		Id:     id,
 		Label:  req.Label,
 		Secret: req.Secret,
@@ -121,7 +122,7 @@ func (s *FooService) Delete(ctx context.Context, req *proto.DeleteFooRequest) (*
 	}, nil
 }
 
-func NewFooService(svc handler.IFooHandler) proto.FooServiceServer {
+func NewFooService(svc service.IFooService) proto.FooServiceServer {
 	return &FooService{
 		svc: svc,
 	}

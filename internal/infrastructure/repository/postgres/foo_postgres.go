@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/adapter/data"
+	repository2 "astigo/internal/domain/adapter/repository"
 	"astigo/internal/domain/model"
-	"astigo/internal/domain/repository"
 	"astigo/internal/infrastructure/repository/postgres/entity"
 	"context"
 	"database/sql"
@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	_ repository.IFooRepository = (*FooPostgres)(nil)
+	_ repository2.IFooRepository = (*FooPostgres)(nil)
 )
 
 // FooPostgres is a concrete implementation of the IFooRepository interface that interacts with a PostgreSQL database.
@@ -23,7 +23,7 @@ type FooPostgres struct {
 }
 
 // FindAll retrieves a list of Foo records from the database based on the provided pagination input (limit and offset).
-func (f FooPostgres) FindAll(ctx context.Context, input handler.FooReadListInput) ([]*model.Foo, error) {
+func (f FooPostgres) FindAll(ctx context.Context, input data.FooReadListInput) ([]*model.Foo, error) {
 	query := `
         SELECT 
             foo.foo_id,
@@ -96,7 +96,7 @@ func (f FooPostgres) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, er
 		&fooEntity.UpdatedAt,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository.NewNotFound("foo", fmt.Sprintf("id: %s", id))
+			return nil, repository2.NewNotFound("foo", fmt.Sprintf("id: %s", id))
 		}
 		return nil, fmt.Errorf("error scanning foo row: %w", err)
 	}
