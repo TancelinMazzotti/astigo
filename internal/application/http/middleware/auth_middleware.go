@@ -1,36 +1,20 @@
 package middleware
 
 import (
-	"context"
-	"github.com/coreos/go-oidc"
+	"astigo/internal/domain/model"
+	"astigo/internal/domain/service"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"strings"
 )
 
-type CustomClaims struct {
-	jwt.RegisteredClaims
-	Email             string `json:"email"`
-	PreferredUsername string `json:"preferred_username"`
-	GivenName         string `json:"given_name"`
-	FamilyName        string `json:"family_name"`
-	RealmAccess       struct {
-		Roles []string `json:"roles"`
-	} `json:"realm_access"`
-	ResourceAccess map[string]struct {
-		Roles []string `json:"roles"`
-	} `json:"resource_access"`
-}
-
+// AuthMiddleware handles authentication by validating JWT tokens in incoming requests.
+// It uses a provided implementation of IAuthService for token verification and claims extraction.
 type AuthMiddleware struct {
-	ctx      context.Context
-	provider *oidc.Provider
-	verifier *oidc.IDTokenVerifier
-	clientID string
-	issuer   string
+	handler service.IAuthService
 }
 
+// Middleware is a Gin middleware function that validates JWT Authorization headers for protected routes.
 func (m *AuthMiddleware) Middleware(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	if authHeader == "" {
@@ -46,16 +30,16 @@ func (m *AuthMiddleware) Middleware(c *gin.Context) {
 
 	token := parts[1]
 
-	idToken, err := m.verifier.Verify(m.ctx, token)
+	idToken, err := m.handler.VerifyToken(c, token)
 	if err != nil {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
 		return
 	}
 
-	var claims CustomClaims
-	if err := idToken.Claims(&claims); err != nil {
+	claims, err := m.handler.GetClaims(idToken)
+	if err != nil {
 
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse claims"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid payload"})
 		return
 	}
 
@@ -65,20 +49,61 @@ func (m *AuthMiddleware) Middleware(c *gin.Context) {
 
 }
 
-func NewAuthMiddleware(issuer string, clientID string) *AuthMiddleware {
+// CheckRealmMiddleware checks if a user's JWT claims include at least one of the specified realm roles and authorizes accordingly.
+func (m *AuthMiddleware) CheckRealmMiddleware(roles []string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		claimsCtx, exists := c.Get("claims")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
 
-	ctx := context.Background()
-	provider, err := oidc.NewProvider(ctx, issuer)
-	if err != nil {
-		panic("Failed to initialize Keycloak provider: " + err.Error())
+		claims, ok := claimsCtx.(*model.Claims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		for _, role := range roles {
+			if claims.HasRealmRole(role) {
+				c.Next()
+				return
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "forbidden"})
 	}
-	verifier := provider.Verifier(&oidc.Config{ClientID: clientID})
+}
 
+// CheckResourceRoleMiddleware validates whether the user's claims include the required roles for a specific resource.
+func (m *AuthMiddleware) CheckResourceRoleMiddleware(resource string, roles []string) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		claimsCtx, exists := c.Get("claims")
+		if !exists {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		claims, ok := claimsCtx.(*model.Claims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "invalid claims type"})
+			return
+		}
+
+		for _, role := range roles {
+			if claims.HasResourceRole(resource, role) {
+				c.Next()
+				return
+			}
+		}
+
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "forbidden"})
+	}
+}
+
+// NewAuthMiddleware creates and returns an instance of AuthMiddleware using the provided IAuthService for authentication.
+func NewAuthMiddleware(authHandler service.IAuthService) *AuthMiddleware {
 	return &AuthMiddleware{
-		ctx:      ctx,
-		provider: provider,
-		verifier: verifier,
-		clientID: clientID,
-		issuer:   issuer,
+		handler: authHandler,
 	}
 }

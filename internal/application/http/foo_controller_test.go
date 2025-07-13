@@ -1,9 +1,10 @@
 package http
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/adapter/repository"
 	"astigo/internal/domain/model"
-	"astigo/internal/domain/repository"
+	"astigo/internal/domain/service"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -24,7 +25,7 @@ func TestFooController_GetAll(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name:       "Success Case - Multiple Foos",
@@ -36,11 +37,11 @@ func TestFooController_GetAll(t *testing.T) {
 				{"id":"20000000-0000-0000-0000-000000000003", "label":"foo3", "value":3, "weight":3.5}
 			]`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
-					handler.FooReadListInput{Offset: 0, Limit: 10},
+					data.FooReadListInput{Offset: 0, Limit: 10},
 				).Return([]*model.Foo{
 					{
 						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
@@ -75,11 +76,11 @@ func TestFooController_GetAll(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"repository error"}`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
-					handler.FooReadListInput{Offset: 0, Limit: 10},
+					data.FooReadListInput{Offset: 0, Limit: 10},
 				).Return(([]*model.Foo)(nil), errors.New("repository error"))
 			},
 		},
@@ -88,7 +89,7 @@ func TestFooController_GetAll(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
+			mockHandler := new(service.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -117,7 +118,7 @@ func TestFooController_GetByID(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name:         "Success Case",
@@ -125,7 +126,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusOK,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"foo1", "value":1, "weight":1.5}`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -147,7 +148,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -164,7 +165,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"repository error"}`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -180,7 +181,7 @@ func TestFooController_GetByID(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
+			mockHandler := new(service.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -210,7 +211,7 @@ func TestFooController_Create(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name:         "Success Case",
@@ -219,11 +220,11 @@ func TestFooController_Create(t *testing.T) {
 			statusCode:   http.StatusCreated,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001"}`,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"Create",
 					mock.Anything,
-					handler.FooCreateInput{
+					data.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
 						Value:  1,
@@ -245,7 +246,7 @@ func TestFooController_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
+			mockHandler := new(service.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -274,7 +275,7 @@ func TestFooController_Update(t *testing.T) {
 		body       string
 		statusCode int
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name:       "Success Case",
@@ -282,11 +283,11 @@ func TestFooController_Update(t *testing.T) {
 			body:       `{"label":"foo_update", "secret":"secret_update", "value":1, "weight":1.5}`,
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					handler.FooUpdateInput{
+					data.FooUpdateInput{
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -300,7 +301,7 @@ func TestFooController_Update(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
+			mockHandler := new(service.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -327,14 +328,14 @@ func TestFooController_Delete(t *testing.T) {
 		url        string
 		statusCode int
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name:       "Success Case",
 			url:        "/foos/20000000-0000-0000-0000-000000000001",
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *handler.MockFooHandler) {
+			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
 					"DeleteByID",
 					mock.Anything,
@@ -347,7 +348,7 @@ func TestFooController_Delete(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
+			mockHandler := new(service.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)

@@ -35,18 +35,18 @@ It provides a robust configuration system supporting default config, config file
 		return initConfig()
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+
 		var config core.Config
 		if err := viper.Unmarshal(&config); err != nil {
 			return fmt.Errorf("failed to parse configuration: %w", err)
 		}
 
-		server, err := core.NewServer(config)
+		server, err := core.NewServer(ctx, config)
 		if err != nil {
 			return fmt.Errorf("failed to initialize server: %w", err)
 		}
-
-		ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
 
 		if err := server.Start(ctx); err != nil {
 			return fmt.Errorf("failed to start server: %w", err)

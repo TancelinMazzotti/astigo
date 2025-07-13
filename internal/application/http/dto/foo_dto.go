@@ -32,6 +32,10 @@ type FooCreateBody struct {
 	Weight float32 `json:"weight" binding:"required"`
 }
 
+type FooCreateResponse struct {
+	Id uuid.UUID `json:"id" binding:"required"`
+}
+
 type FooUpdateRequest struct {
 	Id string `uri:"id" binding:"required"`
 }

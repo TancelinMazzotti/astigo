@@ -1,7 +1,7 @@
 package redis
 
 import (
-	"astigo/internal/domain/cache"
+	"astigo/internal/domain/adapter/cache"
 	"astigo/internal/domain/model"
 	"astigo/internal/infrastructure/cache/redis/entity"
 	"context"

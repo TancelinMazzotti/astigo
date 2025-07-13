@@ -1,8 +1,9 @@
 package grpc
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/adapter/data"
 	"astigo/internal/domain/model"
+	"astigo/internal/domain/service"
 	"astigo/pkg/proto"
 	"context"
 	"fmt"
@@ -21,7 +22,7 @@ func TestFooService_List(t *testing.T) {
 		expectedError error
 		expectedCount int
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -32,10 +33,10 @@ func TestFooService_List(t *testing.T) {
 			expectedCount: 3,
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+			setupMockHandler: func(mockRepo *service.MockFooService) {
 				mockRepo.On("GetAll",
 					mock.Anything,
-					handler.FooReadListInput{Offset: 0, Limit: 10},
+					data.FooReadListInput{Offset: 0, Limit: 10},
 				).Return(
 					[]*model.Foo{
 						{
@@ -73,12 +74,12 @@ func TestFooService_List(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
-			service := NewFooService(mockHandler)
+			mockHandler := new(service.MockFooService)
+			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
 
-			resp, err := service.List(context.Background(), testCase.request)
+			resp, err := svc.List(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
 				assert.Error(t, err)
@@ -101,7 +102,7 @@ func TestFooService_Get(t *testing.T) {
 		expectedError  error
 		expectedResult *proto.FooResponse
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -118,7 +119,7 @@ func TestFooService_Get(t *testing.T) {
 				},
 			},
 
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+			setupMockHandler: func(mockRepo *service.MockFooService) {
 				mockRepo.On("GetByID",
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
@@ -140,18 +141,18 @@ func TestFooService_Get(t *testing.T) {
 			},
 			expectedError:    fmt.Errorf("fail to parse id"),
 			expectedResult:   nil,
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {},
+			setupMockHandler: func(mockRepo *service.MockFooService) {},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
-			service := NewFooService(mockHandler)
+			mockHandler := new(service.MockFooService)
+			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
 
-			resp, err := service.Get(context.Background(), testCase.request)
+			resp, err := svc.Get(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
 				assert.Error(t, err)
@@ -174,7 +175,7 @@ func TestFooService_Create(t *testing.T) {
 		expectedResult *proto.FooResponse
 		expectedError  error
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -194,10 +195,10 @@ func TestFooService_Create(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+			setupMockHandler: func(mockRepo *service.MockFooService) {
 				mockRepo.On("Create",
 					mock.Anything,
-					handler.FooCreateInput{
+					data.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
 						Value:  1,
@@ -219,12 +220,12 @@ func TestFooService_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
-			service := NewFooService(mockHandler)
+			mockHandler := new(service.MockFooService)
+			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
 
-			resp, err := service.Create(context.Background(), testCase.request)
+			resp, err := svc.Create(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
 				assert.Error(t, err)
@@ -247,7 +248,7 @@ func TestFooService_Update(t *testing.T) {
 		expectedResult *proto.FooResponse
 		expectedError  error
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -268,8 +269,8 @@ func TestFooService_Update(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
-				mockRepo.On("Update", mock.Anything, handler.FooUpdateInput{
+			setupMockHandler: func(mockRepo *service.MockFooService) {
+				mockRepo.On("Update", mock.Anything, data.FooUpdateInput{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
@@ -283,12 +284,12 @@ func TestFooService_Update(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
-			service := NewFooService(mockHandler)
+			mockHandler := new(service.MockFooService)
+			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
 
-			resp, err := service.Update(context.Background(), testCase.request)
+			resp, err := svc.Update(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
 				assert.Error(t, err)
@@ -307,7 +308,7 @@ func TestFooService_Delete(t *testing.T) {
 		expectedResult *proto.DeleteFooResponse
 		expectedError  error
 
-		setupMockHandler func(*handler.MockFooHandler)
+		setupMockHandler func(*service.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -319,7 +320,7 @@ func TestFooService_Delete(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *handler.MockFooHandler) {
+			setupMockHandler: func(mockRepo *service.MockFooService) {
 				mockRepo.On("DeleteByID", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
 			},
 		},
@@ -328,12 +329,12 @@ func TestFooService_Delete(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(handler.MockFooHandler)
-			service := NewFooService(mockHandler)
+			mockHandler := new(service.MockFooService)
+			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
 
-			resp, err := service.Delete(context.Background(), testCase.request)
+			resp, err := svc.Delete(context.Background(), testCase.request)
 
 			if testCase.expectedError != nil {
 				assert.Error(t, err)

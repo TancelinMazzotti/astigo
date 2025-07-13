@@ -9,21 +9,22 @@ import (
 type Operation string
 
 const (
-	IN                    Operation = "in"
-	CONTAINS              Operation = "contains"
-	SUBSET                Operation = "subset"
-	SUPERSET              Operation = "superset"
-	EQUALS                Operation = "eq"
-	NOT_EQUALS            Operation = "neq"
-	LESS_THAN             Operation = "lt"
-	LESS_THAN_OR_EQUAL    Operation = "lte"
-	GREATER_THAN          Operation = "gt"
-	GREATER_THAN_OR_EQUAL Operation = "gte"
+	In       Operation = "in"
+	Contains Operation = "cts"
+	Subset   Operation = "subset"
+	Superset Operation = "superset"
 
-	EXCLUSIVE_OR Operation = "xor"
-	OR           Operation = "or"
-	AND          Operation = "and"
-	NOT          Operation = "not"
+	Equals             Operation = "eq"
+	NotEquals          Operation = "neq"
+	LessThan           Operation = "lt"
+	LessThanOrEqual    Operation = "lte"
+	GreaterThan        Operation = "gt"
+	GreaterThanOrEqual Operation = "gte"
+
+	ExclusiveOr Operation = "xor"
+	Or          Operation = "or"
+	And         Operation = "and"
+	Not         Operation = "not"
 )
 
 type Filter struct {
@@ -36,9 +37,9 @@ type Filter struct {
 
 func (o Operation) IsValid() bool {
 	switch o {
-	case IN, CONTAINS, SUBSET, SUPERSET, EQUALS, NOT_EQUALS,
-		LESS_THAN, LESS_THAN_OR_EQUAL, GREATER_THAN, GREATER_THAN_OR_EQUAL,
-		EXCLUSIVE_OR, OR, AND, NOT:
+	case In, Contains, Subset, Superset, Equals, NotEquals,
+		LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual,
+		ExclusiveOr, Or, And, Not:
 		return true
 	}
 	return false

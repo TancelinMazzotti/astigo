@@ -2,6 +2,9 @@ package http
 
 import (
 	"astigo/internal/application/http/middleware"
+	"astigo/internal/domain/model"
+	"astigo/internal/domain/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -19,10 +22,17 @@ type GinConfig struct {
 	ClientID string `mapstructure:"client_id"`
 }
 
-func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthController, fooController *FooController) *gin.Engine {
+func NewGin(
+	config GinConfig,
+	logger *zap.Logger,
+	authHandler service.IAuthService,
+	healthController *HealthController,
+	fooController *FooController,
+) *gin.Engine {
+
 	middleware.RegisterMetrics()
 	gin.SetMode(config.Mode)
-	authMiddleware := middleware.NewAuthMiddleware(config.Issuer, config.ClientID)
+	authMiddleware := middleware.NewAuthMiddleware(authHandler)
 
 	e := gin.New()
 	e.Use(otelgin.Middleware("astigo"))
@@ -54,7 +64,12 @@ func NewGin(config GinConfig, logger *zap.Logger, healthController *HealthContro
 	e.DELETE("/foos/:id", fooController.DeleteByID)
 
 	e.GET("/private", authMiddleware.Middleware, func(c *gin.Context) {
-		claims, _ := c.Get("claims")
+		claimsCtx, _ := c.Get("claims")
+		claims, ok := claimsCtx.(*model.Claims)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": fmt.Errorf("invalid claims type")})
+		}
+
 		c.JSON(http.StatusOK, gin.H{
 			"claims": claims,
 		})

@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"astigo/internal/domain/handler"
+	"astigo/internal/domain/adapter/data"
 	"astigo/internal/domain/model"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -18,14 +18,14 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name          string
-		input         handler.FooReadListInput
+		input         data.FooReadListInput
 		expectedCount int
 		expectedError error
 		expectedData  []*model.Foo
 	}{
 		{
 			name:          "Success Case - Multiple Foos",
-			input:         handler.FooReadListInput{Offset: 0, Limit: 20},
+			input:         data.FooReadListInput{Offset: 0, Limit: 20},
 			expectedCount: 3,
 			expectedError: nil,
 			expectedData: []*model.Foo{
@@ -36,13 +36,13 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 		},
 		{
 			name:          "Success Case - Empty Foos",
-			input:         handler.FooReadListInput{Offset: 0, Limit: 0},
+			input:         data.FooReadListInput{Offset: 0, Limit: 0},
 			expectedCount: 0,
 			expectedError: nil,
 		},
 		{
 			name:          "Success Case - With Offset",
-			input:         handler.FooReadListInput{Offset: 1, Limit: 20},
+			input:         data.FooReadListInput{Offset: 1, Limit: 20},
 			expectedCount: 2,
 			expectedError: nil,
 			expectedData: []*model.Foo{
@@ -52,7 +52,7 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 		},
 		{
 			name:          "Success Case - With Limit",
-			input:         handler.FooReadListInput{Offset: 0, Limit: 2},
+			input:         data.FooReadListInput{Offset: 0, Limit: 2},
 			expectedCount: 2,
 			expectedError: nil,
 			expectedData: []*model.Foo{
@@ -68,7 +68,7 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(container.Config)
+	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,7 +135,7 @@ func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(container.Config)
+	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +189,7 @@ func TestIntegrationFooPostgres_Create(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(container.Config)
+	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -247,7 +247,7 @@ func TestIntegrationFooPostgres_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(container.Config)
+	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -296,7 +296,7 @@ func TestIntegrationFooPostgres_DeleteByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(container.Config)
+	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// ZapLoggerMiddleware is a middleware that logs HTTP requests using the provided zap.Logger.
+// It logs details such as status, method, path, client IP, and request latency.
 func ZapLoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
@@ -20,6 +22,7 @@ func ZapLoggerMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	}
 }
 
+// ZapRecoveryMiddleware provides a middleware for recovering from panics, logs the error, and returns a 500 status.
 func ZapRecoveryMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return gin.CustomRecovery(func(c *gin.Context, err any) {
 		logger.Error("panic recovered",

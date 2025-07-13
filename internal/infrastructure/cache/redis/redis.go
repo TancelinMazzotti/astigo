@@ -16,7 +16,7 @@ type RedisConfig struct {
 }
 
 // NewRedis initializes a new Redis client using the provided configuration and verifies the connection with a ping.
-func NewRedis(config RedisConfig) (*redis.Client, error) {
+func NewRedis(ctx context.Context, config RedisConfig) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Host + ":" + strconv.Itoa(config.Port),
 		Password: config.Password,
@@ -24,9 +24,9 @@ func NewRedis(config RedisConfig) (*redis.Client, error) {
 	})
 
 	// Vérifier la connexion
-	_, err := client.Ping(context.Background()).Result()
+	_, err := client.Ping(ctx).Result()
 	if err != nil {
-		return nil, fmt.Errorf("échec de connexion à Redis : %w", err)
+		return nil, fmt.Errorf("failed to ping redis : %w", err)
 	}
 
 	return client, nil
