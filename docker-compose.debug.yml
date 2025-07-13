@@ -33,10 +33,16 @@ services:
       - ASTIGO_REDIS_HOST=redis
       - ASTIGO_REDIS_DB=0
     depends_on:
-      - keycloak
-      - postgres
-      - nats
-      - redis
+      keycloak:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      nats:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
 
   postgres:
     image: postgres:latest
@@ -50,6 +56,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./deployments/postgres/init-db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U astigo" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
@@ -59,6 +70,31 @@ services:
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    container_name: minio
+    image: 'quay.io/minio/minio'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - MINIO_ROOT_USER=minio-root-user
+      - MINIO_ROOT_PASSWORD=minio-root-password
+    volumes:
+      - minio_data:/data
+    entrypoint: bash
+    command: -c 'mkdir -p /data/default && minio server /data --console-address ":9001"'
+    healthcheck:
+      test: [ "CMD", "mc", "ready", "local" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   nats:
     image: nats:2-alpine
@@ -72,6 +108,11 @@ services:
       - "-D"
       - "-V"
       - "-V"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   keycloak:
     image: quay.io/keycloak/keycloak:latest
@@ -85,6 +126,15 @@ services:
       - "8090:8080"
     volumes:
       - ./deployments/keycloak:/opt/keycloak/data/import
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'exec 3<>/dev/tcp/localhost/8080; echo -e "GET /health/ready HTTP/1.1\nhost: localhost:8080\n" >&3; timeout --preserve-status 1 cat <&3 | grep -m 1 status | grep -m 1 UP; ERROR=$?; exec 3<&-; exec 3>&-; exit $ERROR'
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -95,7 +145,11 @@ services:
       - "4317:4317"     # Port OTLP gRPC
     environment:
       - COLLECTOR_ZIPKIN_HTTP_PORT=9411
-
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "localhost:16686" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   prometheus:
     image: prom/prometheus
@@ -104,6 +158,11 @@ services:
       - ./deployments/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   loki:
     image: grafana/loki:2.9.3
@@ -121,6 +180,11 @@ services:
         target: /loki/chunks
       - type: tmpfs
         target: /wal
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3100/ready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   promtail:
     image: grafana/promtail:2.9.3
@@ -131,7 +195,8 @@ services:
       - /var/log:/var/log
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
     depends_on:
-      - loki
+      loki:
+        condition: service_healthy
 
   grafana:
     image: grafana/grafana
@@ -139,8 +204,10 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - prometheus
-      - loki
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
     volumes:
       - ./deployments/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
       - ./deployments/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
@@ -148,7 +215,11 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
-
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:

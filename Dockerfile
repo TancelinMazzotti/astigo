@@ -14,6 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
 # Image definition
 FROM alpine:latest
 RUN apk update && apk upgrade
+RUN apk add curl
 
 RUN adduser -D appuser
 
