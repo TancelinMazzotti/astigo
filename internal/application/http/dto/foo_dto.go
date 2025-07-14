@@ -6,7 +6,7 @@ import (
 )
 
 type FooReadRequest struct {
-	Id string `uri:"id" binding:"required"`
+	Id string `uri:"id" binding:"required,uuid"`
 }
 
 type FooReadResponse struct {
@@ -33,7 +33,7 @@ type FooCreateBody struct {
 }
 
 type FooCreateResponse struct {
-	Id uuid.UUID `json:"id" binding:"required"`
+	Id uuid.UUID `json:"id" binding:"required,uuid"`
 }
 
 type FooUpdateRequest struct {
@@ -47,5 +47,5 @@ type FooUpdateBody struct {
 }
 
 type FooDeleteRequest struct {
-	Id string `uri:"id" binding:"required"`
+	Id string `uri:"id" binding:"required,uuid"`
 }

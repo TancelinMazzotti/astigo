@@ -62,7 +62,7 @@ func TestFooController_GetAll(t *testing.T) {
 					{
 						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000003"),
 						Label:     "foo3",
-						Secret:    "",
+						Secret:    "secret3",
 						Value:     3,
 						Weight:    3.5,
 						CreatedAt: time.Now(),
@@ -71,10 +71,58 @@ func TestFooController_GetAll(t *testing.T) {
 			},
 		},
 		{
+			name:         "Success Case - No Foos",
+			url:          "/foos?offset=0&limit=10",
+			statusCode:   http.StatusOK,
+			bodyResponse: `[]`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"GetAll",
+					mock.Anything,
+					data.FooReadListInput{Offset: 0, Limit: 10},
+				).Return([]*model.Foo{}, nil)
+			},
+		},
+		{
+			name:             "Failure Case - Invalid type offset",
+			url:              "/foos?offset=invalid&limit=10",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate query params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:             "Failure Case - Invalid value offset",
+			url:              "/foos?offset=-1&limit=10",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate query params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:             "Failure Case - Invalid type limit",
+			url:              "/foos?offset=0&limit=invalid",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate query params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:             "Failure Case - Invalid value limit",
+			url:              "/foos?offset=0&limit=-1",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate query params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:             "Failure Case - Invalid exceeded limit",
+			url:              "/foos?offset=0&limit=51",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate query params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
 			name:         "Failure Case - Repository Error",
 			url:          "/foos?offset=0&limit=10",
 			statusCode:   http.StatusInternalServerError,
-			bodyResponse: `{"error":"repository error"}`,
+			bodyResponse: `{"error":"failed to get all foos"}`,
 
 			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
@@ -143,10 +191,17 @@ func TestFooController_GetByID(t *testing.T) {
 			},
 		},
 		{
+			name:             "Failure Case - Not UUID",
+			url:              "/foos/not_uuid",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate path params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
 			name:         "Failure Case - Not Found",
 			url:          "/foos/40400000-0000-0000-0000-000000000000",
 			statusCode:   http.StatusNotFound,
-			bodyResponse: `{"error":"foo with id '40400000-0000-0000-0000-000000000000' not found"}`,
+			bodyResponse: `{"error":"foo not found"}`,
 
 			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
@@ -163,7 +218,7 @@ func TestFooController_GetByID(t *testing.T) {
 			name:         "Failure Case - Repository Error",
 			url:          "/foos/40000000-0000-0000-0000-000000000000",
 			statusCode:   http.StatusInternalServerError,
-			bodyResponse: `{"error":"repository error"}`,
+			bodyResponse: `{"error":"failed to get foo by id"}`,
 
 			setupMockHandler: func(mockHandler *service.MockFooService) {
 				mockHandler.On(
@@ -241,6 +296,36 @@ func TestFooController_Create(t *testing.T) {
 					}, nil)
 			},
 		},
+		{
+			name:             "Failure Case - Invalid Body",
+			url:              "/foos",
+			body:             `{"label":"foo_create"}`,
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate request body"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:         "Failure Case - Repository Error",
+			url:          "/foos",
+			body:         `{"label":"foo_create", "secret":"secret_create", "value":1, "weight":1.5}`,
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error":"failed to create foo"}`,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Create",
+					mock.Anything,
+					data.FooCreateInput{
+						Label:  "foo_create",
+						Secret: "secret_create",
+						Value:  1,
+						Weight: 1.5,
+					}).Return(
+					(*model.Foo)(nil),
+					errors.New("repository error"),
+				)
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -270,10 +355,11 @@ func TestFooController_Create(t *testing.T) {
 func TestFooController_Update(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name       string
-		url        string
-		body       string
-		statusCode int
+		name         string
+		url          string
+		body         string
+		statusCode   int
+		bodyResponse string
 
 		setupMockHandler func(*service.MockFooService)
 	}{
@@ -296,6 +382,54 @@ func TestFooController_Update(t *testing.T) {
 					}).Return(nil)
 			},
 		},
+		{
+			name:             "Failure Case - Invalid Body",
+			url:              "/foos/20000000-0000-0000-0000-000000000001",
+			body:             `{"label":"foo_update"}`,
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate request body"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:         "Failure Case - Not Found",
+			url:          "/foos/40400000-0000-0000-0000-000000000000",
+			body:         `{"label":"foo_update", "secret":"secret_update", "value":1, "weight":1.5}`,
+			statusCode:   http.StatusNotFound,
+			bodyResponse: `{"error":"foo not found"}`,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					data.FooUpdateInput{
+						Id:     uuid.MustParse("40400000-0000-0000-0000-000000000000"),
+						Label:  "foo_update",
+						Secret: "secret_update",
+						Value:  1,
+						Weight: 1.5,
+					}).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+			},
+		},
+		{
+			name:         "Failure Case - Repository Error",
+			url:          "/foos/20000000-0000-0000-0000-000000000001",
+			body:         `{"label":"foo_update", "secret":"secret_update", "value":1, "weight":1.5}`,
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error": "failed to update foo"}`,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					data.FooUpdateInput{
+						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label:  "foo_update",
+						Secret: "secret_update",
+						Value:  1,
+						Weight: 1.5,
+					}).Return(errors.New("repository error"))
+			},
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -316,6 +450,11 @@ func TestFooController_Update(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, testCase.statusCode, w.Code)
+			if testCase.bodyResponse != "" {
+				assert.JSONEq(t, testCase.bodyResponse, w.Body.String())
+			} else {
+				assert.Empty(t, w.Body.String())
+			}
 			mockHandler.AssertExpectations(t)
 		})
 	}
@@ -324,9 +463,10 @@ func TestFooController_Update(t *testing.T) {
 func TestFooController_Delete(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		name       string
-		url        string
-		statusCode int
+		name         string
+		url          string
+		statusCode   int
+		bodyResponse string
 
 		setupMockHandler func(*service.MockFooService)
 	}{
@@ -341,6 +481,39 @@ func TestFooController_Delete(t *testing.T) {
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(nil)
+			},
+		},
+		{
+			name:             "Failure Case - Not UUID",
+			url:              "/foos/not_uuid",
+			statusCode:       http.StatusBadRequest,
+			bodyResponse:     `{"error":"failed to validate path params"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {},
+		},
+		{
+			name:         "Failure Case - Not Found",
+			url:          "/foos/40400000-0000-0000-0000-000000000000",
+			statusCode:   http.StatusNotFound,
+			bodyResponse: `{"error":"foo not found"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"DeleteByID",
+					mock.Anything,
+					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
+				).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+			},
+		},
+		{
+			name:         "Failure Case - Repository Error",
+			url:          "/foos/20000000-0000-0000-0000-000000000001",
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error": "failed to delete foo"}`,
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"DeleteByID",
+					mock.Anything,
+					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+				).Return(errors.New("repository error"))
 			},
 		},
 	}
@@ -363,8 +536,12 @@ func TestFooController_Delete(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, testCase.statusCode, w.Code)
+			if testCase.bodyResponse != "" {
+				assert.JSONEq(t, testCase.bodyResponse, w.Body.String())
+			} else {
+				assert.Empty(t, w.Body.String())
+			}
 			mockHandler.AssertExpectations(t)
-
 		})
 	}
 }

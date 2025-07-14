@@ -45,7 +45,7 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 	var queryParams dto.ListRequest
 
 	if err := ctx.ShouldBindQuery(&queryParams); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate query params"})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 		Limit:  queryParams.Limit,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get all foos"})
 		return
 	}
 
@@ -78,24 +78,23 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 	var pathParams dto.FooReadRequest
 
 	if err := ctx.ShouldBindUri(&pathParams); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate path params"})
 		return
 	}
 
 	id, err := uuid.Parse(pathParams.Id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id to uuid"})
 		return
 	}
 
 	foo, err := c.svc.GetByID(ctx, id)
 	if err != nil {
-
 		if errors.As(err, &repository.ErrorNotFound) {
-			ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
 		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to get foo by id"})
 		return
 	}
 
@@ -114,7 +113,7 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 func (c *FooController) Create(ctx *gin.Context) {
 	var input dto.FooCreateBody
 	if err := ctx.ShouldBindJSON(&input); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate request body"})
 		return
 	}
 
@@ -125,7 +124,7 @@ func (c *FooController) Create(ctx *gin.Context) {
 		Weight: input.Weight,
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create foo"})
 		return
 	}
 
@@ -144,21 +143,21 @@ func (c *FooController) Create(ctx *gin.Context) {
 // @Success 204
 // @Router /foos [put]
 func (c *FooController) Update(ctx *gin.Context) {
-	var pathParams dto.FooReadRequest
+	var pathParams dto.FooUpdateRequest
 	var body dto.FooUpdateBody
 	if err := ctx.ShouldBindUri(&pathParams); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate path params"})
 		return
 	}
 
 	id, err := uuid.Parse(pathParams.Id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id to uuid"})
 		return
 	}
 
 	if err := ctx.ShouldBindJSON(&body); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate request body"})
 		return
 	}
 
@@ -169,7 +168,11 @@ func (c *FooController) Update(ctx *gin.Context) {
 		Value:  body.Value,
 		Weight: body.Weight,
 	}); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.As(err, &repository.ErrorNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update foo"})
 		return
 	}
 	ctx.Status(http.StatusNoContent)
@@ -184,21 +187,25 @@ func (c *FooController) Update(ctx *gin.Context) {
 // @Success 204
 // @Router /foos/{id} [delete]
 func (c *FooController) DeleteByID(ctx *gin.Context) {
-	var pathParams dto.FooReadRequest
+	var pathParams dto.FooDeleteRequest
 
 	if err := ctx.ShouldBindUri(&pathParams); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate path params"})
 		return
 	}
 
 	id, err := uuid.Parse(pathParams.Id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id to uuid"})
 		return
 	}
 
 	if err := c.svc.DeleteByID(ctx, id); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		if errors.As(err, &repository.ErrorNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete foo"})
 		return
 	}
 	ctx.Status(http.StatusNoContent)
