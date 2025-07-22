@@ -33,7 +33,7 @@ type IFooService interface {
 	GetAll(ctx context.Context, input data.FooReadListInput) ([]*model.Foo, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error)
 	Create(ctx context.Context, input data.FooCreateInput) (*model.Foo, error)
-	Update(ctx context.Context, input data.FooUpdateInput) error
+	Update(ctx context.Context, input data.IFooUpdateMerger) error
 	DeleteByID(ctx context.Context, id uuid.UUID) error
 }
 
@@ -56,7 +56,7 @@ func (m *MockFooService) Create(ctx context.Context, input data.FooCreateInput) 
 	return args.Get(0).(*model.Foo), args.Error(1)
 }
 
-func (m *MockFooService) Update(ctx context.Context, input data.FooUpdateInput) error {
+func (m *MockFooService) Update(ctx context.Context, input data.IFooUpdateMerger) error {
 	args := m.Called(ctx, input)
 	return args.Error(0)
 }
@@ -156,8 +156,8 @@ func (s *FooService) Create(ctx context.Context, input data.FooCreateInput) (*mo
 
 // Update applies partial updates to an existing Foo entity based on the provided input and propagates changes across systems.
 // It retrieves the entity by ID, merges changes, updates the repository, cache, and publishes an event.
-func (s *FooService) Update(ctx context.Context, input data.FooUpdateInput) error {
-	foo, err := s.repo.FindByID(ctx, input.Id)
+func (s *FooService) Update(ctx context.Context, input data.IFooUpdateMerger) error {
+	foo, err := s.repo.FindByID(ctx, input.GetID())
 	if err != nil {
 		s.logger.Debug("fail to find foo by id", zap.Error(err))
 		return fmt.Errorf("fail to get foo by id: %w", err)

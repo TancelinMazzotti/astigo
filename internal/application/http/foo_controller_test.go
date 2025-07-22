@@ -373,7 +373,7 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					data.FooUpdateInput{
+					&data.FooUpdateInput{
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -401,7 +401,7 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					data.FooUpdateInput{
+					&data.FooUpdateInput{
 						Id:     uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -421,7 +421,7 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					data.FooUpdateInput{
+					&data.FooUpdateInput{
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -447,6 +447,137 @@ func TestFooController_Update(t *testing.T) {
 			gin.SetMode(gin.TestMode)
 			router := gin.Default()
 			router.PUT("/foos/:id", controller.Update)
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, testCase.statusCode, w.Code)
+			if testCase.bodyResponse != "" {
+				assert.JSONEq(t, testCase.bodyResponse, w.Body.String())
+			} else {
+				assert.Empty(t, w.Body.String())
+			}
+			mockHandler.AssertExpectations(t)
+		})
+	}
+}
+
+func TestFooController_Patch(t *testing.T) {
+	t.Parallel()
+	testCases := []struct {
+		name         string
+		url          string
+		body         string
+		statusCode   int
+		bodyResponse string
+
+		setupMockHandler func(*service.MockFooService)
+	}{
+		{
+			name:       "Success Case",
+			url:        "/foos/20000000-0000-0000-0000-000000000001",
+			body:       `{"label":"foo_patch", "secret":"secret_patch", "value":1, "weight":1.5}`,
+			statusCode: http.StatusNoContent,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					&data.FooPatchInput{
+						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label: data.Optional[string]{
+							Value: "foo_patch",
+							Set:   true,
+						},
+						Secret: data.Optional[string]{
+							Value: "secret_patch",
+							Set:   true,
+						},
+						Value: data.Optional[int]{
+							Value: 1,
+							Set:   true,
+						},
+						Weight: data.Optional[float32]{
+							Value: 1.5,
+							Set:   true,
+						},
+					}).Return(nil)
+			},
+		},
+		{
+			name:       "Success Case - Partial Update",
+			url:        "/foos/20000000-0000-0000-0000-000000000001",
+			body:       `{"label":"foo_patch"}`,
+			statusCode: http.StatusNoContent,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					&data.FooPatchInput{
+						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label: data.Optional[string]{
+							Value: "foo_patch",
+							Set:   true,
+						},
+					}).Return(nil)
+			},
+		},
+		{
+			name:         "Failure Case - Not Found",
+			url:          "/foos/40400000-0000-0000-0000-000000000000",
+			body:         `{"label":"foo_patch"}`,
+			statusCode:   http.StatusNotFound,
+			bodyResponse: `{"error":"foo not found"}`,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					&data.FooPatchInput{
+						Id: uuid.MustParse("40400000-0000-0000-0000-000000000000"),
+						Label: data.Optional[string]{
+							Value: "foo_patch",
+							Set:   true,
+						},
+					}).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+			},
+		},
+		{
+			name:         "Failure Case - Repository Error",
+			url:          "/foos/20000000-0000-0000-0000-000000000001",
+			body:         `{"label":"foo_patch"}`,
+			statusCode:   http.StatusInternalServerError,
+			bodyResponse: `{"error": "failed to update foo"}`,
+
+			setupMockHandler: func(mockHandler *service.MockFooService) {
+				mockHandler.On(
+					"Update",
+					mock.Anything,
+					&data.FooPatchInput{
+						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+						Label: data.Optional[string]{
+							Value: "foo_patch",
+							Set:   true,
+						},
+					}).Return(errors.New("repository error"))
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			t.Parallel()
+			mockHandler := new(service.MockFooService)
+			controller := NewFooController(mockHandler)
+
+			testCase.setupMockHandler(mockHandler)
+
+			req, err := http.NewRequest(http.MethodPatch, testCase.url, strings.NewReader(testCase.body))
+			assert.NoError(t, err)
+			w := httptest.NewRecorder()
+
+			gin.SetMode(gin.TestMode)
+			router := gin.Default()
+			router.PATCH("/foos/:id", controller.Patch)
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, testCase.statusCode, w.Code)

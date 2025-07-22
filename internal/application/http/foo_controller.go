@@ -24,6 +24,7 @@ type IFooController interface {
 	GetByID(ctx *gin.Context)
 	Create(ctx *gin.Context)
 	Update(ctx *gin.Context)
+	Patch(ctx *gin.Context)
 	DeleteByID(ctx *gin.Context)
 }
 
@@ -141,7 +142,7 @@ func (c *FooController) Create(ctx *gin.Context) {
 // @Produce JSON
 // @Param foo body dto.FooUpdateBody true "Foo"
 // @Success 204
-// @Router /foos [put]
+// @Router /foos/{id} [put]
 func (c *FooController) Update(ctx *gin.Context) {
 	var pathParams dto.FooUpdateRequest
 	var body dto.FooUpdateBody
@@ -161,13 +162,70 @@ func (c *FooController) Update(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.svc.Update(ctx, data.FooUpdateInput{
+	if err := c.svc.Update(ctx, &data.FooUpdateInput{
 		Id:     id,
 		Label:  body.Label,
 		Secret: body.Secret,
 		Value:  body.Value,
 		Weight: body.Weight,
 	}); err != nil {
+		if errors.As(err, &repository.ErrorNotFound) {
+			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "failed to update foo"})
+		return
+	}
+	ctx.Status(http.StatusNoContent)
+}
+
+// Patch @Summary Patch a foo
+// @Description Patch a foo
+// @Tags Foo
+// @Accept JSON
+// @Produce JSON
+// @Param foo body dto.FooPatchBody true "Foo"
+// @Success 204
+// @Router /foos/{id} [patch]
+func (c *FooController) Patch(ctx *gin.Context) {
+	var pathParams dto.FooPatchRequest
+	var body dto.FooPatchBody
+	if err := ctx.ShouldBindUri(&pathParams); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate path params"})
+		return
+	}
+
+	id, err := uuid.Parse(pathParams.Id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to parse id to uuid"})
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "failed to validate request body"})
+		return
+	}
+
+	var input data.FooPatchInput
+	input.Id = id
+	if body.Label != nil {
+		input.Label.Set = true
+		input.Label.Value = *body.Label
+	}
+	if body.Secret != nil {
+		input.Secret.Set = true
+		input.Secret.Value = *body.Secret
+	}
+	if body.Value != nil {
+		input.Value.Set = true
+		input.Value.Value = *body.Value
+	}
+	if body.Weight != nil {
+		input.Weight.Set = true
+		input.Weight.Value = *body.Weight
+	}
+
+	if err := c.svc.Update(ctx, &input); err != nil {
 		if errors.As(err, &repository.ErrorNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return

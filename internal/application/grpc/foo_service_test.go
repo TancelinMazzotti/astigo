@@ -270,7 +270,7 @@ func TestFooService_Update(t *testing.T) {
 			expectedError: nil,
 
 			setupMockHandler: func(mockRepo *service.MockFooService) {
-				mockRepo.On("Update", mock.Anything, data.FooUpdateInput{
+				mockRepo.On("Update", mock.Anything, &data.FooUpdateInput{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",

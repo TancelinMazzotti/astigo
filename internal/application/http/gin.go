@@ -61,6 +61,7 @@ func NewGin(
 	e.GET("foos/:id", fooController.GetByID)
 	e.POST("/foos", fooController.Create)
 	e.PUT("/foos/:id", fooController.Update)
+	e.PATCH("/foos/:id", fooController.Patch)
 	e.DELETE("/foos/:id", fooController.DeleteByID)
 
 	e.GET("/private", authMiddleware.Middleware, func(c *gin.Context) {

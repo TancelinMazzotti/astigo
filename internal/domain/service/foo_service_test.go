@@ -488,7 +488,7 @@ func TestFooService_Update(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
 		name          string
-		input         data.FooUpdateInput
+		input         data.IFooUpdateMerger
 		expectedError error
 
 		setupMockRepository func(*repository.MockFooRepository)
@@ -497,7 +497,7 @@ func TestFooService_Update(t *testing.T) {
 	}{
 		{
 			name: "Success Case",
-			input: data.FooUpdateInput{
+			input: &data.FooUpdateInput{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
@@ -548,7 +548,7 @@ func TestFooService_Update(t *testing.T) {
 		},
 		{
 			name: "Success Case - Cache Error",
-			input: data.FooUpdateInput{
+			input: &data.FooUpdateInput{
 				Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				Label:  "foo_update",
 				Secret: "secret_update",
@@ -599,7 +599,7 @@ func TestFooService_Update(t *testing.T) {
 		},
 		{
 			name: "Failure Case - Repository Get Error",
-			input: data.FooUpdateInput{
+			input: &data.FooUpdateInput{
 				Id:     uuid.MustParse("40000000-0000-0000-0000-000000000000"),
 				Label:  "foo_update",
 				Secret: "secret_update",
