@@ -203,7 +203,7 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	}
 
 	server.Logger.Info("create new oidc provider")
-	server.Provider, err = oidc.NewProvider(context.Background(), server.Config.Auth.Issuer)
+	server.Provider, err = oidc.NewProvider(ctx, server.Config.Auth.Issuer)
 	if err != nil {
 		server.Logger.Error("fail to create oidc provider", zap.Error(err))
 		return nil, fmt.Errorf("failed to create oidc provider: %w", err)

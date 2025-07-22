@@ -6,7 +6,7 @@ import (
 )
 
 type FooReadRequest struct {
-	Id string `uri:"id" binding:"required"`
+	Id string `uri:"id" binding:"required,uuid"`
 }
 
 type FooReadResponse struct {
@@ -37,7 +37,7 @@ type FooCreateResponse struct {
 }
 
 type FooUpdateRequest struct {
-	Id string `uri:"id" binding:"required"`
+	Id string `uri:"id" binding:"required,uuid"`
 }
 type FooUpdateBody struct {
 	Label  string  `json:"label" binding:"required"`
@@ -46,6 +46,16 @@ type FooUpdateBody struct {
 	Weight float32 `json:"weight" binding:"required"`
 }
 
+type FooPatchRequest struct {
+	Id string `uri:"id" binding:"required,uuid"`
+}
+type FooPatchBody struct {
+	Label  *string  `json:"label" binding:"omitempty"`
+	Secret *string  `json:"secret" binding:"omitempty"`
+	Value  *int     `json:"value" binding:"omitempty"`
+	Weight *float32 `json:"weight" binding:"omitempty"`
+}
+
 type FooDeleteRequest struct {
-	Id string `uri:"id" binding:"required"`
+	Id string `uri:"id" binding:"required,uuid"`
 }

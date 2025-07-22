@@ -88,7 +88,7 @@ func (s *FooService) Update(ctx context.Context, req *proto.UpdateFooRequest) (*
 		return nil, fmt.Errorf("fail to parse id: %w", err)
 	}
 
-	if err := s.svc.Update(ctx, data.FooUpdateInput{
+	if err := s.svc.Update(ctx, &data.FooUpdateInput{
 		Id:     id,
 		Label:  req.Label,
 		Secret: req.Secret,
