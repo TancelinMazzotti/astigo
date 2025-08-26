@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"astigo/internal/domain/model"
-	"astigo/internal/domain/service"
 	"net/http"
 	"strings"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 )

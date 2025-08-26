@@ -1,16 +1,17 @@
 package http
 
 import (
-	"astigo/internal/domain/contract"
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/model"
-	"astigo/mocks/domain/contract/service"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

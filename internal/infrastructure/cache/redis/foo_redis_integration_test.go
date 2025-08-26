@@ -1,10 +1,11 @@
 package redis
 
 import (
-	"astigo/internal/domain/model"
 	"context"
 	"testing"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"

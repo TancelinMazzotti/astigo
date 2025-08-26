@@ -1,14 +1,15 @@
 package grpc
 
 import (
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/model"
-	"astigo/mocks/domain/contract/service"
-	"astigo/pkg/proto"
 	"context"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
+	"github.com/TancelinMazzotti/astigo/pkg/proto"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

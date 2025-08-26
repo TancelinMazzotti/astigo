@@ -1,8 +1,9 @@
 package entity
 
 import (
-	"astigo/internal/domain/model"
 	"database/sql"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 )

@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"astigo/internal/application/grpc/interceptor"
-	"astigo/pkg/proto"
+	"github.com/TancelinMazzotti/astigo/internal/application/grpc/interceptor"
+	"github.com/TancelinMazzotti/astigo/pkg/proto"
 
 	"go.uber.org/zap"
 	"google.golang.org/grpc"

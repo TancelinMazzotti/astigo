@@ -1,10 +1,11 @@
 package cache
 
 import (
-	"astigo/internal/domain/contract/cache"
-	"astigo/internal/domain/model"
 	"context"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/cache"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"

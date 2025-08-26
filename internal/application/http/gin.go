@@ -1,12 +1,13 @@
 package http
 
 import (
-	"astigo/internal/application/http/middleware"
-	"astigo/internal/domain/model"
-	"astigo/internal/domain/service"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/application/http/middleware"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

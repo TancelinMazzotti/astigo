@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 )

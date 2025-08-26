@@ -1,8 +1,9 @@
 package message
 
 import (
-	"astigo/internal/domain/model"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 )

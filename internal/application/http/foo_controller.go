@@ -1,12 +1,13 @@
 package http
 
 import (
-	"astigo/internal/application/http/dto"
-	"astigo/internal/domain/contract"
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/contract/service"
 	"errors"
 	"net/http"
+
+	"github.com/TancelinMazzotti/astigo/internal/application/http/dto"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

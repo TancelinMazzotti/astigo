@@ -1,4 +1,4 @@
-module astigo
+module github.com/TancelinMazzotti/astigo
 
 go 1.24.2
 

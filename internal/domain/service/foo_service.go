@@ -1,16 +1,17 @@
 package service
 
 import (
-	"astigo/internal/domain/contract/cache"
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/contract/messaging"
-	"astigo/internal/domain/contract/repository"
-	"astigo/internal/domain/contract/service"
-	"astigo/internal/domain/model"
 	"context"
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/cache"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/repository"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/service"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"

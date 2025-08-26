@@ -1,8 +1,8 @@
 package postgres
 
 import (
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"

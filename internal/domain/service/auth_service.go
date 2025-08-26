@@ -1,9 +1,10 @@
 package service
 
 import (
-	"astigo/internal/domain/model"
 	"context"
 	"fmt"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/coreos/go-oidc"
 	"go.uber.org/zap"

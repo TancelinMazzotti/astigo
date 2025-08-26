@@ -1,12 +1,13 @@
 package nats
 
 import (
-	"astigo/internal/domain/contract/messaging"
-	"astigo/internal/domain/model"
-	"astigo/internal/infrastructure/messaging/nats/message"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats/message"
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"

@@ -1,16 +1,17 @@
 package service
 
 import (
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/model"
-	"astigo/mocks/domain/contract/cache"
-	"astigo/mocks/domain/contract/messaging"
-	"astigo/mocks/domain/contract/repository"
 	"context"
 	"errors"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/cache"
+	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/repository"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

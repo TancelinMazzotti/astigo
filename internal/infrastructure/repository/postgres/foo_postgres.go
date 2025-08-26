@@ -1,16 +1,17 @@
 package postgres
 
 import (
-	"astigo/internal/domain/contract"
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/contract/repository"
-	"astigo/internal/domain/model"
-	"astigo/internal/infrastructure/repository/postgres/entity"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/repository"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres/entity"
 
 	"github.com/google/uuid"
 )

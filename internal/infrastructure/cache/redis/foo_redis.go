@@ -1,14 +1,15 @@
 package redis
 
 import (
-	"astigo/internal/domain/contract/cache"
-	"astigo/internal/domain/model"
-	"astigo/internal/infrastructure/cache/redis/entity"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/cache"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis/entity"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"

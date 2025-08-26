@@ -1,14 +1,6 @@
 package core
 
 import (
-	"astigo/internal/application/event"
-	grpc2 "astigo/internal/application/grpc"
-	http2 "astigo/internal/application/http"
-	"astigo/internal/domain/service"
-	redis2 "astigo/internal/infrastructure/cache/redis"
-	nats2 "astigo/internal/infrastructure/messaging/nats"
-	postgres2 "astigo/internal/infrastructure/repository/postgres"
-	"astigo/internal/infrastructure/tracer"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,6 +8,15 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/application/event"
+	grpc2 "github.com/TancelinMazzotti/astigo/internal/application/grpc"
+	http2 "github.com/TancelinMazzotti/astigo/internal/application/http"
+	"github.com/TancelinMazzotti/astigo/internal/domain/service"
+	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
+	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats"
+	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/tracer"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
