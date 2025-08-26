@@ -2,6 +2,7 @@ package dto
 
 import (
 	"astigo/internal/domain/model"
+
 	"github.com/google/uuid"
 )
 

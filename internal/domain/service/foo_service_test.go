@@ -1,20 +1,21 @@
 package service
 
 import (
-	"astigo/internal/domain/adapter/cache"
-	"astigo/internal/domain/adapter/data"
-	"astigo/internal/domain/adapter/messaging"
-	"astigo/internal/domain/adapter/repository"
+	"astigo/internal/domain/contract/data"
 	"astigo/internal/domain/model"
+	"astigo/mocks/domain/contract/cache"
+	"astigo/mocks/domain/contract/messaging"
+	"astigo/mocks/domain/contract/repository"
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"go.uber.org/zap"
-	"testing"
-	"time"
 )
 
 func TestFooService_GetAll(t *testing.T) {

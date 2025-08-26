@@ -3,10 +3,11 @@ package nats
 import (
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/nats"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"time"
 )
 
 // NatsContainer is a type that embeds a NATS container and its configuration for managing NATS server instances.

@@ -2,6 +2,7 @@ package nats
 
 import (
 	"fmt"
+
 	"github.com/nats-io/nats.go"
 )
 

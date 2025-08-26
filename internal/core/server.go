@@ -13,15 +13,16 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
+	"time"
+
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 	"github.com/nats-io/nats.go"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"net"
-	"net/http"
-	"time"
 )
 
 // Config represents the main configuration structure for the application, encompassing all required service settings.

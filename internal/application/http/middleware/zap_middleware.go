@@ -1,9 +1,10 @@
 package middleware
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"time"
 )
 
 // ZapLoggerMiddleware is a middleware that logs HTTP requests using the provided zap.Logger.

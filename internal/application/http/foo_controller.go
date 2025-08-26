@@ -2,13 +2,14 @@ package http
 
 import (
 	"astigo/internal/application/http/dto"
-	"astigo/internal/domain/adapter/data"
-	"astigo/internal/domain/adapter/repository"
-	"astigo/internal/domain/service"
+	"astigo/internal/domain/contract"
+	"astigo/internal/domain/contract/data"
+	"astigo/internal/domain/contract/service"
 	"errors"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"net/http"
 )
 
 var _ IFooController = (*FooController)(nil)
@@ -91,7 +92,7 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 
 	foo, err := c.svc.GetByID(ctx, id)
 	if err != nil {
-		if errors.As(err, &repository.ErrorNotFound) {
+		if errors.As(err, &contract.ErrorNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
 		}
@@ -169,7 +170,7 @@ func (c *FooController) Update(ctx *gin.Context) {
 		Value:  body.Value,
 		Weight: body.Weight,
 	}); err != nil {
-		if errors.As(err, &repository.ErrorNotFound) {
+		if errors.As(err, &contract.ErrorNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
 		}
@@ -226,7 +227,7 @@ func (c *FooController) Patch(ctx *gin.Context) {
 	}
 
 	if err := c.svc.Update(ctx, &input); err != nil {
-		if errors.As(err, &repository.ErrorNotFound) {
+		if errors.As(err, &contract.ErrorNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
 		}
@@ -259,7 +260,7 @@ func (c *FooController) DeleteByID(ctx *gin.Context) {
 	}
 
 	if err := c.svc.DeleteByID(ctx, id); err != nil {
-		if errors.As(err, &repository.ErrorNotFound) {
+		if errors.As(err, &contract.ErrorNotFound) {
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
 		}

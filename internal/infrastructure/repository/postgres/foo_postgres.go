@@ -1,20 +1,22 @@
 package postgres
 
 import (
-	"astigo/internal/domain/adapter/data"
-	repository2 "astigo/internal/domain/adapter/repository"
+	"astigo/internal/domain/contract"
+	"astigo/internal/domain/contract/data"
+	"astigo/internal/domain/contract/repository"
 	"astigo/internal/domain/model"
 	"astigo/internal/infrastructure/repository/postgres/entity"
 	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var (
-	_ repository2.IFooRepository = (*FooPostgres)(nil)
+	_ repository.IFooRepository = (*FooPostgres)(nil)
 )
 
 // FooPostgres is a concrete implementation of the IFooRepository interface that interacts with a PostgreSQL database.
@@ -96,7 +98,7 @@ func (f FooPostgres) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, er
 		&fooEntity.UpdatedAt,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, repository2.NewNotFound("foo", fmt.Sprintf("id: %s", id))
+			return nil, contract.NewErrNotFound("foo", "id", id.String())
 		}
 		return nil, fmt.Errorf("error scanning foo row: %w", err)
 	}

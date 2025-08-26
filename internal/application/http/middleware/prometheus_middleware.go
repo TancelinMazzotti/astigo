@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
-	"time"
 )
 
 var (

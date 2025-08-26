@@ -1,9 +1,10 @@
 package core
 
 import (
+	"strings"
+
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 type LoggerConfig struct {

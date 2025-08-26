@@ -3,8 +3,9 @@ package entity
 import (
 	"astigo/internal/domain/model"
 	"fmt"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // FooKey represents a unique identifier for a Foo entity using a UUID.

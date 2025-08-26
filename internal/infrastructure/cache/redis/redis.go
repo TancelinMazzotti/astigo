@@ -3,8 +3,9 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"strconv"
+
+	"github.com/redis/go-redis/v9"
 )
 
 // RedisConfig represents the configuration settings required to connect to a Redis server.

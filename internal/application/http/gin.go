@@ -5,12 +5,13 @@ import (
 	"astigo/internal/domain/model"
 	"astigo/internal/domain/service"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
-	"net/http"
-	"time"
 )
 
 var StartAt time.Time

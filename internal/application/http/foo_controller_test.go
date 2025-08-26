@@ -1,20 +1,21 @@
 package http
 
 import (
-	"astigo/internal/domain/adapter/data"
-	"astigo/internal/domain/adapter/repository"
+	"astigo/internal/domain/contract"
+	"astigo/internal/domain/contract/data"
 	"astigo/internal/domain/model"
-	"astigo/internal/domain/service"
+	"astigo/mocks/domain/contract/service"
 	"errors"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestFooController_GetAll(t *testing.T) {
@@ -210,7 +211,7 @@ func TestFooController_GetByID(t *testing.T) {
 					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 				).Return(
 					(*model.Foo)(nil),
-					repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"),
+					contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"),
 				)
 			},
 		},
@@ -407,7 +408,7 @@ func TestFooController_Update(t *testing.T) {
 						Secret: "secret_update",
 						Value:  1,
 						Weight: 1.5,
-					}).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+					}).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{
@@ -538,7 +539,7 @@ func TestFooController_Patch(t *testing.T) {
 							Value: "foo_patch",
 							Set:   true,
 						},
-					}).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+					}).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{
@@ -631,7 +632,7 @@ func TestFooController_Delete(t *testing.T) {
 					"DeleteByID",
 					mock.Anything,
 					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
-				).Return(repository.NewNotFound("foo", "40400000-0000-0000-0000-000000000000"))
+				).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{
