@@ -4,9 +4,9 @@
 ![License](https://img.shields.io/github/license/TancelinMazzotti/astigo)
 ![Status](https://img.shields.io/badge/status-WIP-orange)
 
-
-
 ⚠️ **Project Status**: This project is currently under active development. Features and APIs may change without notice. Not recommended for production use yet.
+
+<img src="astigo.png" alt="Astigo Mascot" width="200"/>
 
 ---
 

@@ -5,11 +5,12 @@ import (
 	"astigo/internal/infrastructure/messaging/nats/message"
 	"context"
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 // TestIntegrationFooNats_PublishFooCreated tests the FooNats integration by publishing a "foo.created" message to NATS.

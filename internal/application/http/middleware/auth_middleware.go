@@ -3,9 +3,10 @@ package middleware
 import (
 	"astigo/internal/domain/model"
 	"astigo/internal/domain/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // AuthMiddleware handles authentication by validating JWT tokens in incoming requests.

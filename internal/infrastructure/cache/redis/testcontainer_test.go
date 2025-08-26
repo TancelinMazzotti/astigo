@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/testcontainers/testcontainers-go/modules/redis"
 	"os"
+
+	"github.com/testcontainers/testcontainers-go/modules/redis"
 )
 
 // RedisContainer represents a wrapper around a Redis container with configuration and container-related functionalities.

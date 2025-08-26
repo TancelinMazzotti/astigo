@@ -1,70 +1,27 @@
 package service
 
 import (
-	"astigo/internal/domain/adapter/cache"
-	"astigo/internal/domain/adapter/data"
-	"astigo/internal/domain/adapter/messaging"
-	"astigo/internal/domain/adapter/repository"
+	"astigo/internal/domain/contract/cache"
+	"astigo/internal/domain/contract/data"
+	"astigo/internal/domain/contract/messaging"
+	"astigo/internal/domain/contract/repository"
+	"astigo/internal/domain/contract/service"
 	"astigo/internal/domain/model"
 	"context"
 	"fmt"
-	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
-	"go.uber.org/zap"
 	"sync"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 const FooCacheExpiration = time.Minute * 15
 
 var (
-	_ IFooService = (*MockFooService)(nil)
-	_ IFooService = (*FooService)(nil)
+	_ service.IFooService = (*FooService)(nil)
 )
-
-// IFooService defines the interface for handling operations related to Foo entities.
-// GetAll retrieves a list of Foo entities based on the provided input.
-// GetByID fetches a Foo entity by its unique identifier.
-// Create adds a new Foo entity based on the provided input and returns the created instance.
-// Update modifies an existing Foo entity based on the provided input.
-// DeleteByID removes a Foo entity identified by its unique identifier.
-type IFooService interface {
-	GetAll(ctx context.Context, input data.FooReadListInput) ([]*model.Foo, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error)
-	Create(ctx context.Context, input data.FooCreateInput) (*model.Foo, error)
-	Update(ctx context.Context, input data.IFooUpdateMerger) error
-	DeleteByID(ctx context.Context, id uuid.UUID) error
-}
-
-type MockFooService struct {
-	mock.Mock
-}
-
-func (m *MockFooService) GetAll(ctx context.Context, pagination data.FooReadListInput) ([]*model.Foo, error) {
-	args := m.Called(ctx, pagination)
-	return args.Get(0).([]*model.Foo), args.Error(1)
-}
-
-func (m *MockFooService) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, error) {
-	args := m.Called(ctx, id)
-	return args.Get(0).(*model.Foo), args.Error(1)
-}
-
-func (m *MockFooService) Create(ctx context.Context, input data.FooCreateInput) (*model.Foo, error) {
-	args := m.Called(ctx, input)
-	return args.Get(0).(*model.Foo), args.Error(1)
-}
-
-func (m *MockFooService) Update(ctx context.Context, input data.IFooUpdateMerger) error {
-	args := m.Called(ctx, input)
-	return args.Error(0)
-}
-
-func (m *MockFooService) DeleteByID(ctx context.Context, id uuid.UUID) error {
-	args := m.Called(ctx, id)
-	return args.Error(0)
-}
 
 // FooService provides business logic around Foo entities, integrating data access, caching, and messaging capabilities.
 type FooService struct {

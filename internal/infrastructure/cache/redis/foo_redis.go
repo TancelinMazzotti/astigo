@@ -1,16 +1,17 @@
 package redis
 
 import (
-	"astigo/internal/domain/adapter/cache"
+	"astigo/internal/domain/contract/cache"
 	"astigo/internal/domain/model"
 	"astigo/internal/infrastructure/cache/redis/entity"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"
-	"time"
 )
 
 var (

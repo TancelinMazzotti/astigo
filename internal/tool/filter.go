@@ -2,8 +2,9 @@ package tool
 
 import (
 	"encoding/json"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Operation string

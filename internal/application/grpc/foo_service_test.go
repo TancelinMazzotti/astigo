@@ -1,17 +1,18 @@
 package grpc
 
 import (
-	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/contract/data"
 	"astigo/internal/domain/model"
-	"astigo/internal/domain/service"
+	"astigo/mocks/domain/contract/service"
 	"astigo/pkg/proto"
 	"context"
 	"fmt"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
-	"time"
 )
 
 func TestFooService_List(t *testing.T) {

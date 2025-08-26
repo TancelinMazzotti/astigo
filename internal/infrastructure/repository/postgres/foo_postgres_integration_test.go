@@ -1,16 +1,18 @@
 package postgres
 
 import (
-	"astigo/internal/domain/adapter/data"
+	"astigo/internal/domain/contract/data"
 	"astigo/internal/domain/model"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 // TestIntegrationFooPostgres_FindAll verifies the behavior of the FindAll repository method with Postgres integration.
@@ -125,7 +127,7 @@ func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 		{
 			name:          "Fail Case - Not exist",
 			id:            uuid.MustParse("40400000-0000-0000-0000-000000000000"),
-			expectedError: fmt.Errorf("foo with id 'id: 40400000-0000-0000-0000-000000000000' not found"),
+			expectedError: fmt.Errorf("foo with id '40400000-0000-0000-0000-000000000000' not found"),
 		},
 	}
 

@@ -3,6 +3,7 @@ package entity
 import (
 	"astigo/internal/domain/model"
 	"database/sql"
+
 	"github.com/google/uuid"
 )
 

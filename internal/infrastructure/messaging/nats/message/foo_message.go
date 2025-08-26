@@ -2,8 +2,9 @@ package message
 
 import (
 	"astigo/internal/domain/model"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // FooMessage represents a data transfer object for Foo, used for messaging or serialization purposes.

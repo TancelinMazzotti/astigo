@@ -3,12 +3,13 @@ package redis
 import (
 	"astigo/internal/domain/model"
 	"context"
+	"testing"
+	"time"
+
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 )
 
 func TestIntegrationFooRedis_GetByID(t *testing.T) {

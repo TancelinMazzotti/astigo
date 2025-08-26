@@ -4,6 +4,7 @@ import (
 	"astigo/internal/domain/model"
 	"context"
 	"fmt"
+
 	"github.com/coreos/go-oidc"
 	"go.uber.org/zap"
 )
