@@ -76,8 +76,8 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 | `ASTIGO_AUTH_CLIENT_ID`          | `astigo-api`                          | Keycloak client ID used for API authentication              |
 | `ASTIGO_LOG_LEVEL`               | `info`                                | Application logging level (info, debug, error, etc.)        |
 | `ASTIGO_LOG_ENCODING`            | `json`                                | Log format encoding (json/console)                          |
-| `ASTIGO_JAEGER_URL`              | `localhost:4318`                      | Jaeger collector endpoint URL for distributed tracing       |
-| `ASTIGO_JAEGER_SERVICE_NAME`     | `astigo`                              | Service name identifier in Jaeger for tracing visualization |
+| `ASTIGO_TELEMETRY_URL`           | `localhost:4318`                      | Jaeger collector endpoint URL for distributed tracing       |
+| `ASTIGO_TELEMETRY_SERVICE_NAME`  | `astigo`                              | Service name identifier in Jaeger for tracing visualization |
 | `ASTIGO_POSTGRES_HOST`           | `localhost`                           | PostgreSQL server hostname                                  |
 | `ASTIGO_POSTGRES_PORT`           | `5432`                                | PostgreSQL connection port                                  |
 | `ASTIGO_POSTGRES_DB`             | `astigo`                              | PostgreSQL database name                                    |

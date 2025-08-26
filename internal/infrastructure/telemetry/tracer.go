@@ -1,4 +1,4 @@
-package tracer
+package telemetry
 
 import (
 	"context"
@@ -10,19 +10,19 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.24.0"
 )
 
-type JaegerConfig struct {
+type Config struct {
 	URL         string `mapstructure:"url"`
 	ServiceName string `mapstructure:"service_name"`
 }
 
-type Jaeger struct {
+type Tracer struct {
 	provider *sdktrace.TracerProvider
 }
 
-func NewJaeger(ctx context.Context, config JaegerConfig) (*Jaeger, error) {
+func NewTracer(ctx context.Context, config Config) (*Tracer, error) {
 	exporter, err := otlptracehttp.New(ctx,
 		otlptracehttp.WithEndpoint(config.URL),
-		otlptracehttp.WithInsecure(), // Pour le développement, retirez en production si vous utilisez TLS
+		otlptracehttp.WithInsecure(),
 	)
 	if err != nil {
 		return nil, err
@@ -38,11 +38,11 @@ func NewJaeger(ctx context.Context, config JaegerConfig) (*Jaeger, error) {
 
 	otel.SetTracerProvider(tp)
 
-	return &Jaeger{
+	return &Tracer{
 		provider: tp,
 	}, nil
 }
 
-func (t *Jaeger) Shutdown(ctx context.Context) error {
+func (t *Tracer) Shutdown(ctx context.Context) error {
 	return t.provider.Shutdown(ctx)
 }

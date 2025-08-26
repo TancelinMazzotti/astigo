@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type GrpcConfig struct {
+type Config struct {
 	Port int `mapstructure:"port"`
 }
 

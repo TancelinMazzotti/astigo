@@ -13,7 +13,7 @@ http:
 grpc:
   port: 50051
 
-jaeger:
+telemetry:
   url: "localhost:4318"
   service_name: "astigo"
 

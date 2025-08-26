@@ -17,7 +17,7 @@ import (
 
 var StartAt time.Time
 
-type GinConfig struct {
+type Config struct {
 	Port     string `mapstructure:"port"`
 	Mode     string `mapstructure:"mode"`
 	Issuer   string `mapstructure:"issuer"`
@@ -25,7 +25,7 @@ type GinConfig struct {
 }
 
 func NewGin(
-	config GinConfig,
+	config Config,
 	logger *zap.Logger,
 	authHandler service.IAuthService,
 	healthController *HealthController,
