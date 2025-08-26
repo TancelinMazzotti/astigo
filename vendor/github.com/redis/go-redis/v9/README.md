@@ -20,6 +20,7 @@ In `go-redis` we are aiming to support the last three releases of Redis. Current
 - [Redis 7.2](https://raw.githubusercontent.com/redis/redis/7.2/00-RELEASENOTES) - using Redis Stack 7.2 for modules support
 - [Redis 7.4](https://raw.githubusercontent.com/redis/redis/7.4/00-RELEASENOTES) - using Redis Stack 7.4 for modules support
 - [Redis 8.0](https://raw.githubusercontent.com/redis/redis/8.0/00-RELEASENOTES) - using Redis CE 8.0 where modules are included
+- [Redis 8.2](https://raw.githubusercontent.com/redis/redis/8.2/00-RELEASENOTES) - using Redis CE 8.2 where modules are included
 
 Although the `go.mod` states it requires at minimum `go 1.18`, our CI is configured to run the tests against all three
 versions of Redis and latest two versions of Go ([1.23](https://go.dev/doc/devel/release#go1.23.0),
@@ -68,6 +69,7 @@ key value NoSQL database that uses RocksDB as storage engine and is compatible w
 
 - Redis commands except QUIT and SYNC.
 - Automatic connection pooling.
+- [StreamingCredentialsProvider (e.g. entra id, oauth)](#1-streaming-credentials-provider-highest-priority) (experimental)
 - [Pub/Sub](https://redis.uptrace.dev/guide/go-redis-pubsub.html).
 - [Pipelines and transactions](https://redis.uptrace.dev/guide/go-redis-pipelines.html).
 - [Scripting](https://redis.uptrace.dev/guide/lua-scripting.html).
@@ -76,6 +78,7 @@ key value NoSQL database that uses RocksDB as storage engine and is compatible w
 - [Redis Ring](https://redis.uptrace.dev/guide/ring.html).
 - [Redis Performance Monitoring](https://redis.uptrace.dev/guide/redis-performance-monitoring.html).
 - [Redis Probabilistic [RedisStack]](https://redis.io/docs/data-types/probabilistic/)
+- [Customizable read and write buffers size.](#custom-buffer-sizes)
 
 ## Installation
 
@@ -136,17 +139,121 @@ func ExampleClient() {
 }
 ```
 
-The above can be modified to specify the version of the RESP protocol by adding the `protocol`
-option to the `Options` struct:
+### Authentication
+
+The Redis client supports multiple ways to provide authentication credentials, with a clear priority order. Here are the available options:
+
+#### 1. Streaming Credentials Provider (Highest Priority) - Experimental feature
+
+The streaming credentials provider allows for dynamic credential updates during the connection lifetime. This is particularly useful for managed identity services and token-based authentication.
 
 ```go
-    rdb := redis.NewClient(&redis.Options{
-        Addr:     "localhost:6379",
-        Password: "", // no password set
-        DB:       0,  // use default DB
-        Protocol: 3, // specify 2 for RESP 2 or 3 for RESP 3
-    })
+type StreamingCredentialsProvider interface {
+    Subscribe(listener CredentialsListener) (Credentials, UnsubscribeFunc, error)
+}
 
+type CredentialsListener interface {
+    OnNext(credentials Credentials)  // Called when credentials are updated
+    OnError(err error)              // Called when an error occurs
+}
+
+type Credentials interface {
+    BasicAuth() (username string, password string)
+    RawCredentials() string
+}
+```
+
+Example usage:
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr: "localhost:6379",
+    StreamingCredentialsProvider: &MyCredentialsProvider{},
+})
+```
+
+**Note:** The streaming credentials provider can be used with [go-redis-entraid](https://github.com/redis/go-redis-entraid) to enable Entra ID (formerly Azure AD) authentication. This allows for seamless integration with Azure's managed identity services and token-based authentication.
+
+Example with Entra ID:
+```go
+import (
+    "github.com/redis/go-redis/v9"
+    "github.com/redis/go-redis-entraid"
+)
+
+// Create an Entra ID credentials provider
+provider := entraid.NewDefaultAzureIdentityProvider()
+
+// Configure Redis client with Entra ID authentication
+rdb := redis.NewClient(&redis.Options{
+    Addr: "your-redis-server.redis.cache.windows.net:6380",
+    StreamingCredentialsProvider: provider,
+    TLSConfig: &tls.Config{
+        MinVersion: tls.VersionTLS12,
+    },
+})
+```
+
+#### 2. Context-based Credentials Provider
+
+The context-based provider allows credentials to be determined at the time of each operation, using the context.
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr: "localhost:6379",
+    CredentialsProviderContext: func(ctx context.Context) (string, string, error) {
+        // Return username, password, and any error
+        return "user", "pass", nil
+    },
+})
+```
+
+#### 3. Regular Credentials Provider
+
+A simple function-based provider that returns static credentials.
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr: "localhost:6379",
+    CredentialsProvider: func() (string, string) {
+        // Return username and password
+        return "user", "pass"
+    },
+})
+```
+
+#### 4. Username/Password Fields (Lowest Priority)
+
+The most basic way to provide credentials is through the `Username` and `Password` fields in the options.
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr:     "localhost:6379",
+    Username: "user",
+    Password: "pass",
+})
+```
+
+#### Priority Order
+
+The client will use credentials in the following priority order:
+1. Streaming Credentials Provider (if set)
+2. Context-based Credentials Provider (if set)
+3. Regular Credentials Provider (if set)
+4. Username/Password fields (if set)
+
+If none of these are set, the client will attempt to connect without authentication.
+
+### Protocol Version
+
+The client supports both RESP2 and RESP3 protocols. You can specify the protocol version in the options:
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr:     "localhost:6379",
+    Password: "", // no password set
+    DB:       0,  // use default DB
+    Protocol: 3,  // specify 2 for RESP 2 or 3 for RESP 3
+})
 ```
 
 ### Connecting via a redis url
@@ -191,6 +298,18 @@ func main() {
     }
 ```
 
+
+### Buffer Size Configuration
+
+go-redis uses 0.5MiB read and write buffers by default for optimal performance. For high-throughput applications or large pipelines, you can customize buffer sizes:
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr:            "localhost:6379",
+    ReadBufferSize:  1024 * 1024, // 1MiB read buffer
+    WriteBufferSize: 1024 * 1024, // 1MiB write buffer
+})
+```
 
 ### Advanced Configuration
 
@@ -255,6 +374,21 @@ For example:
 ```
 You can find further details in the [query dialect documentation](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/dialects/).
 
+#### Custom buffer sizes
+Prior to v9.12, the buffer size was the default go value of 4096 bytes. Starting from v9.12, 
+go-redis uses 256KiB read and write buffers by default for optimal performance.
+For high-throughput applications or large pipelines, you can customize buffer sizes:
+
+```go
+rdb := redis.NewClient(&redis.Options{
+    Addr:            "localhost:6379",
+    ReadBufferSize:  1024 * 1024, // 1MiB read buffer
+    WriteBufferSize: 1024 * 1024, // 1MiB write buffer
+})
+```
+
+**Important**: If you experience any issues with the default buffer sizes, please try setting them to the go default of 4096 bytes.
+
 ## Contributing
 We welcome contributions to the go-redis library! If you have a bug fix, feature request, or improvement, please open an issue or pull request on GitHub.
 We appreciate your help in making go-redis better for everyone.
@@ -294,6 +428,7 @@ vals, err := rdb.Eval(ctx, "return {KEYS[1],ARGV[1]}", []string{"key"}, "hello")
 // custom command
 res, err := rdb.Do(ctx, "set", "key", "value").Result()
 ```
+
 
 ## Run the test
 
