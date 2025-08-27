@@ -34,7 +34,7 @@ type FooNats struct {
 // PublishFooCreated publishes a "foo.created" message to the NATS server using the provided Foo data.
 func (n *FooNats) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
 	tracer := otel.Tracer("FooNats")
-	ctx, span := tracer.Start(ctx, "FooNats.PublishFooCreated")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooCreated")
 	defer span.End()
 
 	span.SetAttributes(
@@ -68,7 +68,7 @@ func (n *FooNats) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
 
 func (n *FooNats) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
 	tracer := otel.Tracer("FooNats")
-	ctx, span := tracer.Start(ctx, "FooNats.PublishFooUpdated")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooUpdated")
 	defer span.End()
 
 	span.SetAttributes(
@@ -101,7 +101,7 @@ func (n *FooNats) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
 
 func (n *FooNats) PublishFooDeleted(ctx context.Context, id uuid.UUID) error {
 	tracer := otel.Tracer("FooNats")
-	ctx, span := tracer.Start(ctx, "FooNats.PublishFooDeleted")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooDeleted")
 	defer span.End()
 
 	span.SetAttributes(
