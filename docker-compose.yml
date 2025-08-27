@@ -16,8 +16,8 @@ services:
       - ASTIGO_AUTH_CLIENT_ID=astigo-api
       - ASTIGO_LOG_LEVEL=info
       - ASTIGO_LOG_ENCODING=json
-      - ASTIGO_JAEGER_URL=jaeger:4318
-      - ASTIGO_JAEGER_SERVICE_NAME=astigo
+      - ASTIGO_TELEMETRY_URL=jaeger:4318
+      - ASTIGO_TELEMETRY_SERVICE_NAME=astigo
       - ASTIGO_POSTGRES_HOST=postgres
       - ASTIGO_POSTGRES_PORT=5432
       - ASTIGO_POSTGRES_DB=astigo

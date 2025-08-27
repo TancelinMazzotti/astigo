@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"astigo/internal/core"
 	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/TancelinMazzotti/astigo/internal/core"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

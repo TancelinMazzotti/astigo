@@ -1,14 +1,6 @@
 package core
 
 import (
-	"astigo/internal/application/event"
-	grpc2 "astigo/internal/application/grpc"
-	http2 "astigo/internal/application/http"
-	"astigo/internal/domain/service"
-	redis2 "astigo/internal/infrastructure/cache/redis"
-	nats2 "astigo/internal/infrastructure/messaging/nats"
-	postgres2 "astigo/internal/infrastructure/repository/postgres"
-	"astigo/internal/infrastructure/tracer"
 	"context"
 	"database/sql"
 	"errors"
@@ -16,6 +8,15 @@ import (
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/application/event"
+	grpc2 "github.com/TancelinMazzotti/astigo/internal/application/grpc"
+	http2 "github.com/TancelinMazzotti/astigo/internal/application/http"
+	"github.com/TancelinMazzotti/astigo/internal/domain/service"
+	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
+	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats"
+	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/telemetry"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
@@ -29,17 +30,17 @@ import (
 type Config struct {
 	Log LoggerConfig `mapstructure:"log"`
 
-	Gin    http2.GinConfig     `mapstructure:"http"`
-	Grpc   grpc2.GrpcConfig    `mapstructure:"grpc"`
-	Jaeger tracer.JaegerConfig `mapstructure:"jaeger"`
-	Auth   struct {
+	Gin       http2.Config     `mapstructure:"http"`
+	Grpc      grpc2.Config     `mapstructure:"grpc"`
+	Telemetry telemetry.Config `mapstructure:"telemetry"`
+	Auth      struct {
 		ClientID string `mapstructure:"client_id"`
 		Issuer   string `mapstructure:"issuer"`
 	} `mapstructure:"auth"`
 
-	Postgres postgres2.PostgresConfig `mapstructure:"postgres"`
-	Nats     nats2.NatsConfig         `mapstructure:"nats"`
-	Redis    redis2.RedisConfig       `mapstructure:"redis"`
+	Postgres postgres2.Config `mapstructure:"postgres"`
+	Nats     nats2.Config     `mapstructure:"nats"`
+	Redis    redis2.Config    `mapstructure:"redis"`
 }
 
 // Server represents the main service structure that holds all essential configurations and dependencies.
@@ -53,7 +54,7 @@ type Server struct {
 	GinEngine    *gin.Engine
 
 	Provider *oidc.Provider
-	Jaeger   *tracer.Jaeger
+	Tracer   *telemetry.Tracer
 	Postgres *sql.DB
 	Nats     *nats.Conn
 	Redis    *redis.Client
@@ -152,12 +153,12 @@ func (server *Server) handleShutdown(ctx context.Context, errCh chan<- error) {
 	server.Nats.Close()
 	server.Logger.Info("Nats shutdown")
 
-	// Shutdown Jaeger
-	server.Logger.Info("Jaeger shutdown...")
-	if err := server.Jaeger.Shutdown(shutdownCtx); err != nil {
-		server.Logger.Error("Jaeger shutdown error", zap.Error(err))
+	// Shutdown Tracer
+	server.Logger.Info("Tracer shutdown...")
+	if err := server.Tracer.Shutdown(shutdownCtx); err != nil {
+		server.Logger.Error("Tracer shutdown error", zap.Error(err))
 	} else {
-		server.Logger.Info("Jaeger shutdown")
+		server.Logger.Info("Tracer shutdown")
 	}
 
 	server.Logger.Info("Shutdown signal complete")
@@ -165,7 +166,7 @@ func (server *Server) handleShutdown(ctx context.Context, errCh chan<- error) {
 }
 
 // NewServer initializes a new Server instance with configured dependencies including logging, tracing, and connectors.
-// It sets up components such as Jaeger tracer, PostgreSQL, Redis, NATS, OIDC provider, and associated services.
+// It sets up components such as Tracer tracer, PostgreSQL, Redis, NATS, OIDC provider, and associated services.
 // Returns a fully initialized Server instance or an error if any dependency setup fails.
 func NewServer(ctx context.Context, config Config) (*Server, error) {
 	var err error
@@ -178,11 +179,11 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 		return nil, fmt.Errorf("fail to create logger %w", err)
 	}
 
-	server.Logger.Info("create new jaeger tracer")
-	server.Jaeger, err = tracer.NewJaeger(ctx, server.Config.Jaeger)
+	server.Logger.Info("create new telemetry tracer")
+	server.Tracer, err = telemetry.NewTracer(ctx, server.Config.Telemetry)
 	if err != nil {
-		server.Logger.Error("fail to create jaeger tracer", zap.Error(err))
-		return nil, fmt.Errorf("fail to create jaeger tracer %w", err)
+		server.Logger.Error("fail to create telemetry tracer", zap.Error(err))
+		return nil, fmt.Errorf("fail to create telemetry tracer %w", err)
 	}
 
 	server.Logger.Info("create new postgres connector")

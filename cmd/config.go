@@ -3,9 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
 	"strings"
+
+	"github.com/spf13/viper"
 )
 
 // initConfig reads in config file and ENV variables if set
@@ -59,8 +60,8 @@ func setDefaults() {
 	viper.SetDefault("log.encoding", "json")
 
 	// Jaeger configuration
-	viper.SetDefault("jaeger.url", "localhost:4318")
-	viper.SetDefault("jaeger.service_name", "astigo")
+	viper.SetDefault("telemetry.url", "localhost:4318")
+	viper.SetDefault("telemetry.service_name", "astigo")
 
 	// PostgreSQL connection defaults
 	viper.SetDefault("postgres.host", "localhost")

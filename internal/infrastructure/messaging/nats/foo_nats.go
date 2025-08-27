@@ -1,12 +1,16 @@
 package nats
 
 import (
-	"astigo/internal/domain/contract/messaging"
-	"astigo/internal/domain/model"
-	"astigo/internal/infrastructure/messaging/nats/message"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats/message"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -28,35 +32,100 @@ type FooNats struct {
 }
 
 // PublishFooCreated publishes a "foo.created" message to the NATS server using the provided Foo data.
-func (n *FooNats) PublishFooCreated(_ context.Context, foo *model.Foo) error {
+func (n *FooNats) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
+	tracer := otel.Tracer("FooNats")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooCreated")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("foo.id", foo.Id.String()),
+		attribute.String("foo.label", foo.Label),
+		attribute.Int("foo.value", foo.Value),
+		attribute.Float64("foo.weight", float64(foo.Weight)),
+		attribute.String("nats.subject", fooCreatedSubject),
+	)
+
 	msg := message.NewFooMessage(foo)
 	data, err := json.Marshal(msg)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to serialize foo")
 		return fmt.Errorf("failed to serialize Foo: %w", err)
 	}
 
-	return n.conn.Publish(fooCreatedSubject, data)
+	span.SetAttributes(attribute.Int("message.size", len(data)))
+
+	if err := n.conn.Publish(fooCreatedSubject, data); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to publish message")
+		return fmt.Errorf("failed to publish to NATS: %w", err)
+	}
+
+	span.SetStatus(codes.Ok, "")
+
+	return nil
 }
 
-// PublishFooUpdated publishes a "foo.updated" message to the NATS server with the updated Foo data.
-func (n *FooNats) PublishFooUpdated(_ context.Context, foo *model.Foo) error {
+func (n *FooNats) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
+	tracer := otel.Tracer("FooNats")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooUpdated")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("foo.id", foo.Id.String()),
+		attribute.String("foo.label", foo.Label),
+		attribute.Int("foo.value", foo.Value),
+		attribute.Float64("foo.weight", float64(foo.Weight)),
+		attribute.String("nats.subject", fooUpdatedSubject),
+	)
+
 	msg := message.NewFooMessage(foo)
 	data, err := json.Marshal(msg)
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to serialize foo")
 		return fmt.Errorf("failed to serialize Foo: %w", err)
 	}
 
-	return n.conn.Publish(fooUpdatedSubject, data)
+	span.SetAttributes(attribute.Int("message.size", len(data)))
+
+	if err := n.conn.Publish(fooUpdatedSubject, data); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to publish message")
+		return fmt.Errorf("failed to publish to NATS: %w", err)
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return nil
 }
 
-// PublishFooDeleted publishes a "foo.deleted" message to the NATS server with the provided Foo ID serialized as JSON.
-func (n *FooNats) PublishFooDeleted(_ context.Context, id uuid.UUID) error {
+func (n *FooNats) PublishFooDeleted(ctx context.Context, id uuid.UUID) error {
+	tracer := otel.Tracer("FooNats")
+	_, span := tracer.Start(ctx, "FooNats.PublishFooDeleted")
+	defer span.End()
+
+	span.SetAttributes(
+		attribute.String("foo.id", id.String()),
+		attribute.String("nats.subject", fooDeletedSubject),
+	)
+
 	data, err := json.Marshal(map[string]string{"id": id.String()})
 	if err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to serialize id")
 		return fmt.Errorf("failed to serialize ID: %w", err)
 	}
 
-	return n.conn.Publish(fooDeletedSubject, data)
+	span.SetAttributes(attribute.Int("message.size", len(data)))
+
+	if err := n.conn.Publish(fooDeletedSubject, data); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, "failed to publish message")
+		return fmt.Errorf("failed to publish to NATS: %w", err)
+	}
+
+	span.SetStatus(codes.Ok, "")
+	return nil
 }
 
 func NewFooNats(conn *nats.Conn) *FooNats {

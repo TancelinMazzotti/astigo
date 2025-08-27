@@ -1,9 +1,10 @@
 package entity
 
 import (
-	"astigo/internal/domain/model"
 	"fmt"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 )

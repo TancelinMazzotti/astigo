@@ -1,12 +1,13 @@
 package http
 
 import (
-	"astigo/internal/application/http/middleware"
-	"astigo/internal/domain/model"
-	"astigo/internal/domain/service"
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/TancelinMazzotti/astigo/internal/application/http/middleware"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -16,7 +17,7 @@ import (
 
 var StartAt time.Time
 
-type GinConfig struct {
+type Config struct {
 	Port     string `mapstructure:"port"`
 	Mode     string `mapstructure:"mode"`
 	Issuer   string `mapstructure:"issuer"`
@@ -24,7 +25,7 @@ type GinConfig struct {
 }
 
 func NewGin(
-	config GinConfig,
+	config Config,
 	logger *zap.Logger,
 	authHandler service.IAuthService,
 	healthController *HealthController,

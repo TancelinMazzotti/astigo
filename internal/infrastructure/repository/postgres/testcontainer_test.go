@@ -12,12 +12,12 @@ import (
 // PostgresContainer represents a PostgreSQL container with its configuration settings encapsulated.
 type PostgresContainer struct {
 	*postgres.PostgresContainer
-	Config PostgresConfig
+	Config Config
 }
 
 // CreatePostgresContainer initializes and starts a PostgreSQL container with predefined configurations and returns its instance.
 func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
-	config := PostgresConfig{
+	config := Config{
 		Host:         "localhost",
 		User:         "postgres",
 		Password:     "postgres",

@@ -1,9 +1,10 @@
 package messaging
 
 import (
-	"astigo/internal/domain/contract/messaging"
-	"astigo/internal/domain/model"
 	"context"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"

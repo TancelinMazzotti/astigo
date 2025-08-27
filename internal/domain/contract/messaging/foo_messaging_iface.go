@@ -1,8 +1,9 @@
 package messaging
 
 import (
-	"astigo/internal/domain/model"
 	"context"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 
 	"github.com/google/uuid"
 )

@@ -1,11 +1,12 @@
 package grpc
 
 import (
-	"astigo/internal/domain/contract/data"
-	"astigo/internal/domain/contract/service"
-	"astigo/pkg/proto"
 	"context"
 	"fmt"
+
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/contract/service"
+	"github.com/TancelinMazzotti/astigo/pkg/proto"
 
 	"github.com/google/uuid"
 )

@@ -33,9 +33,11 @@ var timers = sync.Pool{
 
 // Stats contains pool state information and accumulated stats.
 type Stats struct {
-	Hits     uint32 // number of times free connection was found in the pool
-	Misses   uint32 // number of times free connection was NOT found in the pool
-	Timeouts uint32 // number of times a wait timeout occurred
+	Hits           uint32 // number of times free connection was found in the pool
+	Misses         uint32 // number of times free connection was NOT found in the pool
+	Timeouts       uint32 // number of times a wait timeout occurred
+	WaitCount      uint32 // number of times a connection was waited
+	WaitDurationNs int64  // total time spent for waiting a connection in nanoseconds
 
 	TotalConns uint32 // number of total connections in the pool
 	IdleConns  uint32 // number of idle connections in the pool
@@ -69,6 +71,9 @@ type Options struct {
 	MaxActiveConns  int
 	ConnMaxIdleTime time.Duration
 	ConnMaxLifetime time.Duration
+
+	ReadBufferSize  int
+	WriteBufferSize int
 }
 
 type lastDialErrorWrap struct {
@@ -90,7 +95,8 @@ type ConnPool struct {
 	poolSize     int
 	idleConnsLen int
 
-	stats Stats
+	stats          Stats
+	waitDurationNs atomic.Int64
 
 	_closed uint32 // atomic
 }
@@ -124,6 +130,18 @@ func (p *ConnPool) checkMinIdleConns() {
 			p.idleConnsLen++
 
 			go func() {
+				defer func() {
+					if err := recover(); err != nil {
+						p.connsMu.Lock()
+						p.poolSize--
+						p.idleConnsLen--
+						p.connsMu.Unlock()
+
+						p.freeTurn()
+						internal.Logger.Printf(context.Background(), "addIdleConn panic: %+v", err)
+					}
+				}()
+
 				err := p.addIdleConn()
 				if err != nil && err != ErrClosed {
 					p.connsMu.Lock()
@@ -223,7 +241,7 @@ func (p *ConnPool) dialConn(ctx context.Context, pooled bool) (*Conn, error) {
 		return nil, err
 	}
 
-	cn := NewConn(netConn)
+	cn := NewConnWithBufferSize(netConn, p.cfg.ReadBufferSize, p.cfg.WriteBufferSize)
 	cn.pooled = pooled
 	return cn, nil
 }
@@ -320,7 +338,9 @@ func (p *ConnPool) waitTurn(ctx context.Context) error {
 	default:
 	}
 
+	start := time.Now()
 	timer := timers.Get().(*time.Timer)
+	defer timers.Put(timer)
 	timer.Reset(p.cfg.PoolTimeout)
 
 	select {
@@ -328,16 +348,15 @@ func (p *ConnPool) waitTurn(ctx context.Context) error {
 		if !timer.Stop() {
 			<-timer.C
 		}
-		timers.Put(timer)
 		return ctx.Err()
 	case p.queue <- struct{}{}:
+		p.waitDurationNs.Add(time.Since(start).Nanoseconds())
+		atomic.AddUint32(&p.stats.WaitCount, 1)
 		if !timer.Stop() {
 			<-timer.C
 		}
-		timers.Put(timer)
 		return nil
 	case <-timer.C:
-		timers.Put(timer)
 		atomic.AddUint32(&p.stats.Timeouts, 1)
 		return ErrPoolTimeout
 	}
@@ -457,9 +476,11 @@ func (p *ConnPool) IdleLen() int {
 
 func (p *ConnPool) Stats() *Stats {
 	return &Stats{
-		Hits:     atomic.LoadUint32(&p.stats.Hits),
-		Misses:   atomic.LoadUint32(&p.stats.Misses),
-		Timeouts: atomic.LoadUint32(&p.stats.Timeouts),
+		Hits:           atomic.LoadUint32(&p.stats.Hits),
+		Misses:         atomic.LoadUint32(&p.stats.Misses),
+		Timeouts:       atomic.LoadUint32(&p.stats.Timeouts),
+		WaitCount:      atomic.LoadUint32(&p.stats.WaitCount),
+		WaitDurationNs: p.waitDurationNs.Load(),
 
 		TotalConns: uint32(p.Len()),
 		IdleConns:  uint32(p.IdleLen()),

@@ -1,6 +1,6 @@
 package main
 
-import "astigo/cmd"
+import "github.com/TancelinMazzotti/astigo/cmd"
 
 func main() {
 	cmd.Execute()
