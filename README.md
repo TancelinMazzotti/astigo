@@ -6,8 +6,9 @@
 
 > [!WARNING]
 > **Project Status**: This project is currently under active development. Features and APIs may change without notice. Not recommended for production use yet.
-
-<img src="astigo.png" alt="Astigo Mascot" width="200"/>
+<p align="center">
+<img src="astigo.png" alt="Astigo Mascot" width="400"/>
+</p>
 
 ---
 
