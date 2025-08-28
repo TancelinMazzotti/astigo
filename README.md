@@ -1,12 +1,14 @@
 # Astigo - Backend API Boilerplate
-[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftancelinmazzotti%2Fastigo-blue)](https://github.com/users/TancelinMazzotti/packages/container/package/astigo)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftancelinmazzotti%2Fastigo-blue)](https://github.com/TancelinMazzotti/astigo/pkgs/container/astigo-api)
 ![Go Version](https://img.shields.io/badge/go-1.24.2-blue)
 ![License](https://img.shields.io/github/license/TancelinMazzotti/astigo)
 ![Status](https://img.shields.io/badge/status-WIP-orange)
 
-⚠️ **Project Status**: This project is currently under active development. Features and APIs may change without notice. Not recommended for production use yet.
-
-<img src="astigo.png" alt="Astigo Mascot" width="200"/>
+> [!WARNING]
+> **Project Status**: This project is currently under active development. Features and APIs may change without notice. Not recommended for production use yet.
+<p align="center">
+<img src="astigo.png" alt="Astigo Mascot" width="400"/>
+</p>
 
 ---
 
@@ -101,11 +103,13 @@ All variables are prefixed with `ASTIGO_` to prevent conflicts with other applic
 
 ## 🔐 Keycloak Access
 
-⚠️ **Important Note about Issuer URL**:
-The application uses `host.docker.internal:8090` as the issuer URL instead of `localhost:8090`. This ensures that both the API (running inside Docker) and the client (running on the host machine) use the same issuer URL, which is required for proper OpenID Connect validation.
+> [!TIP]
+> **Important Note about Issuer URL**:
+> The application uses `host.docker.internal:8090` as the issuer URL instead of `localhost:8090`. This ensures that both the API (running inside Docker) and the client (running on the host machine) use the same issuer URL, which is required for proper OpenID Connect validation.
 
-⚠️ **Important Prerequisite**:
-Make sure the `host.docker.internal` entry is present in your hosts file (typically located at `/etc/hosts` on Linux/MacOS or `C:\Windows\System32\drivers\etc\hosts` on Windows). This entry is normally added automatically by Docker Desktop, but it's recommended to verify it. Without this entry, name resolution won't work properly.
+> [!TIP]
+> **Important Prerequisite**:
+> Make sure the `host.docker.internal` entry is present in your hosts file (typically located at `/etc/hosts` on Linux/MacOS or `C:\Windows\System32\drivers\etc\hosts` on Windows). This entry is normally added automatically by Docker Desktop, but it's recommended to verify it. Without this entry, name resolution won't work properly.
 
 The application comes pre-configured with Keycloak and includes all necessary settings:
 
