@@ -7,6 +7,8 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/uptrace/opentelemetry-go-extra/otelsql"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 // Config represents the configuration settings required to connect to a PostgreSQL database.
@@ -30,7 +32,16 @@ func NewPostgres(ctx context.Context, config Config) (*sql.DB, error) {
 		config.User, config.Password, config.Host, config.Port, config.DBName, config.SSLMode,
 	)
 
-	db, err := sql.Open("pgx", dsn)
+	db, err := otelsql.Open("pgx", dsn,
+		otelsql.WithAttributes(
+			attribute.String("db.system", "postgresql"),
+			attribute.String("db.name", config.DBName),
+			attribute.String("db.user", config.User),
+			attribute.String("net.peer.name", config.Host),
+			attribute.Int("net.peer.port", config.Port),
+		),
+		otelsql.WithDBName(config.DBName),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open postgres connection: %w", err)
 	}
