@@ -41,6 +41,7 @@ func NewGin(
 	e.Use(middleware.ZapLoggerMiddleware(logger))
 	e.Use(middleware.ZapRecoveryMiddleware(logger))
 	e.Use(middleware.MetricsMiddleware())
+	e.Use(middleware.CorsMiddleware())
 
 	e.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

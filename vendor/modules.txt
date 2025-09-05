@@ -158,6 +158,9 @@ github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
 github.com/gabriel-vasile/mimetype/internal/markup
 github.com/gabriel-vasile/mimetype/internal/scan
+# github.com/gin-contrib/cors v1.7.6
+## explicit; go 1.23.0
+github.com/gin-contrib/cors
 # github.com/gin-contrib/sse v1.1.0
 ## explicit; go 1.23
 github.com/gin-contrib/sse
@@ -528,7 +531,6 @@ go.opentelemetry.io/otel/propagation
 go.opentelemetry.io/otel/semconv/internal
 go.opentelemetry.io/otel/semconv/v1.10.0
 go.opentelemetry.io/otel/semconv/v1.20.0
-go.opentelemetry.io/otel/semconv/v1.24.0
 go.opentelemetry.io/otel/semconv/v1.26.0
 go.opentelemetry.io/otel/semconv/v1.34.0
 go.opentelemetry.io/otel/semconv/v1.34.0/httpconv
