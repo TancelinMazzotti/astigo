@@ -19,9 +19,9 @@ services:
       - ASTIGO_GRPC_PORT=50051
       - ASTIGO_AUTH_ISSUER=http://host.docker.internal:8090/realms/astigo
       - ASTIGO_AUTH_CLIENT_ID=astigo-api
-      - ASTIGO_LOG_LEVEL=debug
+      - ASTIGO_LOG_LEVEL=info
       - ASTIGO_LOG_ENCODING=json
-      - ASTIGO_TELEMETRY_URL=jaeger:4318
+      - ASTIGO_TELEMETRY_URL=otel-collector:4318
       - ASTIGO_TELEMETRY_SERVICE_NAME=astigo
       - ASTIGO_POSTGRES_HOST=postgres
       - ASTIGO_POSTGRES_PORT=5432
@@ -136,15 +136,35 @@ services:
       timeout: 10s
       retries: 10
 
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./deployments/otel-collector/config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    depends_on:
+      jaeger:
+        condition: service_healthy
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "-q", "http://localhost:13133" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     container_name: jaeger
     ports:
-      - "16686:16686"  # UI Jaeger
-      - "4318:4318"     # Port OTLP HTTP
-      - "4317:4317"     # Port OTLP gRPC
+      - "16686:16686"   # UI Jaeger
+      - "14268:14268"   # HTTP traces endpoint
+      - "14250:14250"   # gRPC traces endpoint
     environment:
-      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      - COLLECTOR_OTLP_ENABLED=true
     healthcheck:
       test: [ "CMD", "wget", "--spider", "-q", "localhost:16686" ]
       interval: 10s
@@ -186,6 +206,7 @@ services:
       timeout: 5s
       retries: 5
 
+
   promtail:
     image: grafana/promtail:2.9.3
     container_name: promtail
@@ -224,3 +245,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  minio_data:
