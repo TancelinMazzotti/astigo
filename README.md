@@ -67,6 +67,89 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 
 ---
 
+## ▶️ Run the project
+
+### Prerequisites:
+> [!TIP]
+> **Important**:
+> Make sure the `host.docker.internal` entry is present in your hosts file (typically located at `/etc/hosts` on Linux/MacOS or `C:\Windows\System32\drivers\etc\hosts` on Windows). This entry is normally added automatically by Docker Desktop, but it's recommended to verify it. Without this entry, name resolution won't work properly.
+> ```txt
+> 172.17.0.1       host.docker.internal
+> ```
+
+- Docker and Docker Compose installed
+- Free ports: 
+  - 8080 (API HTTP)
+  - 50051 (API gRPC)
+  - 5432 (PostgreSQL)
+  - 6379 (Redis)
+  - 4222/8222 (NATS)
+  - 8090 (Keycloak)
+  - 9000/9001 (MinIO)
+  - 4317/4318/13133 (OTel)
+  - 16686 (Jaeger)
+  - 9090 (Prometheus)
+  - 3100 (Loki)
+  - 3000 (Grafana)
+
+### Start (standard mode):
+- Using Make:
+  ```bash
+  make up
+  ```
+- Or with Docker Compose:
+  ```bash
+  docker-compose up -d
+  ```
+
+### Quick access:
+- HTTP API: http://localhost:8080
+- gRPC: localhost:50051
+- Keycloak: http://localhost:8090 (admin / admin)
+- MinIO: http://localhost:9000
+- Jaeger: http://localhost:16686
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3000 (admin / admin)
+- MinIO Console: http://localhost:9001 (minio-root-user / minio-root-pass)
+- Redis Monitoring: http://localhost:3100
+- NATS Monitoring: http://localhost:8222
+
+### Stop and clean:
+- Using Make:
+  ```bash
+  make down
+  ```
+- Or with Docker Compose:
+  ```bash
+  docker-compose down -v
+  ```
+
+### Clean and restart:
+- Using Make:
+  ```bash
+  make restart
+  ```
+- Or with Docker Compose:
+  ```bash
+  docker-compose down -v
+  docker-compose up -d
+  ```
+
+
+### Full rebuild:
+- Using Make:
+  ```bash
+  make rebuild
+  ```
+- Or with Docker Compose:
+  ```bash
+  docker-compose down -v
+  docker-compose build
+  docker-compose up -d
+  ```
+
+---
+
 ## Environement variable
 
 | Environment Variable             | Default Value                         | Description                                                 |
@@ -106,10 +189,6 @@ All variables are prefixed with `ASTIGO_` to prevent conflicts with other applic
 > [!TIP]
 > **Important Note about Issuer URL**:
 > The application uses `host.docker.internal:8090` as the issuer URL instead of `localhost:8090`. This ensures that both the API (running inside Docker) and the client (running on the host machine) use the same issuer URL, which is required for proper OpenID Connect validation.
-
-> [!TIP]
-> **Important Prerequisite**:
-> Make sure the `host.docker.internal` entry is present in your hosts file (typically located at `/etc/hosts` on Linux/MacOS or `C:\Windows\System32\drivers\etc\hosts` on Windows). This entry is normally added automatically by Docker Desktop, but it's recommended to verify it. Without this entry, name resolution won't work properly.
 
 The application comes pre-configured with Keycloak and includes all necessary settings:
 
