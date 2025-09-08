@@ -16,6 +16,7 @@ import (
 	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
 	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats"
 	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/storage/s3storage"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/telemetry"
 
 	"github.com/coreos/go-oidc"
@@ -41,6 +42,7 @@ type Config struct {
 	Postgres postgres2.Config `mapstructure:"postgres"`
 	Nats     nats2.Config     `mapstructure:"nats"`
 	Redis    redis2.Config    `mapstructure:"redis"`
+	S3       s3storage.Config `mapstructure:"s3"`
 }
 
 // Server represents the main service structure that holds all essential configurations and dependencies.
@@ -58,6 +60,7 @@ type Server struct {
 	Postgres  *sql.DB
 	Nats      *nats.Conn
 	Redis     *redis.Client
+	S3        *s3storage.Client
 }
 
 // Start initializes and runs the HTTP and gRPC servers concurrently and listens for errors and shutdown signals.
@@ -196,6 +199,12 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	if server.Redis, err = redis2.NewRedis(ctx, server.Config.Redis); err != nil {
 		server.Logger.Error("fail to create redis connector", zap.Error(err))
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
+	}
+
+	server.Logger.Info("create new s3 connector")
+	if server.S3, err = s3storage.NewS3(ctx, server.Config.S3); err != nil {
+		server.Logger.Error("fail to create s3 connector", zap.Error(err))
+		return nil, fmt.Errorf("fail to create s3 connector %w", err)
 	}
 
 	server.Logger.Info("create new nats connector")

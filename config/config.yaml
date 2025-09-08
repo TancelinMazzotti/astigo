@@ -39,3 +39,16 @@ nats:
   url: "nats://localhost:4222"
   username: ""
   password: ""
+
+s3:
+  region: "us-east-1"
+  bucket: "default"
+  endpoint: "http://localhost:9000"
+  access_key_id: "minio-root-user"
+  secret_access_key: "minio-root-password"
+  session_token: ""
+  use_path_style: true
+  server_side_encryption: ""
+  default_cache_control: ""
+  upload_part_size: 0
+  timeout: "10s"
