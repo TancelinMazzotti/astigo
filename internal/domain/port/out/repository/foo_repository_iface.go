@@ -3,13 +3,13 @@ package repository
 import (
 	"context"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
 
 	"github.com/google/uuid"
 )
 
-// IFooRepository represents a contract for interacting with Foo data storage.
+// IFooRepository represents a port for interacting with Foo data storage.
 // FindAll retrieves a paginated list of Foo entities from the repository.
 // FindByID fetches a Foo entity by its unique identifier.
 // Create adds a new Foo entity to the repository.

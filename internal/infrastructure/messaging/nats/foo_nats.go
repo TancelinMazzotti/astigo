@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats/message"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

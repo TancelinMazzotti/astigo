@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"

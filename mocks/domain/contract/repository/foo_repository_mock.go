@@ -3,10 +3,9 @@ package repository
 import (
 	"context"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/repository"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )

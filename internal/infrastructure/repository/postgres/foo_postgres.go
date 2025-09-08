@@ -7,10 +7,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/repository"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres/entity"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -127,7 +127,7 @@ func (f FooPostgres) FindByID(ctx context.Context, id uuid.UUID) (*model.Foo, er
 		span.RecordError(err)
 		if errors.Is(err, sql.ErrNoRows) {
 			span.SetStatus(codes.Error, "foo not found")
-			return nil, contract.NewErrNotFound("foo", "id", id.String())
+			return nil, port.NewErrNotFound("foo", "id", id.String())
 		}
 		span.SetStatus(codes.Error, "error scanning foo row")
 		return nil, fmt.Errorf("error scanning foo row: %w", err)

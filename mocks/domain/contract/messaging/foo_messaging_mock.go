@@ -3,8 +3,8 @@ package messaging
 import (
 	"context"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/messaging"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"

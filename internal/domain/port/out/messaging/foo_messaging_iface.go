@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// IFooMessaging defines a contract for publishing events related to Foo entities.
+// IFooMessaging defines a port for publishing events related to Foo entities.
 // PublishFooCreated sends a message when a Foo entity is created.
 // PublishFooUpdated sends a message when a Foo entity is updated.
 // PublishFooDeleted sends a message when a Foo entity is deleted.
