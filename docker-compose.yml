@@ -38,6 +38,8 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8080/health/liveness" ]
       interval: 10s
@@ -145,6 +147,7 @@ services:
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
+      - "13133:13133" # health check
     depends_on:
       jaeger:
         condition: service_healthy
