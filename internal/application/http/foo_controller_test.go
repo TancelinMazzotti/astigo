@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port"
+	data2 "github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
 	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +43,7 @@ func TestFooController_GetAll(t *testing.T) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
-					data.FooReadListInput{Offset: 0, Limit: 10},
+					data2.FooReadListInput{Offset: 0, Limit: 10},
 				).Return([]*model.Foo{
 					{
 						Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
@@ -81,7 +81,7 @@ func TestFooController_GetAll(t *testing.T) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
-					data.FooReadListInput{Offset: 0, Limit: 10},
+					data2.FooReadListInput{Offset: 0, Limit: 10},
 				).Return([]*model.Foo{}, nil)
 			},
 		},
@@ -130,7 +130,7 @@ func TestFooController_GetAll(t *testing.T) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
-					data.FooReadListInput{Offset: 0, Limit: 10},
+					data2.FooReadListInput{Offset: 0, Limit: 10},
 				).Return(([]*model.Foo)(nil), errors.New("repository error"))
 			},
 		},
@@ -212,7 +212,7 @@ func TestFooController_GetByID(t *testing.T) {
 					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 				).Return(
 					(*model.Foo)(nil),
-					contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"),
+					port.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"),
 				)
 			},
 		},
@@ -281,7 +281,7 @@ func TestFooController_Create(t *testing.T) {
 				mockHandler.On(
 					"Create",
 					mock.Anything,
-					data.FooCreateInput{
+					data2.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
 						Value:  1,
@@ -317,7 +317,7 @@ func TestFooController_Create(t *testing.T) {
 				mockHandler.On(
 					"Create",
 					mock.Anything,
-					data.FooCreateInput{
+					data2.FooCreateInput{
 						Label:  "foo_create",
 						Secret: "secret_create",
 						Value:  1,
@@ -375,7 +375,7 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooUpdateInput{
+					&data2.FooUpdateInput{
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -403,13 +403,13 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooUpdateInput{
+					&data2.FooUpdateInput{
 						Id:     uuid.MustParse("40400000-0000-0000-0000-000000000000"),
 						Label:  "foo_update",
 						Secret: "secret_update",
 						Value:  1,
 						Weight: 1.5,
-					}).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
+					}).Return(port.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{
@@ -423,7 +423,7 @@ func TestFooController_Update(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooUpdateInput{
+					&data2.FooUpdateInput{
 						Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 						Label:  "foo_update",
 						Secret: "secret_update",
@@ -483,21 +483,21 @@ func TestFooController_Patch(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooPatchInput{
+					&data2.FooPatchInput{
 						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label: data.Optional[string]{
+						Label: data2.Optional[string]{
 							Value: "foo_patch",
 							Set:   true,
 						},
-						Secret: data.Optional[string]{
+						Secret: data2.Optional[string]{
 							Value: "secret_patch",
 							Set:   true,
 						},
-						Value: data.Optional[int]{
+						Value: data2.Optional[int]{
 							Value: 1,
 							Set:   true,
 						},
-						Weight: data.Optional[float32]{
+						Weight: data2.Optional[float32]{
 							Value: 1.5,
 							Set:   true,
 						},
@@ -514,9 +514,9 @@ func TestFooController_Patch(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooPatchInput{
+					&data2.FooPatchInput{
 						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label: data.Optional[string]{
+						Label: data2.Optional[string]{
 							Value: "foo_patch",
 							Set:   true,
 						},
@@ -534,13 +534,13 @@ func TestFooController_Patch(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooPatchInput{
+					&data2.FooPatchInput{
 						Id: uuid.MustParse("40400000-0000-0000-0000-000000000000"),
-						Label: data.Optional[string]{
+						Label: data2.Optional[string]{
 							Value: "foo_patch",
 							Set:   true,
 						},
-					}).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
+					}).Return(port.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{
@@ -554,9 +554,9 @@ func TestFooController_Patch(t *testing.T) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
-					&data.FooPatchInput{
+					&data2.FooPatchInput{
 						Id: uuid.MustParse("20000000-0000-0000-0000-000000000001"),
-						Label: data.Optional[string]{
+						Label: data2.Optional[string]{
 							Value: "foo_patch",
 							Set:   true,
 						},
@@ -633,7 +633,7 @@ func TestFooController_Delete(t *testing.T) {
 					"DeleteByID",
 					mock.Anything,
 					uuid.MustParse("40400000-0000-0000-0000-000000000000"),
-				).Return(contract.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
+				).Return(port.NewErrNotFound("foo", "id", "40400000-0000-0000-0000-000000000000"))
 			},
 		},
 		{

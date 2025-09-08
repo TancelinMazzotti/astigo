@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/TancelinMazzotti/astigo/internal/application/http/dto"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/service"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/service"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -117,7 +117,7 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 	if err != nil {
 		span.RecordError(err)
 
-		if errors.As(err, &contract.ErrorNotFound) {
+		if errors.As(err, &port.ErrorNotFound) {
 			span.SetStatus(codes.Error, "foo not found")
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
@@ -240,7 +240,7 @@ func (c *FooController) Update(ctx *gin.Context) {
 		Weight: body.Weight,
 	}); err != nil {
 		span.RecordError(err)
-		if errors.As(err, &contract.ErrorNotFound) {
+		if errors.As(err, &port.ErrorNotFound) {
 			span.SetStatus(codes.Error, "foo not found")
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
@@ -325,7 +325,7 @@ func (c *FooController) Patch(ctx *gin.Context) {
 
 	if err := c.svc.Update(spanCtx, &input); err != nil {
 		span.RecordError(err)
-		if errors.As(err, &contract.ErrorNotFound) {
+		if errors.As(err, &port.ErrorNotFound) {
 			span.SetStatus(codes.Error, "foo not found")
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return
@@ -372,7 +372,7 @@ func (c *FooController) DeleteByID(ctx *gin.Context) {
 
 	if err := c.svc.DeleteByID(spanCtx, id); err != nil {
 		span.RecordError(err)
-		if errors.As(err, &contract.ErrorNotFound) {
+		if errors.As(err, &port.ErrorNotFound) {
 			span.SetStatus(codes.Error, "foo not found")
 			ctx.JSON(http.StatusNotFound, gin.H{"error": "foo not found"})
 			return

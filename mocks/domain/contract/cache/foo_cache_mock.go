@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/cache"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/cache"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/service"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/service"
 	"github.com/TancelinMazzotti/astigo/pkg/proto"
 
 	"github.com/google/uuid"

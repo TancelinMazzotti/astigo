@@ -53,11 +53,11 @@ type Server struct {
 	ConsumerNats *event.ConsumerNats
 	GinEngine    *gin.Engine
 
-	Provider *oidc.Provider
-	Tracer   *telemetry.Tracer
-	Postgres *sql.DB
-	Nats     *nats.Conn
-	Redis    *redis.Client
+	Provider  *oidc.Provider
+	Telemetry *telemetry.Telemetry
+	Postgres  *sql.DB
+	Nats      *nats.Conn
+	Redis     *redis.Client
 }
 
 // Start initializes and runs the HTTP and gRPC servers concurrently and listens for errors and shutdown signals.
@@ -153,12 +153,12 @@ func (server *Server) handleShutdown(ctx context.Context, errCh chan<- error) {
 	server.Nats.Close()
 	server.Logger.Info("Nats shutdown")
 
-	// Shutdown Tracer
-	server.Logger.Info("Tracer shutdown...")
-	if err := server.Tracer.Shutdown(shutdownCtx); err != nil {
-		server.Logger.Error("Tracer shutdown error", zap.Error(err))
+	// Shutdown Telemetry
+	server.Logger.Info("Telemetry shutdown...")
+	if err := server.Telemetry.Shutdown(shutdownCtx); err != nil {
+		server.Logger.Error("Telemetry shutdown error", zap.Error(err))
 	} else {
-		server.Logger.Info("Tracer shutdown")
+		server.Logger.Info("Telemetry shutdown")
 	}
 
 	server.Logger.Info("Shutdown signal complete")
@@ -166,7 +166,7 @@ func (server *Server) handleShutdown(ctx context.Context, errCh chan<- error) {
 }
 
 // NewServer initializes a new Server instance with configured dependencies including logging, tracing, and connectors.
-// It sets up components such as Tracer tracer, PostgreSQL, Redis, NATS, OIDC provider, and associated services.
+// It sets up components such as Telemetry tracer, PostgreSQL, Redis, NATS, OIDC provider, and associated services.
 // Returns a fully initialized Server instance or an error if any dependency setup fails.
 func NewServer(ctx context.Context, config Config) (*Server, error) {
 	var err error
@@ -179,11 +179,11 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 		return nil, fmt.Errorf("fail to create logger %w", err)
 	}
 
-	server.Logger.Info("create new telemetry tracer")
-	server.Tracer, err = telemetry.NewTracer(ctx, server.Config.Telemetry)
+	server.Logger.Info("create new telemetry provider")
+	server.Telemetry, err = telemetry.NewTelemetry(ctx, server.Config.Telemetry)
 	if err != nil {
-		server.Logger.Error("fail to create telemetry tracer", zap.Error(err))
-		return nil, fmt.Errorf("fail to create telemetry tracer %w", err)
+		server.Logger.Error("fail to create telemetry provider", zap.Error(err))
+		return nil, fmt.Errorf("fail to create telemetry provider %w", err)
 	}
 
 	server.Logger.Info("create new postgres connector")

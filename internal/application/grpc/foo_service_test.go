@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/contract/data"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
 	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
 	"github.com/TancelinMazzotti/astigo/pkg/proto"
 
