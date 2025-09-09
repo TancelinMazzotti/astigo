@@ -1,4 +1,4 @@
-.PHONY: build up down rebuild build-debug up-debug down-debug rebuild-debug
+.PHONY: build up down restart rebuild build-debug up-debug down-debug restart-debug rebuild-debug
 
 # Standard
 build:
@@ -9,6 +9,8 @@ up:
 
 down:
 	docker-compose down -v
+
+restart: down up
 
 rebuild: down build up
 
@@ -21,5 +23,7 @@ up-debug:
 
 down-debug:
 	docker-compose -f docker-compose.debug.yml down -v
+
+restart-debug: down up
 
 rebuild-debug: down-debug build-debug up-debug
