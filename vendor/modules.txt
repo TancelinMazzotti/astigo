@@ -579,8 +579,8 @@ github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.6.0
 ## explicit; go 1.18
 github.com/subosito/gotenv
-# github.com/testcontainers/testcontainers-go v0.38.0
-## explicit; go 1.23.0
+# github.com/testcontainers/testcontainers-go v0.39.0
+## explicit; go 1.24.0
 github.com/testcontainers/testcontainers-go
 github.com/testcontainers/testcontainers-go/exec
 github.com/testcontainers/testcontainers-go/internal
@@ -589,6 +589,9 @@ github.com/testcontainers/testcontainers-go/internal/core
 github.com/testcontainers/testcontainers-go/internal/core/network
 github.com/testcontainers/testcontainers-go/log
 github.com/testcontainers/testcontainers-go/wait
+# github.com/testcontainers/testcontainers-go/modules/minio v0.39.0
+## explicit; go 1.24.0
+github.com/testcontainers/testcontainers-go/modules/minio
 # github.com/testcontainers/testcontainers-go/modules/nats v0.38.0
 ## explicit; go 1.23.0
 github.com/testcontainers/testcontainers-go/modules/nats
@@ -770,8 +773,8 @@ golang.org/x/oauth2/internal
 ## explicit; go 1.24.0
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.35.0
-## explicit; go 1.23.0
+# golang.org/x/sys v0.36.0
+## explicit; go 1.24.0
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

@@ -301,9 +301,7 @@ func (c *Client) Ping(ctx context.Context) error {
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	_, err := c.raw.HeadBucket(ctx, &s3.HeadBucketInput{
-		Bucket: aws.String(c.config.Bucket),
-	})
+	_, err := c.raw.ListBuckets(ctx, &s3.ListBucketsInput{})
 
 	return err
 }
