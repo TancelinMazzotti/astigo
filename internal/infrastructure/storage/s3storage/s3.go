@@ -107,10 +107,9 @@ func (c *Client) Put(ctx context.Context, bucket, key string, body io.Reader, co
 	defer cancel()
 
 	input := &s3.PutObjectInput{
-		Bucket:      aws.String(bucket),
-		Key:         aws.String(key),
-		Body:        body,
-		ContentType: nil,
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   body,
 	}
 	if contentType != "" {
 		input.ContentType = aws.String(contentType)
