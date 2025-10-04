@@ -1,0 +1,184 @@
+basePath: /
+definitions:
+  dto.FooCreateBody:
+    properties:
+      label:
+        type: string
+      secret:
+        type: string
+      value:
+        type: integer
+      weight:
+        type: number
+    required:
+    - label
+    - secret
+    - value
+    - weight
+    type: object
+  dto.FooCreateResponse:
+    properties:
+      id:
+        type: string
+    required:
+    - id
+    type: object
+  dto.FooPatchBody:
+    properties:
+      label:
+        type: string
+      secret:
+        type: string
+      value:
+        type: integer
+      weight:
+        type: number
+    type: object
+  dto.FooReadResponse:
+    properties:
+      id:
+        type: string
+      label:
+        type: string
+      value:
+        type: integer
+      weight:
+        type: number
+    required:
+    - id
+    - label
+    - value
+    - weight
+    type: object
+  dto.FooUpdateBody:
+    properties:
+      label:
+        type: string
+      secret:
+        type: string
+      value:
+        type: integer
+      weight:
+        type: number
+    required:
+    - label
+    - secret
+    - value
+    - weight
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: contact@example.com
+    name: Tancelin Mazzotti
+  description: Backend API Boilerplate (Hexagonal Architecture)
+  title: Astigo
+  version: "1.0"
+paths:
+  /foos:
+    get:
+      consumes:
+      - application/json
+      description: Get all foos
+      parameters:
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.FooReadResponse'
+            type: array
+      tags:
+      - Foo
+    post:
+      consumes:
+      - application/json
+      description: Create a new foo
+      parameters:
+      - description: Foo
+        in: body
+        name: foo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FooCreateBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.FooCreateResponse'
+      tags:
+      - Foo
+  /foos/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a foo
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      tags:
+      - Foo
+    get:
+      consumes:
+      - application/json
+      description: Get foo by id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.FooReadResponse'
+      tags:
+      - Foo
+    patch:
+      consumes:
+      - application/json
+      description: Patch a foo
+      parameters:
+      - description: Foo
+        in: body
+        name: foo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FooPatchBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      tags:
+      - Foo
+    put:
+      consumes:
+      - application/json
+      description: Update a foo
+      parameters:
+      - description: Foo
+        in: body
+        name: foo
+        required: true
+        schema:
+          $ref: '#/definitions/dto.FooUpdateBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      tags:
+      - Foo
+swagger: "2.0"

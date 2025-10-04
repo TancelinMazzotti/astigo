@@ -104,6 +104,7 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 
 ### Quick access:
 - HTTP API: http://localhost:8080
+- Swagger UI: http://localhost:8080/docs/index.html
 - gRPC: localhost:50051
 - Keycloak: http://localhost:8090 (admin / admin)
 - MinIO: http://localhost:9000
