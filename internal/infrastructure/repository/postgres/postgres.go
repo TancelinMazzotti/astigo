@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/uptrace/opentelemetry-go-extra/otelsql"
 	"go.opentelemetry.io/otel/attribute"
@@ -13,15 +16,17 @@ import (
 
 // Config represents the configuration settings required to connect to a PostgreSQL database.
 type Config struct {
-	Host         string `mapstructure:"host"`
-	Port         int    `mapstructure:"port"`
-	User         string `mapstructure:"user"`
-	Password     string `mapstructure:"password"`
-	DBName       string `mapstructure:"dbname"`
-	SSLMode      string `mapstructure:"sslmode"`
-	MaxOpenConns int    `mapstructure:"max_open_conns"`
-	MaxIdleConns int    `mapstructure:"max_idle_conns"`
-	MaxLifetime  int    `mapstructure:"max_lifetime"`
+	Host          string `mapstructure:"host"`
+	Port          int    `mapstructure:"port"`
+	User          string `mapstructure:"user"`
+	Password      string `mapstructure:"password"`
+	DBName        string `mapstructure:"dbname"`
+	SSLMode       string `mapstructure:"sslmode"`
+	MaxOpenConns  int    `mapstructure:"max_open_conns"`
+	MaxIdleConns  int    `mapstructure:"max_idle_conns"`
+	MaxLifetime   int    `mapstructure:"max_lifetime"`
+	Migrate       bool   `mapstructure:"migrate"`
+	MigrationPath string `mapstructure:"migration_path"`
 }
 
 // NewPostgres initializes and returns a PostgreSQL database connection based on the provided configuration.
@@ -35,10 +40,10 @@ func NewPostgres(ctx context.Context, config Config) (*sql.DB, error) {
 	db, err := otelsql.Open("pgx", dsn,
 		otelsql.WithAttributes(
 			attribute.String("db.system", "postgresql"),
+			attribute.String("db.host", config.Host),
+			attribute.Int("db.port", config.Port),
 			attribute.String("db.name", config.DBName),
 			attribute.String("db.user", config.User),
-			attribute.String("net.peer.name", config.Host),
-			attribute.Int("net.peer.port", config.Port),
 		),
 		otelsql.WithDBName(config.DBName),
 	)
@@ -57,5 +62,33 @@ func NewPostgres(ctx context.Context, config Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to ping postgres: %w", err)
 	}
 
+	if config.Migrate {
+		if err := migration(db, config.MigrationPath); err != nil {
+			return nil, fmt.Errorf("failed to migrate postgres: %w", err)
+		}
+	}
+
 	return db, nil
+}
+
+func migration(db *sql.DB, source string) error {
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	if err != nil {
+		return fmt.Errorf("failed to create postgres driver: %w", err)
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		source,
+		"postgres",
+		driver,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create new migration instance: %w", err)
+	}
+
+	if err := m.Up(); err != nil {
+		return fmt.Errorf("failed to migrate postgres: %w", err)
+	}
+
+	return nil
 }

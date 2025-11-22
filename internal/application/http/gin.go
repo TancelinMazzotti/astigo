@@ -5,6 +5,10 @@ import (
 	"net/http"
 	"time"
 
+	_ "github.com/TancelinMazzotti/astigo/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/TancelinMazzotti/astigo/internal/application/http/middleware"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/service"
@@ -54,6 +58,8 @@ func NewGin(
 			"docs":        "https://github.com/TancelinMazzotti/astigo/blob/main/README.md",
 		})
 	})
+
+	e.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	e.GET("/metrics", gin.WrapH(promhttp.Handler()))
 

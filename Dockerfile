@@ -23,7 +23,9 @@ RUN mkdir -p /app/config
 RUN chown -R appuser:appuser /app
 
 COPY --from=builder /app/astigo .
-COPY --chown=appuser:appuser config/config.yaml /app/config/
+
+COPY --chown=appuser:appuser migrations/ migrations/
+COPY --chown=appuser:appuser config/config.yaml config/
 
 USER appuser
 #HTTP

@@ -41,8 +41,8 @@ type FooController struct {
 // GetAll @Summary Get all foo
 // @Description Get all foos
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param offset query int false "Offset"
 // @Param limit query int false "Limit"
 // @Success 200 {array} dto.FooReadResponse
@@ -85,8 +85,8 @@ func (c *FooController) GetAll(ctx *gin.Context) {
 // GetByID @Summary Get foo by id
 // @Description Get foo by id
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param id path uuid true "Foo id"
 // @Success 200 {object} dto.FooReadResponse
 // @Router /foos/{id} [get]
@@ -142,8 +142,8 @@ func (c *FooController) GetByID(ctx *gin.Context) {
 // Create @Summary Create a new foo
 // @Description Create a new foo
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param foo body dto.FooCreateBody true "Foo"
 // @Success 201 {object} dto.FooCreateResponse
 // @Router /foos [post]
@@ -191,8 +191,8 @@ func (c *FooController) Create(ctx *gin.Context) {
 // Update @Summary Update a foo
 // @Description Update a foo
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param foo body dto.FooUpdateBody true "Foo"
 // @Success 204
 // @Router /foos/{id} [put]
@@ -257,8 +257,8 @@ func (c *FooController) Update(ctx *gin.Context) {
 // Patch @Summary Patch a foo
 // @Description Patch a foo
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param foo body dto.FooPatchBody true "Foo"
 // @Success 204
 // @Router /foos/{id} [patch]
@@ -342,8 +342,8 @@ func (c *FooController) Patch(ctx *gin.Context) {
 // DeleteByID @Summary Delete a foo
 // @Description Delete a foo
 // @Tags Foo
-// @Accept JSON
-// @Produce JSON
+// @Accept json
+// @Produce json
 // @Param id path uuid true "Foo id"
 // @Success 204
 // @Router /foos/{id} [delete]

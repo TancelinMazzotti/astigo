@@ -1,4 +1,8 @@
-.PHONY: build up down restart rebuild build-debug up-debug down-debug restart-debug rebuild-debug
+.PHONY: swagger build up down restart rebuild build-debug up-debug down-debug restart-debug rebuild-debug
+
+# Dev
+swagger:
+	swag init -g .\main.go -o .\docs\
 
 # Standard
 build:

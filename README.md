@@ -104,6 +104,7 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 
 ### Quick access:
 - HTTP API: http://localhost:8080
+- Swagger UI: http://localhost:8080/docs/index.html
 - gRPC: localhost:50051
 - Keycloak: http://localhost:8090 (admin / admin)
 - MinIO: http://localhost:9000
@@ -172,6 +173,8 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
 | `ASTIGO_POSTGRES_MAX_OPEN_CONNS` | `10`                                  | PostgreSQL maximum open connections                         |
 | `ASTIGO_POSTGRES_MAX_IDLE_CONNS` | `5`                                   | PostgreSQL maximum idle connections                         |
 | `ASTIGO_POSTGRES_MAX_LIFETIME`   | `300`                                 | PostgreSQL connection maximum lifetime (seconds)            |
+| `ASTIGO_POSTGRES_MIGRATE`        | `true`                                | Execute migration script to PostgreSQL                      |
+| `ASTIGO_POSTGRES_MIGRATION_PATH` | `file//migrations/postgres`           | Path to migrations folder to PostgreSQL                     |
 | `ASTIGO_NATS_URL`                | `nats://localhost:4222`               | NATS server connection URL                                  |
 | `ASTIGO_REDIS_HOST`              | `localhost`                           | Redis server hostname                                       |
 | `ASTIGO_REDIS_PORT`              | `6379`                                | Redis connection port                                       |

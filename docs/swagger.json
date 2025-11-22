@@ -1,0 +1,280 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Backend API Boilerplate (Hexagonal Architecture)",
+        "title": "Astigo",
+        "contact": {
+            "name": "Tancelin Mazzotti",
+            "email": "contact@example.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/foos": {
+            "get": {
+                "description": "Get all foos",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Offset",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dto.FooReadResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new foo",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "parameters": [
+                    {
+                        "description": "Foo",
+                        "name": "foo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FooCreateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FooCreateResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/foos/{id}": {
+            "get": {
+                "description": "Get foo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.FooReadResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a foo",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "parameters": [
+                    {
+                        "description": "Foo",
+                        "name": "foo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FooUpdateBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a foo",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "description": "Patch a foo",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Foo"
+                ],
+                "parameters": [
+                    {
+                        "description": "Foo",
+                        "name": "foo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.FooPatchBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.FooCreateBody": {
+            "type": "object",
+            "required": [
+                "label",
+                "secret",
+                "value",
+                "weight"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.FooCreateResponse": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.FooPatchBody": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.FooReadResponse": {
+            "type": "object",
+            "required": [
+                "id",
+                "label",
+                "value",
+                "weight"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        },
+        "dto.FooUpdateBody": {
+            "type": "object",
+            "required": [
+                "label",
+                "secret",
+                "value",
+                "weight"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "weight": {
+                    "type": "number"
+                }
+            }
+        }
+    }
+}

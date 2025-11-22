@@ -107,10 +107,9 @@ func (c *Client) Put(ctx context.Context, bucket, key string, body io.Reader, co
 	defer cancel()
 
 	input := &s3.PutObjectInput{
-		Bucket:      aws.String(bucket),
-		Key:         aws.String(key),
-		Body:        body,
-		ContentType: nil,
+		Bucket: aws.String(bucket),
+		Key:    aws.String(key),
+		Body:   body,
 	}
 	if contentType != "" {
 		input.ContentType = aws.String(contentType)
@@ -301,9 +300,7 @@ func (c *Client) Ping(ctx context.Context) error {
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	_, err := c.raw.HeadBucket(ctx, &s3.HeadBucketInput{
-		Bucket: aws.String(c.config.Bucket),
-	})
+	_, err := c.raw.ListBuckets(ctx, &s3.ListBucketsInput{})
 
 	return err
 }
