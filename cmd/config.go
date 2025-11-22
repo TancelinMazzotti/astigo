@@ -71,6 +71,8 @@ func setDefaults() {
 	viper.SetDefault("postgres.max_open_conns", 10)
 	viper.SetDefault("postgres.max_idle_conns", 5)
 	viper.SetDefault("postgres.max_lifetime", 300)
+	viper.SetDefault("postgres.migrate", true)
+	viper.SetDefault("postgres.migration_path", "file://migrations/postgres")
 
 	// Redis connection defaults
 	viper.SetDefault("redis.host", "localhost")

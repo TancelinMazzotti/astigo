@@ -8,15 +8,6 @@ Accept: application/json
     }
 %}
 
-### GET Foo By ID
-GET http://localhost:8080/foos/20000000-0000-0000-0000-000000000001
-Accept: application/json
-
-> {%
-    if (response.status !== 200) {
-        throw new Error(`Expected status 200 but got ${response.status}`);
-    }
-%}
 
 ### Create Foo
 POST localhost:8080/foos
@@ -35,6 +26,16 @@ Content-Type: application/json
     }
     const id = response.body.id;
     client.global.set("fooId", id);
+%}
+
+### GET Foo By ID
+GET http://localhost:8080/foos/{{fooId}}
+Accept: application/json
+
+> {%
+    if (response.status !== 200) {
+        throw new Error(`Expected status 200 but got ${response.status}`);
+    }
 %}
 
 ### Update Foo

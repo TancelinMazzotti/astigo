@@ -63,7 +63,6 @@ services:
       - POSTGRES_PASSWORD=astigo_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./deployments/postgres/init-db:/docker-entrypoint-initdb.d
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U astigo" ]
       interval: 10s

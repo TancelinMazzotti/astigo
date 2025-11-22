@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"strings"
 
 	"go.uber.org/zap"
@@ -21,22 +22,31 @@ func NewLogger(c LoggerConfig) (*zap.Logger, error) {
 		OutputPaths:      []string{"stdout"},
 		ErrorOutputPaths: []string{"stderr"},
 		EncoderConfig: zapcore.EncoderConfig{
-			TimeKey:        "time",
-			LevelKey:       "level",
-			NameKey:        "logger",
-			CallerKey:      "caller",
-			MessageKey:     "msg",
-			StacktraceKey:  "stacktrace",
-			EncodeLevel:    zapcore.CapitalLevelEncoder,
-			EncodeTime:     zapcore.RFC3339TimeEncoder,
-			EncodeDuration: zapcore.MillisDurationEncoder,
-			EncodeCaller:   zapcore.ShortCallerEncoder,
+			MessageKey:       "msg",
+			LevelKey:         "level",
+			TimeKey:          "time",
+			NameKey:          "logger",
+			CallerKey:        "caller",
+			StacktraceKey:    "stacktrace",
+			SkipLineEnding:   false,
+			LineEnding:       zapcore.DefaultLineEnding,
+			EncodeLevel:      zapcore.CapitalLevelEncoder,
+			EncodeTime:       zapcore.RFC3339TimeEncoder,
+			EncodeDuration:   zapcore.MillisDurationEncoder,
+			EncodeCaller:     zapcore.ShortCallerEncoder,
+			EncodeName:       zapcore.FullNameEncoder,
+			ConsoleSeparator: " ",
 		},
 	}
 
 	logger, err := cfg.Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build logger: %w", err)
+	}
 
-	return logger, err
+	zap.ReplaceGlobals(logger)
+
+	return logger, nil
 }
 
 func parseLevel(lvl string) zapcore.Level {

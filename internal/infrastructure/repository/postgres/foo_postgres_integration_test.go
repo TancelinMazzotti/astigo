@@ -15,6 +15,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	PathSeed = "seed.sql"
+)
+
 // TestIntegrationFooPostgres_FindAll verifies the behavior of the FindAll repository method with Postgres integration.
 func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 	t.Parallel()
@@ -72,6 +76,10 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 
 	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := seed(pg, PathSeed); err != nil {
 		t.Fatal(err)
 	}
 
@@ -142,6 +150,10 @@ func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if err := seed(pg, PathSeed); err != nil {
+		t.Fatal(err)
+	}
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			repo := NewFooPostgres(pg)
@@ -193,6 +205,10 @@ func TestIntegrationFooPostgres_Create(t *testing.T) {
 
 	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := seed(pg, PathSeed); err != nil {
 		t.Fatal(err)
 	}
 
@@ -254,6 +270,10 @@ func TestIntegrationFooPostgres_Update(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	if err := seed(pg, PathSeed); err != nil {
+		t.Fatal(err)
+	}
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			repo := NewFooPostgres(pg)
@@ -300,6 +320,10 @@ func TestIntegrationFooPostgres_DeleteByID(t *testing.T) {
 
 	pg, err := NewPostgres(ctx, container.Config)
 	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := seed(pg, PathSeed); err != nil {
 		t.Fatal(err)
 	}
 
