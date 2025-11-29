@@ -9,7 +9,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
@@ -17,12 +16,7 @@ import (
 
 // Config holds configuration parameters for connecting to and interacting with an S3-compatible storage service.
 type Config struct {
-	Region          string `mapstructure:"region"`
-	Bucket          string `mapstructure:"bucket"`
-	Endpoint        string `mapstructure:"endpoint"`
-	AccessKeyID     string `mapstructure:"access_key_id"`
-	SecretAccessKey string `mapstructure:"secret_access_key"`
-	SessionToken    string `mapstructure:"session_token"`
+	Bucket string `mapstructure:"bucket"`
 
 	UsePathStyle         bool   `mapstructure:"use_path_style"`
 	ServerSideEncryption string `mapstructure:"server_side_encryption"`
@@ -36,7 +30,7 @@ type Config struct {
 type Client struct {
 	config     Config
 	awsconfig  aws.Config
-	raw        *s3.Client
+	client     *s3.Client
 	uploader   *manager.Uploader
 	downloader *manager.Downloader
 	presign    *s3.PresignClient
@@ -44,29 +38,14 @@ type Client struct {
 
 // NewS3 initializes a new S3 client with the provided configuration and returns it, or an error if the configuration is invalid.
 func NewS3(ctx context.Context, config Config) (*Client, error) {
-	loadOpts := []func(*awsconfig.LoadOptions) error{
-		awsconfig.WithRegion(config.Region),
-	}
-
-	if config.AccessKeyID != "" && config.SecretAccessKey != "" {
-		loadOpts = append(loadOpts, awsconfig.WithCredentialsProvider(
-			credentials.NewStaticCredentialsProvider(config.AccessKeyID, config.SecretAccessKey, config.SessionToken),
-		))
-	}
-
-	awsCfg, err := awsconfig.LoadDefaultConfig(context.Background(), loadOpts...)
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}
 
-	// Options client S3
-	s3Opts := func(o *s3.Options) {
+	s3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
 		o.UsePathStyle = config.UsePathStyle
-		if config.Endpoint != "" {
-			o.BaseEndpoint = aws.String(config.Endpoint)
-		}
-	}
-	raw := s3.NewFromConfig(awsCfg, s3Opts)
+	})
 
 	// Uploader/Downloader
 	upOpts := func(u *manager.Uploader) {
@@ -75,16 +54,16 @@ func NewS3(ctx context.Context, config Config) (*Client, error) {
 		}
 	}
 
-	uploader := manager.NewUploader(raw, func(o *manager.Uploader) {})
+	uploader := manager.NewUploader(s3Client, func(o *manager.Uploader) {})
 	upOpts(uploader)
 
-	downloader := manager.NewDownloader(raw)
-	presignClient := s3.NewPresignClient(raw)
+	downloader := manager.NewDownloader(s3Client)
+	presignClient := s3.NewPresignClient(s3Client)
 
 	client := &Client{
 		config:     config,
 		awsconfig:  awsCfg,
-		raw:        raw,
+		client:     s3Client,
 		uploader:   uploader,
 		downloader: downloader,
 		presign:    presignClient,
@@ -125,7 +104,7 @@ func (c *Client) Put(ctx context.Context, bucket, key string, body io.Reader, co
 		input.ServerSideEncryption = types.ServerSideEncryption(c.config.ServerSideEncryption)
 	}
 
-	_, err := c.raw.PutObject(ctx, input)
+	_, err := c.client.PutObject(ctx, input)
 	if err != nil {
 		return fmt.Errorf("failed to put object: %w", err)
 	}
@@ -180,7 +159,7 @@ func (c *Client) Get(ctx context.Context, bucket, key string) (io.ReadCloser, er
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	out, err := c.raw.GetObject(ctx, &s3.GetObjectInput{
+	out, err := c.client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -200,7 +179,7 @@ func (c *Client) Head(ctx context.Context, bucket, key string) (*s3.HeadObjectOu
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	head, err := c.raw.HeadObject(ctx, &s3.HeadObjectInput{
+	head, err := c.client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -220,7 +199,7 @@ func (c *Client) Delete(ctx context.Context, bucket, key string) error {
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	_, err := c.raw.DeleteObject(ctx, &s3.DeleteObjectInput{
+	_, err := c.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -300,14 +279,14 @@ func (c *Client) Ping(ctx context.Context) error {
 	ctx, cancel := c.withTimeout(ctx)
 	defer cancel()
 
-	_, err := c.raw.ListBuckets(ctx, &s3.ListBucketsInput{})
+	_, err := c.client.ListBuckets(ctx, &s3.ListBucketsInput{})
 
 	return err
 }
 
-// Raw returns the underlying AWS S3 client used for raw operations.
+// Raw returns the underlying AWS S3 client used for client operations.
 func (c *Client) Raw() *s3.Client {
-	return c.raw
+	return c.client
 }
 
 // withTimeout returns a context with a timeout derived from the client's configuration or the original context if the timeout is not set.

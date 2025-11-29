@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -87,7 +88,11 @@ func migration(db *sql.DB, source string) error {
 	}
 
 	if err := m.Up(); err != nil {
-		return fmt.Errorf("failed to migrate postgres: %w", err)
+		switch {
+		case errors.Is(err, migrate.ErrNoChange):
+		default:
+			return fmt.Errorf("failed to migrate postgres: %w", err)
+		}
 	}
 
 	return nil
