@@ -83,11 +83,7 @@ func setDefaults() {
 	viper.SetDefault("nats.url", "nats://localhost:4222")
 
 	// S3 storage configuration defaults
-	viper.SetDefault("s3.region", "us-east-1")
 	viper.SetDefault("s3.bucket", "default")
-	viper.SetDefault("s3.endpoint", "http://localhost:9000")
-	viper.SetDefault("s3.access_key_id", "minio-root-user")
-	viper.SetDefault("s3.secret_access_key", "minio-root-pass")
 	viper.SetDefault("s3.session_token", "")
 	viper.SetDefault("s3.use_path_style", true)
 	viper.SetDefault("s3.server_side_encryption", "")

@@ -12,27 +12,35 @@ services:
       - ASTIGO_HTTP_PORT=8080
       - ASTIGO_HTTP_MODE=debug
       - ASTIGO_GRPC_PORT=50051
+
       - ASTIGO_AUTH_ISSUER=http://host.docker.internal:8090/realms/astigo
       - ASTIGO_AUTH_CLIENT_ID=astigo-api
+
       - ASTIGO_LOG_LEVEL=info
       - ASTIGO_LOG_ENCODING=json
+
       - ASTIGO_TELEMETRY_URL=otel-collector:4318
       - ASTIGO_TELEMETRY_SERVICE_NAME=astigo
+
       - ASTIGO_POSTGRES_HOST=postgres
       - ASTIGO_POSTGRES_PORT=5432
       - ASTIGO_POSTGRES_DB=astigo
       - ASTIGO_POSTGRES_USER=astigo
       - ASTIGO_POSTGRES_PASSWORD=astigo_password
+
       - ASTIGO_NATS_URL=nats://nats:4222
+
       - ASTIGO_REDIS_PORT=6379
       - ASTIGO_REDIS_HOST=redis
       - ASTIGO_REDIS_DB=0
-      - ASTIGO_S3_REGION=us-east-1
+
       - ASTIGO_S3_BUCKET=default
-      - ASTIGO_S3_ENDPOINT=http://host.docker.internal:9000
-      - ASTIGO_S3_ACCESS_KEY_ID=minio-root-user
-      - ASTIGO_S3_SECRET_ACCESS_KEY=minio-root-password
       - ASTIGO_S3_USE_PATH_STYLE=true
+      - AWS_ENDPOINT_URL_S3=http://minio:9000
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=minio-root-user
+      - AWS_SECRET_ACCESS_KEY=minio-root-password
+
     depends_on:
       keycloak:
         condition: service_healthy

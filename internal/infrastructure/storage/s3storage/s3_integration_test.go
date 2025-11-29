@@ -12,16 +12,11 @@ import (
 
 func TestIntegration_NewS3(t *testing.T) {
 	t.Parallel()
-
 	ctx := context.Background()
-	container, err := CreateS3Container(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	t.Run("Success Case", func(t *testing.T) {
 		t.Parallel()
-		_, err := NewS3(ctx, container.Config)
+		_, err := NewS3(ctx, globalContainer.Config)
 		assert.NoError(t, err)
 	})
 
