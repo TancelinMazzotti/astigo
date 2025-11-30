@@ -29,6 +29,9 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
+      - name: 📁 Download dependencies
+        run: go mod download
+
       - name: 🔍 Lint - go vet
         run: go vet ./...
 
@@ -53,6 +56,9 @@ jobs:
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: 📁 Download dependencies
+        run: go mod download
 
       - name: 🧪 Run Tests (with Testcontainers)
         run: go test -v ./...
