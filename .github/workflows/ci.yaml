@@ -10,7 +10,7 @@ env:
   TESTCONTAINERS_RYUK_DISABLED: true
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: 🧾 Checkout code
@@ -21,7 +21,10 @@ jobs:
         with:
           go-version: "1.24.2"
 
-      - name: Cache Go modules
+      - name: 🧹 Clean Go mod cache
+        run: rm -rf ~/go/pkg/mod
+
+      - name: ⚡ Cache Go modules
         uses: actions/cache@v3
         with:
           path: |
@@ -29,23 +32,8 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: ⚙️ Go mod tidy
-        run: go mod tidy
-
-      - name: 📁 Vendoring dependencies
-        run: go mod vendor
-
-  lint:
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: 🧾 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🧰 Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.24.2"
+      - name: 📁 Download dependencies
+        run: go mod download
 
       - name: 🔍 Lint - go vet
         run: go vet ./...
@@ -55,7 +43,6 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    needs: build
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
@@ -65,14 +52,26 @@ jobs:
         with:
           go-version: "1.24.2"
 
+      - name: 🧹 Clean Go mod cache
+        run: rm -rf ~/go/pkg/mod
+
+      - name: ⚡ Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: 📁 Download dependencies
+        run: go mod download
+
       - name: 🧪 Run Tests (with Testcontainers)
         run: go test -v ./...
 
   docker:
     runs-on: ubuntu-latest
-    needs: [build, lint, test]
-    env:
-      TESTCONTAINERS_RYUK_DISABLED: true
+    needs: [lint, test]
     steps:
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
@@ -80,7 +79,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
+      - name: ⚡ Cache Docker layers
         uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
