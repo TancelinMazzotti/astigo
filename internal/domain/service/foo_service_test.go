@@ -10,7 +10,7 @@ import (
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
 	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockcache"
-	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockmessaging"
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockpublisher"
 	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockrepository"
 
 	"github.com/google/uuid"
@@ -29,7 +29,7 @@ func TestFooService_GetAll(t *testing.T) {
 
 		setupMockRepository func(*mockrepository.MockFooRepository)
 		setupMockCache      func(*mockcache.MockFooCache)
-		setupMockMessaging  func(*mockmessaging.MockFooMessaging)
+		setupMockPublisher  func(*mockpublisher.MockFooPublisher)
 	}{
 		{
 			name: "Success Case - Multiple Foos",
@@ -50,7 +50,7 @@ func TestFooService_GetAll(t *testing.T) {
 				}, nil)
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
 			name: "Success Case - Empty Foos",
@@ -67,7 +67,7 @@ func TestFooService_GetAll(t *testing.T) {
 				}).Return([]*model.Foo{}, nil)
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
 			name: "Failure Case - Repository Error",
@@ -84,7 +84,7 @@ func TestFooService_GetAll(t *testing.T) {
 				}).Return(([]*model.Foo)(nil), errors.New("repository error"))
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 	}
 
@@ -93,12 +93,12 @@ func TestFooService_GetAll(t *testing.T) {
 			t.Parallel()
 			mockRepo := new(mockrepository.MockFooRepository)
 			mockCache := new(mockcache.MockFooCache)
-			mockMessaging := new(mockmessaging.MockFooMessaging)
-			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockMessaging)
+			mockPublisher := new(mockpublisher.MockFooPublisher)
+			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockPublisher)
 
 			testCase.setupMockRepository(mockRepo)
 			testCase.setupMockCache(mockCache)
-			testCase.setupMockMessaging(mockMessaging)
+			testCase.setupMockPublisher(mockPublisher)
 
 			result, err := service.GetAll(context.Background(), testCase.input)
 
@@ -125,7 +125,7 @@ func TestFooService_GetByID(t *testing.T) {
 
 		setupMockCache      func(*mockcache.MockFooCache)
 		setupMockRepository func(*mockrepository.MockFooRepository)
-		setupMockMessaging  func(*mockmessaging.MockFooMessaging)
+		setupMockPublisher  func(*mockpublisher.MockFooPublisher)
 	}{
 		{
 			name: "Success Case",
@@ -175,7 +175,7 @@ func TestFooService_GetByID(t *testing.T) {
 					UpdatedAt: &now,
 				}, nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
 			name: "Success Case - Cache Hit",
@@ -207,7 +207,7 @@ func TestFooService_GetByID(t *testing.T) {
 				}, nil)
 			},
 			setupMockRepository: func(mockRepo *mockrepository.MockFooRepository) {},
-			setupMockMessaging:  func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher:  func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
 			name: "Success Case - Cache Error",
@@ -257,7 +257,7 @@ func TestFooService_GetByID(t *testing.T) {
 					UpdatedAt: &now,
 				}, nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
 			name:           "Failure Case - Repository Error",
@@ -280,7 +280,7 @@ func TestFooService_GetByID(t *testing.T) {
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return((*model.Foo)(nil), fmt.Errorf("repository error"))
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 	}
 
@@ -289,12 +289,12 @@ func TestFooService_GetByID(t *testing.T) {
 			t.Parallel()
 			mockRepo := new(mockrepository.MockFooRepository)
 			mockCache := new(mockcache.MockFooCache)
-			mockMessaging := new(mockmessaging.MockFooMessaging)
-			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockMessaging)
+			mockPublisher := new(mockpublisher.MockFooPublisher)
+			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockPublisher)
 
 			testCase.setupMockRepository(mockRepo)
 			testCase.setupMockCache(mockCache)
-			testCase.setupMockMessaging(mockMessaging)
+			testCase.setupMockPublisher(mockPublisher)
 
 			result, err := service.GetByID(context.Background(), testCase.id)
 
@@ -318,7 +318,7 @@ func TestFooService_Create(t *testing.T) {
 
 		setupMockRepository func(*mockrepository.MockFooRepository)
 		setupMockCache      func(*mockcache.MockFooCache)
-		setupMockMessaging  func(*mockmessaging.MockFooMessaging)
+		setupMockPublisher  func(*mockpublisher.MockFooPublisher)
 	}{
 		{
 			name: "Success Case",
@@ -352,8 +352,8 @@ func TestFooService_Create(t *testing.T) {
 						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
+				mockMess.On("PublishCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
 						foo.Secret == "secret_create" &&
 						foo.Value == 1 &&
@@ -393,8 +393,8 @@ func TestFooService_Create(t *testing.T) {
 						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(fmt.Errorf("cache error"))
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
+				mockMess.On("PublishCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
 						foo.Secret == "secret_create" &&
 						foo.Value == 1 &&
@@ -421,17 +421,17 @@ func TestFooService_Create(t *testing.T) {
 				})).Return(fmt.Errorf("repository error"))
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 		{
-			name: "Failure Case - Messaging Error",
+			name: "Failure Case - Publisher Error",
 			input: data.FooCreateInput{
 				Label:  "foo_create",
 				Secret: "secret_create",
 				Value:  1,
 				Weight: 1.5,
 			},
-			expectedError: errors.New("fail to publish foo created: messaging error"),
+			expectedError: errors.New("fail to publish foo created: pub error"),
 
 			setupMockRepository: func(mockRepo *mockrepository.MockFooRepository) {
 				mockRepo.On("Create", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
@@ -449,13 +449,13 @@ func TestFooService_Create(t *testing.T) {
 						foo.Weight == 1.5
 				}), FooCacheExpiration).Return(nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
-				mockMess.On("PublishFooCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
+				mockMess.On("PublishCreated", mock.Anything, mock.MatchedBy(func(foo *model.Foo) bool {
 					return foo.Label == "foo_create" &&
 						foo.Secret == "secret_create" &&
 						foo.Value == 1 &&
 						foo.Weight == 1.5
-				})).Return(fmt.Errorf("messaging error"))
+				})).Return(fmt.Errorf("pub error"))
 			},
 		},
 	}
@@ -465,12 +465,12 @@ func TestFooService_Create(t *testing.T) {
 			t.Parallel()
 			mockRepo := new(mockrepository.MockFooRepository)
 			mockCache := new(mockcache.MockFooCache)
-			mockMessaging := new(mockmessaging.MockFooMessaging)
-			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockMessaging)
+			mockPublisher := new(mockpublisher.MockFooPublisher)
+			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockPublisher)
 
 			testCase.setupMockRepository(mockRepo)
 			testCase.setupMockCache(mockCache)
-			testCase.setupMockMessaging(mockMessaging)
+			testCase.setupMockPublisher(mockPublisher)
 
 			foo, err := service.Create(context.Background(), testCase.input)
 
@@ -495,7 +495,7 @@ func TestFooService_Update(t *testing.T) {
 
 		setupMockRepository func(*mockrepository.MockFooRepository)
 		setupMockCache      func(*mockcache.MockFooCache)
-		setupMockMessaging  func(*mockmessaging.MockFooMessaging)
+		setupMockPublisher  func(*mockpublisher.MockFooPublisher)
 	}{
 		{
 			name: "Success Case",
@@ -538,8 +538,8 @@ func TestFooService_Update(t *testing.T) {
 					Weight: 1.5,
 				}, FooCacheExpiration).Return(nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
-				mockMess.On("PublishFooUpdated", mock.Anything, &model.Foo{
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
+				mockMess.On("PublishUpdated", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
@@ -589,8 +589,8 @@ func TestFooService_Update(t *testing.T) {
 					Weight: 1.5,
 				}, FooCacheExpiration).Return(fmt.Errorf("cache error"))
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
-				mockMess.On("PublishFooUpdated", mock.Anything, &model.Foo{
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
+				mockMess.On("PublishUpdated", mock.Anything, &model.Foo{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
 					Secret: "secret_update",
@@ -618,7 +618,7 @@ func TestFooService_Update(t *testing.T) {
 				).Return((*model.Foo)(nil), errors.New("repository error"))
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 	}
 
@@ -627,12 +627,12 @@ func TestFooService_Update(t *testing.T) {
 			t.Parallel()
 			mockRepo := new(mockrepository.MockFooRepository)
 			mockCache := new(mockcache.MockFooCache)
-			mockMessaging := new(mockmessaging.MockFooMessaging)
-			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockMessaging)
+			mockPublisher := new(mockpublisher.MockFooPublisher)
+			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockPublisher)
 
 			testCase.setupMockRepository(mockRepo)
 			testCase.setupMockCache(mockCache)
-			testCase.setupMockMessaging(mockMessaging)
+			testCase.setupMockPublisher(mockPublisher)
 
 			err := service.Update(context.Background(), testCase.input)
 
@@ -654,7 +654,7 @@ func TestFooService_DeleteByID(t *testing.T) {
 
 		setupMockRepository func(*mockrepository.MockFooRepository)
 		setupMockCache      func(*mockcache.MockFooCache)
-		setupMockMessaging  func(*mockmessaging.MockFooMessaging)
+		setupMockPublisher  func(*mockpublisher.MockFooPublisher)
 	}{
 		{
 			name:          "Success Case",
@@ -675,9 +675,9 @@ func TestFooService_DeleteByID(t *testing.T) {
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(nil)
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
 				mockMess.On(
-					"PublishFooDeleted",
+					"PublishDeleted",
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(nil)
@@ -702,9 +702,9 @@ func TestFooService_DeleteByID(t *testing.T) {
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(fmt.Errorf("cache error"))
 			},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {
 				mockMess.On(
-					"PublishFooDeleted",
+					"PublishDeleted",
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 				).Return(nil)
@@ -723,7 +723,7 @@ func TestFooService_DeleteByID(t *testing.T) {
 				).Return(errors.New("repository error"))
 			},
 			setupMockCache:     func(mockCache *mockcache.MockFooCache) {},
-			setupMockMessaging: func(mockMess *mockmessaging.MockFooMessaging) {},
+			setupMockPublisher: func(mockMess *mockpublisher.MockFooPublisher) {},
 		},
 	}
 
@@ -732,12 +732,12 @@ func TestFooService_DeleteByID(t *testing.T) {
 			t.Parallel()
 			mockRepo := new(mockrepository.MockFooRepository)
 			mockCache := new(mockcache.MockFooCache)
-			mockMessaging := new(mockmessaging.MockFooMessaging)
-			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockMessaging)
+			mockPublisher := new(mockpublisher.MockFooPublisher)
+			service := NewFooService(zap.NewNop(), mockRepo, mockCache, mockPublisher)
 
 			testCase.setupMockRepository(mockRepo)
 			testCase.setupMockCache(mockCache)
-			testCase.setupMockMessaging(mockMessaging)
+			testCase.setupMockPublisher(mockPublisher)
 
 			err := service.DeleteByID(context.Background(), testCase.id)
 

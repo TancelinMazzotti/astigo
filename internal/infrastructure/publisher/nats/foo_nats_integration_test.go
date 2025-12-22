@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats/message"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/publisher/nats/message"
 
 	"github.com/google/uuid"
 	"github.com/nats-io/nats.go"
@@ -66,9 +66,9 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(DefaultConnector)
+			publisher := NewFooNats(DefaultConnector)
 
-			err = messaging.PublishFooCreated(ctx, testCase.foo)
+			err = publisher.PublishCreated(ctx, testCase.foo)
 
 			if testCase.expectedError != nil {
 				assert.ErrorContains(t, err, testCase.expectedError.Error())
@@ -95,7 +95,7 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 	}
 }
 
-// TestIntegrationFooNats_PublishFooUpdated tests the PublishFooUpdated method by verifying NATS message delivery and content.
+// TestIntegrationFooNats_PublishFooUpdated tests the PublishUpdated method by verifying NATS message delivery and content.
 func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 	t.Parallel()
 	now := time.Now()
@@ -147,9 +147,9 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(DefaultConnector)
+			publisher := NewFooNats(DefaultConnector)
 
-			err = messaging.PublishFooUpdated(ctx, testCase.foo)
+			err = publisher.PublishUpdated(ctx, testCase.foo)
 
 			if testCase.expectedError != nil {
 				assert.ErrorContains(t, err, testCase.expectedError.Error())
@@ -212,9 +212,9 @@ func TestIntegrationFooNats_PublishFooDeleted(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(DefaultConnector)
+			publisher := NewFooNats(DefaultConnector)
 
-			err = messaging.PublishFooDeleted(ctx, testCase.id)
+			err = publisher.PublishDeleted(ctx, testCase.id)
 
 			if testCase.expectedError != nil {
 				assert.ErrorContains(t, err, testCase.expectedError.Error())

@@ -10,7 +10,7 @@ import (
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/service"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/cache"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/publisher"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -27,12 +27,12 @@ var (
 	_ service.IFooService = (*FooService)(nil)
 )
 
-// FooService provides business logic around Foo entities, integrating data access, caching, and messaging capabilities.
+// FooService provides business logic around Foo entities, integrating data access, caching, and pub capabilities.
 type FooService struct {
-	logger    *zap.Logger
-	repo      repository.IFooRepository
-	cache     cache.IFooCache
-	messaging messaging.IFooMessaging
+	logger *zap.Logger
+	repo   repository.IFooRepository
+	cache  cache.IFooCache
+	pub    publisher.IFooPublisher
 }
 
 // GetAll retrieves a list of Foo entities based on the provided input criteria and returns an error if retrieval fails.
@@ -98,7 +98,7 @@ func (s *FooService) GetByID(ctx context.Context, id uuid.UUID) (*model.Foo, err
 	return foo, nil
 }
 
-// Create creates a new Foo entity, stores it in the repository, and updates related cache and messaging.
+// Create creates a new Foo entity, stores it in the repository, and updates related cache and pub.
 func (s *FooService) Create(ctx context.Context, input data.FooCreateInput) (*model.Foo, error) {
 	tracer := otel.Tracer("FooService")
 	ctx, span := tracer.Start(ctx, "FooService.Create")
@@ -146,22 +146,22 @@ func (s *FooService) Create(ctx context.Context, input data.FooCreateInput) (*mo
 		}
 	}()
 
-	var errMessaging error
+	var errPublisher error
 	go func() {
 		defer wg.Done()
-		if err := s.messaging.PublishFooCreated(ctx, foo); err != nil {
+		if err := s.pub.PublishCreated(ctx, foo); err != nil {
 			span.RecordError(err)
-			span.SetAttributes(attribute.Bool("messaging.publish.error", true))
-			errMessaging = err
+			span.SetAttributes(attribute.Bool("pub.publish.error", true))
+			errPublisher = err
 		}
 
 	}()
 
 	wg.Wait()
 
-	if errMessaging != nil {
-		s.logger.Debug("fail to publish foo created", zap.Error(errMessaging))
-		return nil, fmt.Errorf("fail to publish foo created: %w", errMessaging)
+	if errPublisher != nil {
+		s.logger.Debug("fail to publish foo created", zap.Error(errPublisher))
+		return nil, fmt.Errorf("fail to publish foo created: %w", errPublisher)
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -234,22 +234,22 @@ func (s *FooService) Update(ctx context.Context, input data.IFooUpdateMerger) er
 		}
 	}()
 
-	var errMessaging error
+	var errPublisher error
 	go func() {
 		defer wg.Done()
-		if err := s.messaging.PublishFooUpdated(ctx, foo); err != nil {
+		if err := s.pub.PublishUpdated(ctx, foo); err != nil {
 			span.RecordError(err)
-			span.SetAttributes(attribute.Bool("messaging.publish.error", true))
-			errMessaging = err
+			span.SetAttributes(attribute.Bool("pub.publish.error", true))
+			errPublisher = err
 		}
 
 	}()
 
 	wg.Wait()
 
-	if errMessaging != nil {
-		s.logger.Debug("fail to publish foo updated", zap.Error(errMessaging))
-		return fmt.Errorf("fail to publish foo updated: %w", errMessaging)
+	if errPublisher != nil {
+		s.logger.Debug("fail to publish foo updated", zap.Error(errPublisher))
+		return fmt.Errorf("fail to publish foo updated: %w", errPublisher)
 	}
 
 	span.SetStatus(codes.Ok, "")
@@ -283,32 +283,32 @@ func (s *FooService) DeleteByID(ctx context.Context, id uuid.UUID) error {
 		}
 	}()
 
-	var errMessaging error
+	var errPublisher error
 	go func() {
 		defer wg.Done()
-		if err := s.messaging.PublishFooDeleted(ctx, id); err != nil {
+		if err := s.pub.PublishDeleted(ctx, id); err != nil {
 			span.RecordError(err)
-			span.SetAttributes(attribute.Bool("messaging.publish.error", true))
-			errMessaging = err
+			span.SetAttributes(attribute.Bool("pub.publish.error", true))
+			errPublisher = err
 		}
 	}()
 
 	wg.Wait()
 
-	if errMessaging != nil {
-		s.logger.Debug("fail to publish foo deleted", zap.Error(errMessaging))
+	if errPublisher != nil {
+		s.logger.Debug("fail to publish foo deleted", zap.Error(errPublisher))
 	}
 
 	span.SetStatus(codes.Ok, "")
 	return nil
 }
 
-// NewFooService initializes a new instance of FooService with the provided logger, repository, cache, and messaging dependencies.
-func NewFooService(logger *zap.Logger, repo repository.IFooRepository, cache cache.IFooCache, messaging messaging.IFooMessaging) *FooService {
+// NewFooService initializes a new instance of FooService with the provided logger, repository, cache, and pub dependencies.
+func NewFooService(logger *zap.Logger, repo repository.IFooRepository, cache cache.IFooCache, pub publisher.IFooPublisher) *FooService {
 	return &FooService{
-		logger:    logger,
-		repo:      repo,
-		cache:     cache,
-		messaging: messaging,
+		logger: logger,
+		repo:   repo,
+		cache:  cache,
+		pub:    pub,
 	}
 }

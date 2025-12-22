@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats/message"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/publisher"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/publisher/nats/message"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
@@ -23,18 +23,18 @@ const (
 )
 
 var (
-	_ messaging.IFooMessaging = (*FooNats)(nil)
+	_ publisher.IFooPublisher = (*FooNats)(nil)
 )
 
-// FooNats wraps a NATS connection and implements the IFooMessaging interface for publishing Foo-related messages.
+// FooNats wraps a NATS connection and implements the IFooPublisher interface for publishing Foo-related messages.
 type FooNats struct {
 	conn *nats.Conn
 }
 
-// PublishFooCreated publishes a "foo.created" message to the NATS server using the provided Foo data.
-func (n *FooNats) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
+// PublishCreated publishes a "foo.created" message to the NATS server using the provided Foo data.
+func (n *FooNats) PublishCreated(ctx context.Context, foo *model.Foo) error {
 	tracer := otel.Tracer("FooNats")
-	_, span := tracer.Start(ctx, "FooNats.PublishFooCreated")
+	_, span := tracer.Start(ctx, "FooNats.PublishCreated")
 	defer span.End()
 
 	span.SetAttributes(
@@ -66,9 +66,9 @@ func (n *FooNats) PublishFooCreated(ctx context.Context, foo *model.Foo) error {
 	return nil
 }
 
-func (n *FooNats) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
+func (n *FooNats) PublishUpdated(ctx context.Context, foo *model.Foo) error {
 	tracer := otel.Tracer("FooNats")
-	_, span := tracer.Start(ctx, "FooNats.PublishFooUpdated")
+	_, span := tracer.Start(ctx, "FooNats.PublishUpdated")
 	defer span.End()
 
 	span.SetAttributes(
@@ -99,9 +99,9 @@ func (n *FooNats) PublishFooUpdated(ctx context.Context, foo *model.Foo) error {
 	return nil
 }
 
-func (n *FooNats) PublishFooDeleted(ctx context.Context, id uuid.UUID) error {
+func (n *FooNats) PublishDeleted(ctx context.Context, id uuid.UUID) error {
 	tracer := otel.Tracer("FooNats")
-	_, span := tracer.Start(ctx, "FooNats.PublishFooDeleted")
+	_, span := tracer.Start(ctx, "FooNats.PublishDeleted")
 	defer span.End()
 
 	span.SetAttributes(

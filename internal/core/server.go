@@ -15,7 +15,7 @@ import (
 	"github.com/TancelinMazzotti/astigo/internal/domain/service"
 	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
-	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats"
+	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/publisher/nats"
 	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/storage/s3storage"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/telemetry"
