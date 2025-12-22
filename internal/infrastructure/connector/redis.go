@@ -1,4 +1,4 @@
-package redis
+package connector
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-// Config represents the configuration settings required to connect to a Redis server.
-type Config struct {
+// RedisConfig represents the configuration settings required to connect to a Redis server.
+type RedisConfig struct {
 	Host     string `mapstructure:"host"`
 	Port     int    `mapstructure:"port"`
 	Password string `mapstructure:"password"`
@@ -17,7 +17,7 @@ type Config struct {
 }
 
 // NewRedis initializes a new Redis client using the provided configuration and verifies the connection with a ping.
-func NewRedis(ctx context.Context, config Config) (*redis.Client, error) {
+func NewRedis(ctx context.Context, config RedisConfig) (*redis.Client, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     config.Host + ":" + strconv.Itoa(config.Port),
 		Password: config.Password,

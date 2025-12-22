@@ -14,6 +14,7 @@ import (
 	http2 "github.com/TancelinMazzotti/astigo/internal/application/http"
 	"github.com/TancelinMazzotti/astigo/internal/domain/service"
 	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/messaging/nats"
 	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
 	"github.com/TancelinMazzotti/astigo/internal/infrastructure/storage/s3storage"
@@ -26,24 +27,6 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
-
-// Config represents the main configuration structure for the application, encompassing all required service settings.
-type Config struct {
-	Log LoggerConfig `mapstructure:"log"`
-
-	Gin       http2.Config     `mapstructure:"http"`
-	Grpc      grpc2.Config     `mapstructure:"grpc"`
-	Telemetry telemetry.Config `mapstructure:"telemetry"`
-	Auth      struct {
-		ClientID string `mapstructure:"client_id"`
-		Issuer   string `mapstructure:"issuer"`
-	} `mapstructure:"auth"`
-
-	Postgres postgres2.Config `mapstructure:"postgres"`
-	Nats     nats2.Config     `mapstructure:"nats"`
-	Redis    redis2.Config    `mapstructure:"redis"`
-	S3       s3storage.Config `mapstructure:"s3"`
-}
 
 // Server represents the main service structure that holds all essential configurations and dependencies.
 type Server struct {
@@ -190,13 +173,13 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	}
 
 	server.Logger.Info("create new postgres connector")
-	if server.Postgres, err = postgres2.NewPostgres(ctx, server.Config.Postgres); err != nil {
+	if server.Postgres, err = connector.NewPostgres(ctx, server.Config.Postgres); err != nil {
 		server.Logger.Error("fail to create postgres connector", zap.Error(err))
 		return nil, fmt.Errorf("fail to create postgres connector %w", err)
 	}
 
 	server.Logger.Info("create new redis connector")
-	if server.Redis, err = redis2.NewRedis(ctx, server.Config.Redis); err != nil {
+	if server.Redis, err = connector.NewRedis(ctx, server.Config.Redis); err != nil {
 		server.Logger.Error("fail to create redis connector", zap.Error(err))
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}
@@ -208,7 +191,7 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	}
 
 	server.Logger.Info("create new nats connector")
-	if server.Nats, err = nats2.NewNats(server.Config.Nats); err != nil {
+	if server.Nats, err = connector.NewNats(server.Config.Nats); err != nil {
 		server.Logger.Error("fail to create nats connector", zap.Error(err))
 		return nil, fmt.Errorf("fail to create nats connector %w", err)
 	}

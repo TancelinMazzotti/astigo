@@ -60,6 +60,13 @@ func setDefaults() {
 	viper.SetDefault("log.level", "info")
 	viper.SetDefault("log.encoding", "json")
 
+	// Driver configuration defaults
+	viper.SetDefault("driver.repository", "postgres")
+	viper.SetDefault("driver.cache", "redis")
+	viper.SetDefault("driver.publisher", "nats")
+	viper.SetDefault("driver.subscriber", "nats")
+	viper.SetDefault("driver.storage", "s3")
+
 	// Jaeger configuration
 	viper.SetDefault("telemetry.url", "localhost:4318")
 	viper.SetDefault("telemetry.service_name", "astigo")

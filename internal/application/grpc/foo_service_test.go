@@ -8,9 +8,8 @@ import (
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
-	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
 	"github.com/TancelinMazzotti/astigo/pkg/proto"
-
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/in/mockservice"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -24,7 +23,7 @@ func TestFooService_List(t *testing.T) {
 		expectedError error
 		expectedCount int
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -35,7 +34,7 @@ func TestFooService_List(t *testing.T) {
 			expectedCount: 3,
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *service.MockFooService) {
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {
 				mockRepo.On("GetAll",
 					mock.Anything,
 					data.FooReadListInput{Offset: 0, Limit: 10},
@@ -76,7 +75,7 @@ func TestFooService_List(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -104,7 +103,7 @@ func TestFooService_Get(t *testing.T) {
 		expectedError  error
 		expectedResult *proto.FooResponse
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -121,7 +120,7 @@ func TestFooService_Get(t *testing.T) {
 				},
 			},
 
-			setupMockHandler: func(mockRepo *service.MockFooService) {
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {
 				mockRepo.On("GetByID",
 					mock.Anything,
 					uuid.MustParse("20000000-0000-0000-0000-000000000001"),
@@ -143,13 +142,13 @@ func TestFooService_Get(t *testing.T) {
 			},
 			expectedError:    fmt.Errorf("fail to parse id"),
 			expectedResult:   nil,
-			setupMockHandler: func(mockRepo *service.MockFooService) {},
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {},
 		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -177,7 +176,7 @@ func TestFooService_Create(t *testing.T) {
 		expectedResult *proto.FooResponse
 		expectedError  error
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -197,7 +196,7 @@ func TestFooService_Create(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *service.MockFooService) {
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {
 				mockRepo.On("Create",
 					mock.Anything,
 					data.FooCreateInput{
@@ -222,7 +221,7 @@ func TestFooService_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -250,7 +249,7 @@ func TestFooService_Update(t *testing.T) {
 		expectedResult *proto.FooResponse
 		expectedError  error
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -271,7 +270,7 @@ func TestFooService_Update(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *service.MockFooService) {
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {
 				mockRepo.On("Update", mock.Anything, &data.FooUpdateInput{
 					Id:     uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:  "foo_update",
@@ -286,7 +285,7 @@ func TestFooService_Update(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -310,7 +309,7 @@ func TestFooService_Delete(t *testing.T) {
 		expectedResult *proto.DeleteFooResponse
 		expectedError  error
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name: "Success Case",
@@ -322,7 +321,7 @@ func TestFooService_Delete(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockHandler: func(mockRepo *service.MockFooService) {
+			setupMockHandler: func(mockRepo *mockservice.MockFooService) {
 				mockRepo.On("DeleteByID", mock.Anything, uuid.MustParse("20000000-0000-0000-0000-000000000001")).Return(nil)
 			},
 		},
@@ -331,7 +330,7 @@ func TestFooService_Delete(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			svc := NewFooService(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)

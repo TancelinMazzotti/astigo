@@ -1,4 +1,4 @@
-.PHONY: swagger build up down restart rebuild build-debug up-debug down-debug restart-debug rebuild-debug
+.PHONY: swagger build up down restart rebuild build-debug up-debug down-debug restart-debug rebuild-debug up-monitoring down-monitoring
 
 # Dev
 swagger:
@@ -6,13 +6,13 @@ swagger:
 
 # Standard
 build:
-	docker-compose build
+	docker-compose --profile astigo build
 
 up:
-	docker-compose up -d
+	docker-compose --profile astigo up -d
 
 down:
-	docker-compose down -v
+	docker-compose --profile astigo down -v
 
 restart: down up
 
@@ -20,14 +20,20 @@ rebuild: down build up
 
 # Debug
 build-debug:
-	docker-compose -f docker-compose.debug.yml build
+	docker-compose --profile debug build
 
 up-debug:
-	docker-compose -f docker-compose.debug.yml up -d
+	docker-compose --profile debug up -d
 
 down-debug:
-	docker-compose -f docker-compose.debug.yml down -v
+	docker-compose --profile debug down -v
 
 restart-debug: down up
 
 rebuild-debug: down-debug build-debug up-debug
+
+up-monitoring:
+	docker-compose --profile monitoring up -d
+
+down-monitoring:
+	docker-compose --profile monitoring down -v

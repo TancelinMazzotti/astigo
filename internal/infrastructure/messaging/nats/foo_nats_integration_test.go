@@ -48,20 +48,11 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	container, err := CreateNatsContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	nc, err := NewNats(container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			messageChan := make(chan message.FooMessage, 1)
-			sub, err := nc.Subscribe(fooCreatedSubject, func(msg *nats.Msg) {
+			sub, err := DefaultConnector.Subscribe(fooCreatedSubject, func(msg *nats.Msg) {
 				var receivedDta message.FooMessage
 				err := json.Unmarshal(msg.Data, &receivedDta)
 				if err != nil {
@@ -75,7 +66,7 @@ func TestIntegrationFooNats_PublishFooCreated(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(nc)
+			messaging := NewFooNats(DefaultConnector)
 
 			err = messaging.PublishFooCreated(ctx, testCase.foo)
 
@@ -138,20 +129,11 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	container, err := CreateNatsContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	nc, err := NewNats(container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			messageChan := make(chan message.FooMessage, 1)
-			sub, err := nc.Subscribe(fooUpdatedSubject, func(msg *nats.Msg) {
+			sub, err := DefaultConnector.Subscribe(fooUpdatedSubject, func(msg *nats.Msg) {
 				var receivedFoo message.FooMessage
 				err := json.Unmarshal(msg.Data, &receivedFoo)
 				if err != nil {
@@ -165,7 +147,7 @@ func TestIntegrationFooNats_PublishFooUpdated(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(nc)
+			messaging := NewFooNats(DefaultConnector)
 
 			err = messaging.PublishFooUpdated(ctx, testCase.foo)
 
@@ -210,20 +192,11 @@ func TestIntegrationFooNats_PublishFooDeleted(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	container, err := CreateNatsContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	nc, err := NewNats(container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			messageChan := make(chan uuid.UUID, 1)
-			sub, err := nc.Subscribe(fooDeletedSubject, func(msg *nats.Msg) {
+			sub, err := DefaultConnector.Subscribe(fooDeletedSubject, func(msg *nats.Msg) {
 				var receivedId struct {
 					Id uuid.UUID
 				}
@@ -239,7 +212,7 @@ func TestIntegrationFooNats_PublishFooDeleted(t *testing.T) {
 			}
 			defer sub.Unsubscribe()
 
-			messaging := NewFooNats(nc)
+			messaging := NewFooNats(DefaultConnector)
 
 			err = messaging.PublishFooDeleted(ctx, testCase.id)
 

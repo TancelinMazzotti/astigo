@@ -3,6 +3,8 @@ package postgres
 import (
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
+	"github.com/TancelinMazzotti/astigo/test/testcontainer"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -13,10 +15,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-)
-
-const (
-	PathSeed = "seed.sql"
 )
 
 // TestIntegrationFooPostgres_FindAll verifies the behavior of the FindAll repository method with Postgres integration.
@@ -68,24 +66,9 @@ func TestIntegrationFooPostgres_FindAll(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
-	container, err := CreatePostgresContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pg, err := NewPostgres(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := seed(pg, PathSeed); err != nil {
-		t.Fatal(err)
-	}
-
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			repo := NewFooPostgres(pg)
+			repo := NewFooPostgres(DefaultReadDb)
 
 			result, err := repo.FindAll(context.Background(), testCase.input)
 
@@ -139,24 +122,9 @@ func TestIntegrationFooPostgres_FindByID(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
-	container, err := CreatePostgresContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	pg, err := NewPostgres(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := seed(pg, PathSeed); err != nil {
-		t.Fatal(err)
-	}
-
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			repo := NewFooPostgres(pg)
+			repo := NewFooPostgres(DefaultReadDb)
 
 			result, err := repo.FindByID(context.Background(), testCase.id)
 
@@ -198,17 +166,30 @@ func TestIntegrationFooPostgres_Create(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	container, err := CreatePostgresContainer(ctx)
+	container, err := testcontainer.CreatePostgresContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := connector.PostgresConfig{
+		Host:          container.Host,
+		Port:          container.Port,
+		DBName:        container.Database,
+		User:          container.User,
+		Password:      container.Password,
+		SSLMode:       "disable",
+		MaxOpenConns:  10,
+		MaxIdleConns:  5,
+		MaxLifetime:   10,
+		Migrate:       true,
+		MigrationPath: MigrationPath,
+	}
+
+	pg, err := connector.NewPostgres(ctx, config)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := seed(pg, PathSeed); err != nil {
+	if err := testcontainer.SeedPostgres(pg, DefaultSeedPath); err != nil {
 		t.Fatal(err)
 	}
 
@@ -260,17 +241,30 @@ func TestIntegrationFooPostgres_Update(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	container, err := CreatePostgresContainer(ctx)
+	container, err := testcontainer.CreatePostgresContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := connector.PostgresConfig{
+		Host:          container.Host,
+		Port:          container.Port,
+		DBName:        container.Database,
+		User:          container.User,
+		Password:      container.Password,
+		SSLMode:       "disable",
+		MaxOpenConns:  10,
+		MaxIdleConns:  5,
+		MaxLifetime:   10,
+		Migrate:       true,
+		MigrationPath: MigrationPath,
+	}
+
+	pg, err := connector.NewPostgres(ctx, config)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := seed(pg, PathSeed); err != nil {
+	if err := testcontainer.SeedPostgres(pg, DefaultSeedPath); err != nil {
 		t.Fatal(err)
 	}
 
@@ -313,17 +307,30 @@ func TestIntegrationFooPostgres_DeleteByID(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	container, err := CreatePostgresContainer(ctx)
+	container, err := testcontainer.CreatePostgresContainer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	config := connector.PostgresConfig{
+		Host:          container.Host,
+		Port:          container.Port,
+		DBName:        container.Database,
+		User:          container.User,
+		Password:      container.Password,
+		SSLMode:       "disable",
+		MaxOpenConns:  10,
+		MaxIdleConns:  5,
+		MaxLifetime:   10,
+		Migrate:       true,
+		MigrationPath: MigrationPath,
+	}
+
+	pg, err := connector.NewPostgres(ctx, config)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	pg, err := NewPostgres(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if err := seed(pg, PathSeed); err != nil {
+	if err := testcontainer.SeedPostgres(pg, DefaultSeedPath); err != nil {
 		t.Fatal(err)
 	}
 

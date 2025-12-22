@@ -17,6 +17,12 @@ telemetry:
   url: "localhost:4318"
   service_name: "astigo"
 
+driver:
+  repository: "postgres"
+  cache: "redis"
+  publisher: "nats"
+  subscriber: "nats"
+  storage: "s3"
 
 postgres:
   host: "localhost"

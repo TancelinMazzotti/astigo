@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
@@ -41,20 +40,9 @@ func TestIntegrationFooRedis_GetByID(t *testing.T) {
 		},
 	}
 
-	ctx := context.Background()
-	container, err := CreateRedisContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	redis, err := NewRedis(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			cache := NewFooRedis(redis)
+			cache := NewFooRedis(DefaultClient)
 
 			result, err := cache.GetByID(context.Background(), testCase.id)
 
@@ -114,19 +102,9 @@ func TestIntegrationFooRedis_Set(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	container, err := CreateRedisContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	redis, err := NewRedis(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			cache := NewFooRedis(redis)
+			cache := NewFooRedis(DefaultClient)
 
 			err := cache.Set(ctx, testCase.foo, 0)
 
@@ -155,23 +133,15 @@ func TestIntegrationFooRedis_DeleteByID(t *testing.T) {
 	}{
 		{
 			name:          "Success Case",
-			id:            uuid.MustParse("20000000-0000-0000-0000-000000000001"),
+			id:            uuid.MustParse("20000000-0000-0000-0000-000000000002"),
 			expectedError: nil,
 		},
 	}
 	ctx := context.Background()
-	container, err := CreateRedisContainer(ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
 
-	redis, err := NewRedis(ctx, container.Config)
-	if err != nil {
-		t.Fatal(err)
-	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
-			cache := NewFooRedis(redis)
+			cache := NewFooRedis(DefaultClient)
 
 			err := cache.DeleteByID(ctx, testCase.id)
 

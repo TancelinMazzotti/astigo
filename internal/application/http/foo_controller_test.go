@@ -11,8 +11,7 @@ import (
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port"
 	data2 "github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
-	"github.com/TancelinMazzotti/astigo/mocks/domain/contract/service"
-
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/in/mockservice"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func TestFooController_GetAll(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:       "Success Case - Multiple Foos",
@@ -39,7 +38,7 @@ func TestFooController_GetAll(t *testing.T) {
 				{"id":"20000000-0000-0000-0000-000000000003", "label":"foo3", "value":3, "weight":3.5}
 			]`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
@@ -77,7 +76,7 @@ func TestFooController_GetAll(t *testing.T) {
 			url:          "/foos?offset=0&limit=10",
 			statusCode:   http.StatusOK,
 			bodyResponse: `[]`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
@@ -90,35 +89,35 @@ func TestFooController_GetAll(t *testing.T) {
 			url:              "/foos?offset=invalid&limit=10",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate query params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:             "Failure Case - Invalid value offset",
 			url:              "/foos?offset=-1&limit=10",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate query params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:             "Failure Case - Invalid type limit",
 			url:              "/foos?offset=0&limit=invalid",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate query params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:             "Failure Case - Invalid value limit",
 			url:              "/foos?offset=0&limit=-1",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate query params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:             "Failure Case - Invalid exceeded limit",
 			url:              "/foos?offset=0&limit=51",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate query params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:         "Failure Case - Repository Error",
@@ -126,7 +125,7 @@ func TestFooController_GetAll(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"failed to get all foos"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetAll",
 					mock.Anything,
@@ -139,7 +138,7 @@ func TestFooController_GetAll(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -168,7 +167,7 @@ func TestFooController_GetByID(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:         "Success Case",
@@ -176,7 +175,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusOK,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001", "label":"foo1", "value":1, "weight":1.5}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -197,7 +196,7 @@ func TestFooController_GetByID(t *testing.T) {
 			url:              "/foos/not_uuid",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate path params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:         "Failure Case - Not Found",
@@ -205,7 +204,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo not found"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -222,7 +221,7 @@ func TestFooController_GetByID(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"failed to get foo by id"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"GetByID",
 					mock.Anything,
@@ -238,7 +237,7 @@ func TestFooController_GetByID(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -268,7 +267,7 @@ func TestFooController_Create(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:         "Success Case",
@@ -277,7 +276,7 @@ func TestFooController_Create(t *testing.T) {
 			statusCode:   http.StatusCreated,
 			bodyResponse: `{"id":"20000000-0000-0000-0000-000000000001"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Create",
 					mock.Anything,
@@ -304,7 +303,7 @@ func TestFooController_Create(t *testing.T) {
 			body:             `{"label":"foo_create"}`,
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate request body"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:         "Failure Case - Repository Error",
@@ -313,7 +312,7 @@ func TestFooController_Create(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error":"failed to create foo"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Create",
 					mock.Anything,
@@ -333,7 +332,7 @@ func TestFooController_Create(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -363,7 +362,7 @@ func TestFooController_Update(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:       "Success Case",
@@ -371,7 +370,7 @@ func TestFooController_Update(t *testing.T) {
 			body:       `{"label":"foo_update", "secret":"secret_update", "value":1, "weight":1.5}`,
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -390,7 +389,7 @@ func TestFooController_Update(t *testing.T) {
 			body:             `{"label":"foo_update"}`,
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate request body"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:         "Failure Case - Not Found",
@@ -399,7 +398,7 @@ func TestFooController_Update(t *testing.T) {
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo not found"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -419,7 +418,7 @@ func TestFooController_Update(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error": "failed to update foo"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -437,7 +436,7 @@ func TestFooController_Update(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -471,7 +470,7 @@ func TestFooController_Patch(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:       "Success Case",
@@ -479,7 +478,7 @@ func TestFooController_Patch(t *testing.T) {
 			body:       `{"label":"foo_patch", "secret":"secret_patch", "value":1, "weight":1.5}`,
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -510,7 +509,7 @@ func TestFooController_Patch(t *testing.T) {
 			body:       `{"label":"foo_patch"}`,
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -530,7 +529,7 @@ func TestFooController_Patch(t *testing.T) {
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo not found"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -550,7 +549,7 @@ func TestFooController_Patch(t *testing.T) {
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error": "failed to update foo"}`,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"Update",
 					mock.Anything,
@@ -568,7 +567,7 @@ func TestFooController_Patch(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)
@@ -601,14 +600,14 @@ func TestFooController_Delete(t *testing.T) {
 		statusCode   int
 		bodyResponse string
 
-		setupMockHandler func(*service.MockFooService)
+		setupMockHandler func(*mockservice.MockFooService)
 	}{
 		{
 			name:       "Success Case",
 			url:        "/foos/20000000-0000-0000-0000-000000000001",
 			statusCode: http.StatusNoContent,
 
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"DeleteByID",
 					mock.Anything,
@@ -621,14 +620,14 @@ func TestFooController_Delete(t *testing.T) {
 			url:              "/foos/not_uuid",
 			statusCode:       http.StatusBadRequest,
 			bodyResponse:     `{"error":"failed to validate path params"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {},
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {},
 		},
 		{
 			name:         "Failure Case - Not Found",
 			url:          "/foos/40400000-0000-0000-0000-000000000000",
 			statusCode:   http.StatusNotFound,
 			bodyResponse: `{"error":"foo not found"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"DeleteByID",
 					mock.Anything,
@@ -641,7 +640,7 @@ func TestFooController_Delete(t *testing.T) {
 			url:          "/foos/20000000-0000-0000-0000-000000000001",
 			statusCode:   http.StatusInternalServerError,
 			bodyResponse: `{"error": "failed to delete foo"}`,
-			setupMockHandler: func(mockHandler *service.MockFooService) {
+			setupMockHandler: func(mockHandler *mockservice.MockFooService) {
 				mockHandler.On(
 					"DeleteByID",
 					mock.Anything,
@@ -654,7 +653,7 @@ func TestFooController_Delete(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockHandler := new(service.MockFooService)
+			mockHandler := new(mockservice.MockFooService)
 			controller := NewFooController(mockHandler)
 
 			testCase.setupMockHandler(mockHandler)

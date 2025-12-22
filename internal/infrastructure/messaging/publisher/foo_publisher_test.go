@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-	messaging2 "github.com/TancelinMazzotti/astigo/mocks/domain/contract/messaging"
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockmessaging"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -22,8 +22,8 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 		foo           *model.Foo
 		expectedError error
 
-		setupMockMessaging1 func(*messaging2.MockFooMessaging)
-		setupMockMessaging2 func(*messaging2.MockFooMessaging)
+		setupMockMessaging1 func(*mockmessaging.MockFooMessaging)
+		setupMockMessaging2 func(*mockmessaging.MockFooMessaging)
 	}{
 		{
 			name: "Success Case",
@@ -37,7 +37,7 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 			},
 			expectedError: nil,
 
-			setupMockMessaging1: func(mockMessaging *messaging2.MockFooMessaging) {
+			setupMockMessaging1: func(mockMessaging *mockmessaging.MockFooMessaging) {
 				mockMessaging.On("PublishFooCreated", mock.Anything, &model.Foo{
 					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:     "Foo1",
@@ -47,7 +47,7 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 					CreatedAt: createdAt,
 				}).Return(nil)
 			},
-			setupMockMessaging2: func(mockMessaging *messaging2.MockFooMessaging) {
+			setupMockMessaging2: func(mockMessaging *mockmessaging.MockFooMessaging) {
 				mockMessaging.On("PublishFooCreated", mock.Anything, &model.Foo{
 					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:     "Foo1",
@@ -70,7 +70,7 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 			},
 			expectedError: errors.New("failed to publish foo created: failed to publish"),
 
-			setupMockMessaging1: func(mockMessaging *messaging2.MockFooMessaging) {
+			setupMockMessaging1: func(mockMessaging *mockmessaging.MockFooMessaging) {
 				mockMessaging.On("PublishFooCreated", mock.Anything, &model.Foo{
 					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:     "Foo1",
@@ -80,7 +80,7 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 					CreatedAt: createdAt,
 				}).Return(errors.New("failed to publish"))
 			},
-			setupMockMessaging2: func(mockMessaging *messaging2.MockFooMessaging) {
+			setupMockMessaging2: func(mockMessaging *mockmessaging.MockFooMessaging) {
 				mockMessaging.On("PublishFooCreated", mock.Anything, &model.Foo{
 					Id:        uuid.MustParse("20000000-0000-0000-0000-000000000001"),
 					Label:     "Foo1",
@@ -96,8 +96,8 @@ func TestFooPublisher_PublishFooCreated(t *testing.T) {
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			t.Parallel()
-			mockMessaging1 := new(messaging2.MockFooMessaging)
-			mockMessaging2 := new(messaging2.MockFooMessaging)
+			mockMessaging1 := new(mockmessaging.MockFooMessaging)
+			mockMessaging2 := new(mockmessaging.MockFooMessaging)
 
 			testCase.setupMockMessaging1(mockMessaging1)
 			testCase.setupMockMessaging2(mockMessaging2)

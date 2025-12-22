@@ -1,4 +1,4 @@
-package nats
+package testcontainer
 
 import (
 	"context"
@@ -13,21 +13,20 @@ import (
 // NatsContainer is a type that embeds a NATS container and its configuration for managing NATS server instances.
 type NatsContainer struct {
 	*nats.NATSContainer
-	Config Config
+	URL      string
+	Username string
+	Password string
 }
 
 // CreateNatsContainer creates and initializes a NATS container in a Docker environment with the provided context.
 // Returns a pointer to a NatsContainer instance containing the container instance and its configuration, or an error.
 func CreateNatsContainer(ctx context.Context) (*NatsContainer, error) {
-	config := Config{
-		URL:      "localhost",
-		Username: "foo",
-		Password: "bar",
-	}
+	username := "foo"
+	password := "bar"
 
 	natsContainer, err := nats.Run(ctx, "nats:2.9",
-		nats.WithUsername(config.Username),
-		nats.WithPassword(config.Password),
+		nats.WithUsername(username),
+		nats.WithPassword(password),
 		testcontainers.WithWaitStrategy(
 			wait.ForListeningPort("4222/tcp").
 				WithStartupTimeout(30*time.Second),
@@ -42,10 +41,10 @@ func CreateNatsContainer(ctx context.Context) (*NatsContainer, error) {
 		return nil, fmt.Errorf("failed to get connection string: %w", err)
 	}
 
-	config.URL = uri
-
 	return &NatsContainer{
 		NATSContainer: natsContainer,
-		Config:        config,
+		URL:           uri,
+		Username:      username,
+		Password:      password,
 	}, nil
 }

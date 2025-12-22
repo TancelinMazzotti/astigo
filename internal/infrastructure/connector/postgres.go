@@ -1,4 +1,4 @@
-package postgres
+package connector
 
 import (
 	"context"
@@ -15,8 +15,8 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 )
 
-// Config represents the configuration settings required to connect to a PostgreSQL database.
-type Config struct {
+// PostgresConfig represents the configuration settings required to connect to a PostgreSQL database.
+type PostgresConfig struct {
 	Host          string `mapstructure:"host"`
 	Port          int    `mapstructure:"port"`
 	User          string `mapstructure:"user"`
@@ -32,7 +32,7 @@ type Config struct {
 
 // NewPostgres initializes and returns a PostgreSQL database connection based on the provided configuration.
 // It configures connection pool settings and verifies connectivity by pinging the database.
-func NewPostgres(ctx context.Context, config Config) (*sql.DB, error) {
+func NewPostgres(ctx context.Context, config PostgresConfig) (*sql.DB, error) {
 	dsn := fmt.Sprintf(
 		"user=%s password=%s host=%s port=%d dbname=%s sslmode=%s",
 		config.User, config.Password, config.Host, config.Port, config.DBName, config.SSLMode,
