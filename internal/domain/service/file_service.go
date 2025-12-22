@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/service"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/messaging"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/storage"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/api/service"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/publisher"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/repository"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/storage"
 	"go.uber.org/zap"
 )
 
@@ -16,14 +16,14 @@ type FileService struct {
 	logger *zap.Logger
 	repo   repository.IFileRepository
 	store  storage.IFileStorage
-	msg    messaging.IFileMessaging
+	pub    publisher.IFilePublisher
 }
 
-func NewFileService(logger *zap.Logger, repo repository.IFileRepository, store storage.IFileStorage, msg messaging.IFileMessaging) *FileService {
+func NewFileService(logger *zap.Logger, repo repository.IFileRepository, store storage.IFileStorage, pub publisher.IFilePublisher) *FileService {
 	return &FileService{
 		logger: logger,
 		repo:   repo,
 		store:  store,
-		msg:    msg,
+		pub:    pub,
 	}
 }

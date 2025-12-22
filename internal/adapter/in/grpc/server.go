@@ -1,0 +1,22 @@
+package grpc
+
+import (
+	"github.com/TancelinMazzotti/astigo/internal/adapter/in/grpc/interceptor"
+	"github.com/TancelinMazzotti/astigo/pkg/proto"
+
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+)
+
+type Config struct {
+	Port int `mapstructure:"port"`
+}
+
+func NewGrpcServer(logger *zap.Logger, fooService proto.FooServiceServer) *grpc.Server {
+	server := grpc.NewServer(
+		grpc.UnaryInterceptor(interceptor.UnaryLoggerInterceptor(logger)),
+	)
+	server.RegisterService(&proto.FooService_ServiceDesc, fooService)
+
+	return server
+}
