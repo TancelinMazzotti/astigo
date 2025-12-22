@@ -1,8 +1,6 @@
 name: CI - Astigo API
 
 on:
-  push:
-    branches: ["dev", "main"]
   pull_request:
     branches: ["dev", "main"]
 
@@ -20,9 +18,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
-
-      - name: 🧹 Clean Go mod cache
-        run: rm -rf ~/go/pkg/mod
 
       - name: ⚡ Cache Go modules
         uses: actions/cache@v3
@@ -51,9 +46,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24.2"
-
-      - name: 🧹 Clean Go mod cache
-        run: rm -rf ~/go/pkg/mod
 
       - name: ⚡ Cache Go modules
         uses: actions/cache@v3
