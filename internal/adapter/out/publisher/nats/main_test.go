@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	"github.com/TancelinMazzotti/astigo/test/testcontainer"
 	"github.com/nats-io/nats.go"
 )

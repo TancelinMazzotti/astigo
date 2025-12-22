@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	"github.com/TancelinMazzotti/astigo/test/helpers"
 	"github.com/TancelinMazzotti/astigo/test/testcontainer"
 )

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	redis2 "github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go/modules/redis"
 )

@@ -13,12 +13,12 @@ import (
 	grpc3 "github.com/TancelinMazzotti/astigo/internal/adapter/in/grpc"
 	http3 "github.com/TancelinMazzotti/astigo/internal/adapter/in/http"
 	redis2 "github.com/TancelinMazzotti/astigo/internal/adapter/out/cache/redis"
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
 	nats2 "github.com/TancelinMazzotti/astigo/internal/adapter/out/publisher/nats"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/out/repository/postgres"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/out/storage/s3storage"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/out/telemetry"
 	"github.com/TancelinMazzotti/astigo/internal/domain/service"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"

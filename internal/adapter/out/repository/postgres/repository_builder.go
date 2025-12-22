@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/repository"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 )
 
 const Driver = "postgres"

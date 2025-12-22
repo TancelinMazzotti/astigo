@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/api/data"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	"github.com/TancelinMazzotti/astigo/test/testcontainer"
 
 	"github.com/google/go-cmp/cmp"

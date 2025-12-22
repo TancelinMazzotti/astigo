@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
 	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/cache"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 	"github.com/redis/go-redis/v9"
 )
 

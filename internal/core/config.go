@@ -3,9 +3,9 @@ package core
 import (
 	"github.com/TancelinMazzotti/astigo/internal/adapter/in/grpc"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/in/http"
-	connector2 "github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/out/storage/s3storage"
 	"github.com/TancelinMazzotti/astigo/internal/adapter/out/telemetry"
+	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
 )
 
 // Config represents the main configuration structure for the application, encompassing all required service settings.
@@ -22,10 +22,10 @@ type Config struct {
 
 	Driver DriverConfig `mapstructure:"driver"`
 
-	Postgres connector2.PostgresConfig `mapstructure:"postgres"`
-	Nats     connector2.NatsConfig     `mapstructure:"nats"`
-	Redis    connector2.RedisConfig    `mapstructure:"redis"`
-	S3       s3storage.Config          `mapstructure:"s3"`
+	Postgres connector.PostgresConfig `mapstructure:"postgres"`
+	Nats     connector.NatsConfig     `mapstructure:"nats"`
+	Redis    connector.RedisConfig    `mapstructure:"redis"`
+	S3       s3storage.Config         `mapstructure:"s3"`
 }
 
 type DriverConfig struct {
