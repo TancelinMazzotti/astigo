@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/publisher"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/publisher/nats"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/publisher/nats"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/publisher"
 )
 
 func GetPublisherBuilder(config Config) (publisher.IPublisherBuilder, error) {

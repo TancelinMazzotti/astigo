@@ -1,10 +1,10 @@
 package service
 
 import (
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/service"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/publisher"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/storage"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/api/service"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/publisher"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/repository"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/storage"
 	"go.uber.org/zap"
 )
 

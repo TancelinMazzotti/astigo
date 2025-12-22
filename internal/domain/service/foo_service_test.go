@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/TancelinMazzotti/astigo/internal/domain/model"
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/in/data"
-	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockcache"
-	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockpublisher"
-	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/out/mockrepository"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/api/data"
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/spi/mockcache"
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/spi/mockpublisher"
+	"github.com/TancelinMazzotti/astigo/test/mocks/domain/port/spi/mockrepository"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

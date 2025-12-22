@@ -9,16 +9,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/TancelinMazzotti/astigo/internal/application/event"
-	grpc2 "github.com/TancelinMazzotti/astigo/internal/application/grpc"
-	http2 "github.com/TancelinMazzotti/astigo/internal/application/http"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/in/event"
+	grpc3 "github.com/TancelinMazzotti/astigo/internal/adapter/in/grpc"
+	http3 "github.com/TancelinMazzotti/astigo/internal/adapter/in/http"
+	redis2 "github.com/TancelinMazzotti/astigo/internal/adapter/out/cache/redis"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/connector"
+	nats2 "github.com/TancelinMazzotti/astigo/internal/adapter/out/publisher/nats"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/storage/s3storage"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/telemetry"
 	"github.com/TancelinMazzotti/astigo/internal/domain/service"
-	redis2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/connector"
-	nats2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/publisher/nats"
-	postgres2 "github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/storage/s3storage"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/telemetry"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
@@ -62,7 +62,7 @@ func (server *Server) Start(ctx context.Context) error {
 
 // startHTTPServer starts an HTTP server using the configuration provided in the Server instance and listens for errors.
 func (server *Server) startHTTPServer(errCh chan<- error) {
-	http2.StartAt = time.Now()
+	http3.StartAt = time.Now()
 	server.HttpServer = &http.Server{
 		Addr:    fmt.Sprintf(":%s", server.Config.Gin.Port),
 		Handler: server.GinEngine,
@@ -220,24 +220,24 @@ func NewServer(ctx context.Context, config Config) (*Server, error) {
 	server.Logger.Debug("create new foo services")
 	fooService := service.NewFooService(
 		server.Logger,
-		postgres2.NewFooPostgres(server.Postgres),
+		postgres.NewFooPostgres(server.Postgres),
 		redis2.NewFooRedis(server.Redis),
 		nats2.NewFooNats(server.Nats),
 	)
 
 	server.Logger.Debug("create new gin engine")
-	server.GinEngine = http2.NewGin(
+	server.GinEngine = http3.NewGin(
 		server.Config.Gin,
 		server.Logger,
 		authService,
-		http2.NewHealthController(),
-		http2.NewFooController(fooService),
+		http3.NewHealthController(),
+		http3.NewFooController(fooService),
 	)
 
 	server.Logger.Debug("create new grpc server")
-	server.GrpcServer = grpc2.NewGrpcServer(
+	server.GrpcServer = grpc3.NewGrpcServer(
 		server.Logger,
-		grpc2.NewFooService(fooService),
+		grpc3.NewFooService(fooService),
 	)
 
 	return server, nil

@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/repository"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/repository/postgres"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/repository"
 )
 
 func GetRepositoryBuilder(config Config) (repository.IRepositoryBuilder, error) {

@@ -3,8 +3,8 @@ package core
 import (
 	"fmt"
 
-	"github.com/TancelinMazzotti/astigo/internal/domain/port/out/cache"
-	"github.com/TancelinMazzotti/astigo/internal/infrastructure/cache/redis"
+	"github.com/TancelinMazzotti/astigo/internal/adapter/out/cache/redis"
+	"github.com/TancelinMazzotti/astigo/internal/domain/port/spi/cache"
 )
 
 func GetCacheBuilder(config Config) (cache.ICacheBuilder, error) {
