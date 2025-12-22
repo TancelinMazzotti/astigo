@@ -99,7 +99,7 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
   ```
 - Or with Docker Compose:
   ```bash
-  docker-compose up -d
+  docker-compose --profile astigo up -d
   ```
 
 ### Quick access:
@@ -122,7 +122,7 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
   ```
 - Or with Docker Compose:
   ```bash
-  docker-compose down -v
+  docker-compose --profile astigo down -v
   ```
 
 ### Clean and restart:
@@ -132,8 +132,8 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
   ```
 - Or with Docker Compose:
   ```bash
-  docker-compose down -v
-  docker-compose up -d
+  docker-compose --profile astigo down -v
+  docker-compose --profile astigo up -d
   ```
 
 
@@ -144,9 +144,9 @@ This project emphasizes **separation of concerns**, **scalability**, and **exten
   ```
 - Or with Docker Compose:
   ```bash
-  docker-compose down -v
-  docker-compose build
-  docker-compose up -d
+  docker-compose --profile astigo down -v
+  docker-compose --profile astigo build
+  docker-compose --profile astigo up -d
   ```
 
 ---
